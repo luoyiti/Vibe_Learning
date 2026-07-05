@@ -1,0 +1,52 @@
+{
+  "schema_version": "1.0",
+  "id": "01KVJAYJGQH64TAX8VQ11FVMTY",
+  "title": "OLAP 与 OLTP 的区别",
+  "slug": "olap-oltp",
+  "summary": "OLTP 面向高并发业务事务与强一致写入，OLAP 面向海量历史数据的聚合分析，实践中常通过 ETL 分离部署。",
+  "original_question": "写一份简约、白色学术风格的网站，给我讲一讲OLAP和OLTP的区别",
+  "domain": "databases",
+  "tags": [
+    "databases",
+    "olap",
+    "oltp",
+    "data-warehouse",
+    "data-architecture"
+  ],
+  "concepts": [
+    "OLTP",
+    "OLAP",
+    "ACID",
+    "ETL",
+    "data warehouse",
+    "star schema",
+    "column-oriented storage",
+    "row-oriented storage",
+    "HTAP",
+    "normalization",
+    "denormalization"
+  ],
+  "references": [
+    {
+      "title": "One Size Fits All — Stonebraker & Çetintemel",
+      "url": "https://dl.acm.org/doi/10.1145/322659.322672"
+    },
+    {
+      "title": "Oracle — What is OLTP?",
+      "url": "https://www.oracle.com/database/what-is-oltp/"
+    },
+    {
+      "title": "Amazon Redshift — OLAP",
+      "url": "https://docs.aws.amazon.com/redshift/latest/dg/c_OLAP.html"
+    }
+  ],
+  "artifact": {
+    "format": "html",
+    "entry": "artifact/index.html",
+    "self_contained": true
+  },
+  "status": "stable",
+  "confidence": "solid",
+  "created_at": "2026-06-20T10:59:13.559586+00:00",
+  "updated_at": "2026-06-20T10:59:13.559586+00:00"
+}

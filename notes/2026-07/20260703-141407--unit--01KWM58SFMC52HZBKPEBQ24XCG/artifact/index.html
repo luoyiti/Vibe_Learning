@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>软件测试工程师技术栈全景</title>
+<style>
+  :root{
+    --bg:#ffffff; --bg2:#f7f8fa; --panel:#ffffff; --panel2:#f7f8fa;
+    --line:#e8eaed; --line2:#eef0f3; --txt:#1f2329; --mut:#6b7280; --mut2:#9aa1ad;
+    --accent:#2563eb; --accent2:#3b82f6; --accent-soft:#eff4ff;
+    --emerald:#059669; --amber:#d97706; --rose:#e11d48; --violet:#7c3aed; --sky:#0284c7;
+    --shadow:0 1px 2px rgba(16,24,40,.04),0 1px 3px rgba(16,24,40,.06);
+    --shadow-lg:0 10px 30px rgba(16,24,40,.08);
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--txt);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1120px;margin:0 auto;padding:0 22px}
+  a{color:var(--accent)}
+  nav.top{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.85);backdrop-filter:blur(12px);
+    border-bottom:1px solid var(--line)}
+  nav.top .row{display:flex;align-items:center;gap:18px;height:56px}
+  nav.top .brand{font-weight:600;letter-spacing:.2px;display:flex;align-items:center;gap:9px;color:var(--txt)}
+  nav.top .brand .dot{width:8px;height:8px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 4px var(--accent-soft)}
+  nav.top .links{margin-left:auto;display:flex;gap:4px;flex-wrap:wrap}
+  nav.top .links a{color:var(--mut);font-size:.86rem;padding:.32rem .7rem;border-radius:7px;transition:.18s}
+  nav.top .links a:hover{color:var(--accent);background:var(--accent-soft)}
+  .hero{padding:60px 0 30px;position:relative;overflow:hidden}
+  .hero::before{content:"";position:absolute;inset:0;
+    background:radial-gradient(560px 280px at 82% -6%,rgba(37,99,235,.07),transparent 70%),
+               radial-gradient(460px 260px at 4% 8%,rgba(124,58,237,.05),transparent 70%);pointer-events:none}
+  .hero .inner{position:relative}
+  .hero .tag{display:inline-flex;align-items:center;gap:7px;font-size:.76rem;color:var(--accent);
+    border:1px solid #d6e0fb;background:var(--accent-soft);padding:.3rem .7rem;border-radius:999px;letter-spacing:.5px;font-weight:500}
+  .hero h1{font-size:2.5rem;line-height:1.14;margin:18px 0 12px;font-weight:700;letter-spacing:-.5px;color:var(--txt)}
+  .hero h1 .g{background:linear-gradient(92deg,var(--accent),var(--violet));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .hero p.lead{font-size:1.06rem;color:var(--mut);max-width:680px;margin:0 0 22px}
+  .hero .stats{display:flex;gap:14px;flex-wrap:wrap}
+  .hero .stat{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 16px;min-width:120px;box-shadow:var(--shadow)}
+  .hero .stat .n{font-size:1.5rem;font-weight:700;color:var(--accent)}
+  .hero .stat .l{font-size:.78rem;color:var(--mut)}
+  section{padding:44px 0}
+  .sec-h{display:flex;align-items:baseline;gap:12px;margin-bottom:6px}
+  .sec-h .idx{font-family:ui-monospace,monospace;color:var(--accent);font-size:.82rem;font-weight:600}
+  .sec-h h2{font-size:1.5rem;margin:0;font-weight:700;letter-spacing:-.3px;color:var(--txt)}
+  .sec-d{color:var(--mut);margin:0 0 24px;font-size:.96rem;max-width:720px}
+  .pyr-wrap{display:grid;grid-template-columns:1.05fr .95fr;gap:34px;align-items:center}
+  @media(max-width:820px){.pyr-wrap{grid-template-columns:1fr}}
+  .pyr{display:flex;flex-direction:column;align-items:center;gap:9px}
+  .layer{position:relative;display:flex;align-items:center;justify-content:center;cursor:pointer;
+    border-radius:10px;transition:.2s;font-weight:600;letter-spacing:.3px;
+    border:1px solid rgba(15,23,42,.08)}
+  .layer small{font-weight:500;opacity:.75;margin-left:10px}
+  .layer:hover{transform:translateY(-2px);box-shadow:var(--shadow-lg)}
+  .layer.active{box-shadow:0 0 0 2px var(--accent),var(--shadow-lg)}
+  .pyr-card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:24px;min-height:230px;box-shadow:var(--shadow)}
+  .pyr-card .k{font-size:.74rem;color:var(--accent);letter-spacing:1px;text-transform:uppercase;font-weight:600}
+  .pyr-card h3{margin:6px 0 10px;font-size:1.22rem;color:var(--txt)}
+  .pyr-card p{color:var(--mut);margin:0 0 14px}
+  .pyr-card .tools{display:flex;flex-wrap:wrap;gap:7px}
+  .chip{font-size:.78rem;background:var(--bg2);border:1px solid var(--line);color:var(--txt);
+    padding:.3rem .65rem;border-radius:7px}
+  .pct{font-size:1.05rem;color:var(--amber);font-weight:700}
+  .filters{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:22px}
+  .fbtn{font-size:.82rem;color:var(--mut);background:var(--panel);border:1px solid var(--line);
+    padding:.42rem .85rem;border-radius:999px;cursor:pointer;transition:.16s;font-family:inherit}
+  .fbtn:hover{color:var(--accent);border-color:#c8d6fb}
+  .fbtn.on{color:#fff;background:var(--accent);border-color:var(--accent);font-weight:500}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(305px,1fr));gap:16px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:18px 19px;
+    transition:.18s;position:relative;overflow:hidden;box-shadow:var(--shadow)}
+  .card:hover{border-color:#c8d6fb;transform:translateY(-3px);box-shadow:var(--shadow-lg)}
+  .card .ic{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;
+    font-size:1.1rem;margin-bottom:11px;background:var(--accent-soft);border:1px solid var(--line)}
+  .card h4{margin:0 0 4px;font-size:1.02rem;color:var(--txt)}
+  .card .cat{font-size:.7rem;color:var(--mut2);letter-spacing:.6px;text-transform:uppercase;margin-bottom:9px;font-weight:600}
+  .card p{margin:0 0 11px;font-size:.88rem;color:var(--mut)}
+  .card .tl{display:flex;flex-wrap:wrap;gap:6px}
+  .ttag{font-size:.76rem;background:var(--bg2);border:1px solid var(--line);border-radius:6px;
+    padding:.2rem .5rem;color:var(--accent)}
+  .ttag.alt{color:var(--amber)}
+  .ttag.alt2{color:var(--violet)}
+  .road{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+  @media(max-width:820px){.road{grid-template-columns:1fr 1fr}}
+  @media(max-width:520px){.road{grid-template-columns:1fr}}
+  .stage{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:18px;position:relative;box-shadow:var(--shadow)}
+  .stage .num{font-family:ui-monospace,monospace;font-size:.74rem;color:var(--accent);letter-spacing:1px;font-weight:600}
+  .stage h4{margin:5px 0 3px;font-size:1.04rem;color:var(--txt)}
+  .stage .sub{font-size:.8rem;color:var(--amber);margin-bottom:11px}
+  .stage ul{margin:0;padding-left:18px;color:var(--mut);font-size:.85rem}
+  .stage li{margin-bottom:5px}
+  .types{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px}
+  .type{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--accent);
+    border-radius:10px;padding:14px 15px;box-shadow:var(--shadow)}
+  .type h5{margin:0 0 4px;font-size:.95rem;color:var(--txt)}
+  .type p{margin:0;font-size:.82rem;color:var(--mut)}
+  .method{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}
+  .mblock{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:20px;box-shadow:var(--shadow)}
+  .mblock h4{margin:0 0 9px;font-size:1.06rem;color:var(--txt)}
+  .mblock .loop{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:10px 0 12px}
+  .pill{font-size:.76rem;font-weight:600;padding:.3rem .7rem;border-radius:999px}
+  .pill.r{background:#fef2f3;color:var(--rose);border:1px solid #fbd5dc}
+  .pill.g{background:#ecfdf5;color:var(--emerald);border:1px solid #c7eede}
+  .pill.b{background:#eff6ff;color:var(--sky);border:1px solid #cfe3fb}
+  .arrow{color:var(--mut2)}
+  .mblock p{color:var(--mut);font-size:.88rem;margin:0}
+  footer{border-top:1px solid var(--line);padding:34px 0 50px;color:var(--mut2);font-size:.82rem;text-align:center}
+  .footnote{font-size:.8rem;color:var(--mut);background:var(--bg2);border:1px dashed var(--line);
+    border-radius:10px;padding:12px 15px;margin-top:18px}
+</style>
+</head>
+<body>
+
+<nav class="top">
+  <div class="wrap row">
+    <div class="brand"><span class="dot"></span>QA·Stack 软件测试技术栈</div>
+    <div class="links">
+      <a href="#pyramid">测试金字塔</a>
+      <a href="#stack">技术栈</a>
+      <a href="#types">测试类型</a>
+      <a href="#roadmap">进阶路线</a>
+      <a href="#method">方法论</a>
+    </div>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="wrap inner">
+    <span class="tag">● QA ENGINEERING · 2025 全景指南</span>
+    <h1>软件测试工程师<br><span class="g">技术栈全景图</span></h1>
+    <p class="lead">从功能测试到测试开发，一张图讲清软件测试工作应当学习的完整技术栈：测试金字塔、自动化工具链、CI/CD 工程化、性能与安全，以及四个进阶阶段。</p>
+    <div class="stats">
+      <div class="stat"><div class="n">12+</div><div class="l">技术分类</div></div>
+      <div class="stat"><div class="n">40+</div><div class="l">工具与框架</div></div>
+      <div class="stat"><div class="n">4</div><div class="l">进阶阶段</div></div>
+      <div class="stat"><div class="n">9</div><div class="l">测试类型</div></div>
+    </div>
+  </div>
+</header>
+
+<section id="pyramid">
+  <div class="wrap">
+    <div class="sec-h"><span class="idx">01</span><h2>测试金字塔 · 分层策略</h2></div>
+    <p class="sec-d">越底层测试越多越快，越顶层越少越脆。把验证尽量下移到接口层，UI 只跑关键路径——这是跳出“改一行崩一片”的根本。</p>
+    <div class="pyr-wrap">
+      <div class="pyr" id="pyr-layers"></div>
+      <div class="pyr-card" id="pyr-card"></div>
+    </div>
+  </div>
+</section>
+
+<section id="stack">
+  <div class="wrap">
+    <div class="sec-h"><span class="idx">02</span><h2>技术栈 · 按方向分类</h2></div>
+    <p class="sec-d">测试工程师不必样样精通，但要知道有什么工具、何时用、解决什么问题，再深入其中几项。点击下方分类筛选。</p>
+    <div class="filters" id="filters"></div>
+    <div class="grid" id="cards"></div>
+  </div>
+</section>
+
+<section id="types">
+  <div class="wrap">
+    <div class="sec-h"><span class="idx">03</span><h2>测试类型 · 一图速查</h2></div>
+    <p class="sec-d">按目的划分的常见测试类型，理解每种类型“测什么、何时测”是基本功。</p>
+    <div class="types" id="types-grid"></div>
+  </div>
+</section>
+
+<section id="roadmap">
+  <div class="wrap">
+    <div class="sec-h"><span class="idx">04</span><h2>进阶路线 · 四个阶段</h2></div>
+    <p class="sec-d">每一步都不是技能叠加，而是认知层级的跃迁。优秀的测试工程师最终都会变成半个架构师。</p>
+    <div class="road" id="road-grid"></div>
+  </div>
+</section>
+
+<section id="method">
+  <div class="wrap">
+    <div class="sec-h"><span class="idx">05</span><h2>方法论 · 思维升级</h2></div>
+    <p class="sec-d">工具会过时，方法论常青。三种核心思维决定了你能走多远。</p>
+    <div class="method">
+      <div class="mblock">
+        <h4>测试金字塔</h4>
+        <p>分层策略：底层多、顶层少。把验证下移到接口/单元层，UI 只做关键回归，解决 UI 自动化脆弱性问题。</p>
+      </div>
+      <div class="mblock">
+        <h4>TDD 测试驱动开发</h4>
+        <div class="loop">
+          <span class="pill r">红 · 写失败测试</span><span class="arrow">→</span>
+          <span class="pill g">绿 · 最少实现</span><span class="arrow">→</span>
+          <span class="pill b">重构</span><span class="arrow">↻</span>
+        </div>
+        <p>本质不是“先写测试”，而是以测试为设计工具，先定义行为契约再实现。重构时有安全网，敢于优化。</p>
+      </div>
+      <div class="mblock">
+        <h4>BDD 行为驱动开发</h4>
+        <p>用自然语言（Given/When/Then）描述业务行为，Cucumber 等工具桥接业务与测试，促进产品、开发、测试三方协作。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    软件测试工程师技术栈全景 · 知识沉淀学习产物<br>
+    数据整理自公开技术资料（CSDN / 知乎 / 腾讯云 / 现代 Web 测试指南 2025）
+  </div>
+</footer>
+
+<script>
+(function(){
+  "use strict";
+  function el(tag, attrs, children){
+    var n = document.createElement(tag);
+    if(attrs){
+      for(var k in attrs){
+        if(k === "class") n.className = attrs[k];
+        else if(k === "style" && typeof attrs[k] === "object"){
+          for(var s in attrs[k]) n.style[s] = attrs[k][s];
+        } else if(k.indexOf("on") === 0){
+          n.addEventListener(k.slice(2).toLowerCase(), attrs[k]);
+        } else {
+          n.setAttribute(k, attrs[k]);
+        }
+      }
+    }
+    if(children != null){
+      if(!Array.isArray(children)) children = [children];
+      children.forEach(function(c){
+        if(c == null) return;
+        if(typeof c === "string" || typeof c === "number") n.appendChild(document.createTextNode(String(c)));
+        else n.appendChild(c);
+      });
+    }
+    return n;
+  }
+
+  var CATEGORIES = [
+    { key:"all", label:"全部" },
+    { key:"foundation", label:"基础理论" },
+    { key:"lang", label:"编程语言" },
+    { key:"unit", label:"单元测试" },
+    { key:"web", label:"Web UI 自动化" },
+    { key:"mobile", label:"移动端自动化" },
+    { key:"api", label:"接口测试" },
+    { key:"perf", label:"性能测试" },
+    { key:"cicd", label:"CI/CD 工程化" },
+    { key:"net", label:"网络抓包" },
+    { key:"sec", label:"安全测试" },
+    { key:"mgmt", label:"测试管理" },
+    { key:"env", label:"测试环境" }
+  ];
+  var CATMAP = {};
+  CATEGORIES.forEach(function(c){ CATMAP[c.key] = c.label; });
+
+  var STACK = [
+    { cat:"foundation", icon:"📐", title:"测试基础理论",
+      desc:"测试分类（黑/白/灰盒）、等价类与边界值、因果图、错误推测、缺陷生命周期、测试用例设计与测试报告。",
+      tools:["黑盒方法","边界值","等价类","缺陷管理","测试流程"] },
+    { cat:"lang", icon:"🐍", title:"Python（主攻）",
+      desc:"测试自动化首选语言，生态最完整。掌握语法、面向对象、装饰器、异常处理与 requests/pytest 等库。",
+      tools:["Python 3","requests","pytest","pip","venv"] },
+    { cat:"lang", icon:"☕", title:"Java（辅助）",
+      desc:"企业级测试开发与后端接口测试常用。配合 TestNG/JUnit、RestAssured、Maven 构建测试工程。",
+      tools:["Java","TestNG","RestAssured","Maven"] },
+    { cat:"lang", icon:"🌐", title:"前端基础（HTML/CSS/JS）",
+      desc:"Web 自动化定位与调试需要理解 DOM、CSS Selector、XPath 与 JS 执行；小程序/H5 测试也依赖前端知识。",
+      tools:["HTML","CSS","JavaScript","DOM","XPath"] },
+    { cat:"unit", icon:"🧪", title:"Pytest / Unittest",
+      desc:"Python 单元测试主力。Pytest 更现代：fixture、参数化、插件生态丰富；Unittest 为标准库自带。",
+      tools:["pytest","unittest","fixture","parametrize"] },
+    { cat:"unit", icon:"🔬", title:"JUnit / TestNG",
+      desc:"Java 体系单元测试框架。JUnit 简洁主流，TestNG 提供依赖测试、数据驱动、并发执行等进阶能力。",
+      tools:["JUnit 5","TestNG","Mockito","AssertJ"] },
+    { cat:"unit", icon:"⚡", title:"Jest / Vitest（前端）",
+      desc:"JS/TS 生态单元测试。Jest 零配置主流，Vitest 与 Vite 深度集成、速度更快，适合现代前端组件测试。",
+      tools:["Jest","Vitest","Mocha","Sinon"] },
+    { cat:"web", icon:"🌍", title:"Selenium",
+      desc:"Web 自动化事实标准，基于 W3C WebDriver 协议。通过浏览器驱动以 HTTP+JSON 操控浏览器，语言无关。",
+      tools:["Selenium 4","WebDriver","chromedriver","Grid"] },
+    { cat:"web", icon:"🎭", title:"Playwright / Cypress",
+      desc:"现代 Web 自动化新选择。Playwright 跨浏览器、自动等待、内置录制；Cypress 开发者体验极佳、调试直观。",
+      tools:["Playwright","Cypress","自动等待","Trace Viewer"] },
+    { cat:"mobile", icon:"📱", title:"Appium",
+      desc:"移动端跨平台自动化王者。同一套 API 跑 Android（UiAutomator2）与 iOS（XCUITest/WDA），语言无关。",
+      tools:["Appium","UiAutomator2","XCUITest","WDA"] },
+    { cat:"mobile", icon:"🤖", title:"Android 专项工具",
+      desc:"Monkey/MonkeyRunner 压力与随机测试，Espresso 白盒级 UI 测试，Airtest 图像识别测试，配合 ADB 调试。",
+      tools:["Espresso","Monkey","Airtest","ADB"] },
+    { cat:"api", icon:"🔌", title:"Postman",
+      desc:"接口手工调试利器。Collections 管理用例、环境变量、断言脚本、Mock，配合 Newman 可命令行批量执行。",
+      tools:["Postman","Newman","Collections","环境变量"] },
+    { cat:"api", icon:"🧰", title:"JMeter / requests",
+      desc:"JMeter 接口与性能通吃，支持多协议、可批量自动化；Python + requests + pytest 适合自研接口自动化框架。",
+      tools:["JMeter","requests","pytest","ddt"] },
+    { cat:"perf", icon:"📈", title:"JMeter / LoadRunner",
+      desc:"性能测试双雄。JMeter 开源主流、社区活跃；LoadRunner 老牌企业级、分析能力强大但显老态。",
+      tools:["JMeter","LoadRunner","压力测试","负载测试"] },
+    { cat:"perf", icon:"🚀", title:"Locust / k6 / Gatling",
+      desc:"新一代性能工具。Locust 用 Python 写脚本、分布式；k6 基于 Go、云原生、脚本即代码；Gatling 高并发。",
+      tools:["Locust","k6","Gatling","分布式压测"] },
+    { cat:"cicd", icon:"🔄", title:"Jenkins / GitLab CI",
+      desc:"持续集成核心。代码提交→自动构建→部署→跑测试→出报告。Jenkins 插件生态最广，GitLab CI/GitHub Actions 与仓库一体。",
+      tools:["Jenkins","GitLab CI","GitHub Actions","Pipeline"] },
+    { cat:"cicd", icon:"🐳", title:"Docker / K8s",
+      desc:"容器化测试环境，一键拉起一致的环境，告别“在我机器上能跑”。K8s 适合规模化测试集群与并发执行。",
+      tools:["Docker","Compose","Kubernetes","镜像"] },
+    { cat:"cicd", icon:"📊", title:"报告与工程化",
+      desc:"Allure 可视化报告（截图/趋势/步骤）；YAML 配置管理环境参数；日志系统让失败可追踪；DDT 数据驱动。",
+      tools:["Allure","YAML 配置","logging","DDT","Git"] },
+    { cat:"net", icon:"🕵️", title:"Fiddler / Charles",
+      desc:"HTTP/HTTPS 抓包调试，Mock 响应、弱网模拟、断点改包，是接口测试与移动端联调的必备技能。",
+      tools:["Fiddler","Charles","弱网","Mock","断点"] },
+    { cat:"net", icon:"🦈", title:"Wireshark",
+      desc:"网络层抓包分析，深入 TCP/UDP/DNS 协议级排查，适合复杂网络问题与协议合规性测试。",
+      tools:["Wireshark","TCP/IP","协议分析"] },
+    { cat:"sec", icon:"🛡️", title:"安全测试工具",
+      desc:"OWASP Top 10 漏洞扫描与渗透。AppScan 自动扫描、Burp Suite 手工渗透、OWASP ZAP 开源、SQL 注入/XSS 检测。",
+      tools:["Burp Suite","AppScan","OWASP ZAP","Skipfish"] },
+    { cat:"mgmt", icon:"📋", title:"测试管理工具",
+      desc:"用例与缺陷全生命周期管理。禅道互联网主流、Jira 国际通用、ALM/QC 金融电信、Bugzilla 轻量。",
+      tools:["禅道","Jira","ALM","Bugzilla"] },
+    { cat:"env", icon:"🖥️", title:"测试环境搭建",
+      desc:"Linux 基础与 Shell、MySQL/Redis 数据库、LAMP/LNMP、虚拟机与云服务器，是从测试走向测试开发的基石。",
+      tools:["Linux","Shell","MySQL","Redis","LAMP"] }
+  ];
+
+  /* 浅色金字塔：柔和底色 + 深色文字 */
+  var PYRAMID = [
+    { k:"unit", name:"单元测试", pct:"70%", color:"#dcfce7", colorText:"#059669", w:"46%",
+      title:"Unit Tests · 单元测试",
+      desc:"对最小可测单元（函数/类）做隔离验证。用 mock/stub 隔离依赖，速度快、定位准、覆盖率高，是金字塔最宽的基石。",
+      tools:["pytest","JUnit","Jest","Mockito","覆盖率"] },
+    { k:"intg", name:"接口 / 集成测试", pct:"20%", color:"#dbeafe", colorText:"#1d4ed8", w:"72%",
+      title:"Integration / API Tests · 接口与集成测试",
+      desc:"验证模块间协作与接口契约。绕开脆弱的 UI，直接打 API 验证业务逻辑，速度快且稳定，是性价比最高的一层。",
+      tools:["Postman","requests","JMeter","Testcontainers","契约测试"] },
+    { k:"e2e", name:"UI / 端到端测试", pct:"10%", color:"#fef3c7", colorText:"#b45309", w:"100%",
+      title:"UI / E2E Tests · 端到端测试",
+      desc:"模拟真实用户走完关键路径。最贴近真实但最慢最脆（改个 id 就崩），只覆盖核心回归，不要把所有验证都压在这一层。",
+      tools:["Selenium","Playwright","Cypress","Appium"] }
+  ];
+
+  var STAGES = [
+    { n:"STAGE 01", t:"入门 · 功能测试", s:"会写用例，会点点点",
+      items:["测试基础理论与流程","黑盒用例设计方法","缺陷报告与跟踪","Linux/MySQL 基础","Postman 接口手工测试"] },
+    { n:"STAGE 02", t:"进阶 · 自动化测试", s:"能写脚本，会用框架",
+      items:["Python + pytest 自动化","Selenium / Appium","requests 接口自动化","Allure 报告 + Git","Jenkins 持续集成"] },
+    { n:"STAGE 03", t:"高手 · 框架与架构", s:"懂分层，能建框架",
+      items:["测试金字塔分层策略","模块化框架设计","配置/日志/DDT 工程化","Docker 容器化环境","性能测试 JMeter/k6"] },
+    { n:"STAGE 04", t:"大师 · 质量内建", s:"TDD 驱动，质量左移",
+      items:["TDD 红-绿-重构循环","BDD / Cucumber 协作","测试平台开发（测开）","质量度量与左移右移","架构级质量保障"] }
+  ];
+
+  var TYPES = [
+    { t:"单元测试 Unit", d:"验证最小代码单元，隔离依赖，速度最快" },
+    { t:"集成测试 Integration", d:"验证模块间接口与协作" },
+    { t:"端到端 E2E", d:"模拟真实用户走完整业务路径" },
+    { t:"冒烟测试 Smoke", d:"主流程能否跑通，快速拦截致命缺陷" },
+    { t:"健全测试 Sanity", d:"冒烟的子集，聚焦新增/变更模块" },
+    { t:"回归测试 Regression", d:"改代码后确认未引入新问题" },
+    { t:"性能测试 Performance", d:"负载/压力/稳定性/并发" },
+    { t:"安全测试 Security", d:"OWASP 漏洞扫描与渗透" },
+    { t:"兼容测试 Compatibility", d:"多浏览器/设备/系统适配" }
+  ];
+
+  /* ---- 测试金字塔 ---- */
+  var pyrLayers = document.getElementById("pyr-layers");
+  var pyrCard = document.getElementById("pyr-card");
+  var activePyr = 0;
+
+  function renderPyrCard(){
+    var p = PYRAMID[activePyr];
+    pyrCard.innerHTML = "";
+    pyrCard.appendChild(el("div", {class:"k"}, p.title));
+    pyrCard.appendChild(el("h3", null, ["占比 ", el("span", {class:"pct"}, p.pct)]));
+    pyrCard.appendChild(el("p", null, p.desc));
+    pyrCard.appendChild(el("div", {class:"tools"}, p.tools.map(function(t){ return el("span",{class:"chip"},t); })));
+    pyrCard.appendChild(el("div", {class:"footnote", style:{marginTop:"14px"}},
+      "点击左侧金字塔三层切换查看。理想比例：单元 70% / 接口 20% / UI 10%。"));
+  }
+  function renderPyr(){
+    pyrLayers.innerHTML = "";
+    PYRAMID.forEach(function(p, i){
+      var layer = el("div", {
+        class: "layer" + (activePyr === i ? " active" : ""),
+        style: { width: p.w, height: "62px", background: p.color, color: p.colorText },
+        onclick: function(){ activePyr = i; renderPyr(); renderPyrCard(); }
+      }, [p.name, el("small", null, "约 " + p.pct)]);
+      pyrLayers.appendChild(layer);
+    });
+  }
+  renderPyr();
+  renderPyrCard();
+
+  /* ---- 技术栈筛选 ---- */
+  var filtersEl = document.getElementById("filters");
+  var cardsEl = document.getElementById("cards");
+  var currentFilter = "all";
+
+  function renderFilters(){
+    filtersEl.innerHTML = "";
+    CATEGORIES.forEach(function(c){
+      filtersEl.appendChild(el("button", {
+        class: "fbtn" + (currentFilter === c.key ? " on" : ""),
+        onclick: function(){ currentFilter = c.key; renderFilters(); renderCards(); }
+      }, c.label));
+    });
+  }
+  function renderCards(){
+    cardsEl.innerHTML = "";
+    var list = STACK.filter(function(s){ return currentFilter === "all" || s.cat === currentFilter; });
+    list.forEach(function(s, i){
+      var card = el("div", {class:"card"});
+      card.appendChild(el("div", {class:"ic"}, s.icon));
+      card.appendChild(el("div", {class:"cat"}, CATMAP[s.cat]));
+      card.appendChild(el("h4", null, s.title));
+      card.appendChild(el("p", null, s.desc));
+      var tl = el("div", {class:"tl"});
+      s.tools.forEach(function(t, ti){
+        var cls = "ttag" + (ti % 3 === 1 ? " alt" : ti % 3 === 2 ? " alt2" : "");
+        tl.appendChild(el("span", {class:cls}, t));
+      });
+      card.appendChild(tl);
+      cardsEl.appendChild(card);
+    });
+  }
+  renderFilters();
+  renderCards();
+
+  /* ---- 测试类型 ---- */
+  var typesGrid = document.getElementById("types-grid");
+  TYPES.forEach(function(t){
+    var box = el("div", {class:"type"});
+    box.appendChild(el("h5", null, t.t));
+    box.appendChild(el("p", null, t.d));
+    typesGrid.appendChild(box);
+  });
+
+  /* ---- 进阶路线 ---- */
+  var roadGrid = document.getElementById("road-grid");
+  STAGES.forEach(function(s){
+    var stage = el("div", {class:"stage"});
+    stage.appendChild(el("div", {class:"num"}, s.n));
+    stage.appendChild(el("h4", null, s.t));
+    stage.appendChild(el("div", {class:"sub"}, s.s));
+    var ul = el("ul");
+    s.items.forEach(function(x){ ul.appendChild(el("li", null, x)); });
+    stage.appendChild(ul);
+    roadGrid.appendChild(stage);
+  });
+})();
+</script>
+</body>
+</html>

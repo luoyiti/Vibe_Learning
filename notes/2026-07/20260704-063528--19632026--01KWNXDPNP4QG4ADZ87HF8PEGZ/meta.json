@@ -1,0 +1,143 @@
+{
+  "schema_version": "1.0",
+  "id": "01KWNXDPNP4QG4ADZ87HF8PEGZ",
+  "title": "树模型六十年：历史发展历程与最新前沿方向（1963–2026）",
+  "slug": "19632026",
+  "summary": "树模型六十年经历单棵树（AID/CHAID/CART/ID3/C4.5）→集成革命（Bagging/AdaBoost/随机森林/GBM/三大工业化 GBDT）→被表格基础模型挑战三次范式转移：凭借与表格数据匹配的归纳偏置统治表格预测二十年，2025 年起 TabPFN 类基础模型在 ≤5 万样本场景首次将其稳定击败，但大数据、低成本与强解释场景仍是树的防线。",
+  "original_question": "请给我详细讲一讲 树模型 机器学习模式的历史发展历程以及最新前沿发展方向。要求 1. 构建一个学术风格的 React 应用进行讲解 2. 在网页中配置动态组件，配合真实数据和真实训练结构、算法等，生动的讲解 3. 你应当使用 perplexity mcp 去进行网络搜索，获取最新的论文以及网络介绍。",
+  "domain": "machine-learning",
+  "tags": [
+    "machine-learning",
+    "decision-trees",
+    "ensemble-learning",
+    "gradient-boosting",
+    "tabular-data",
+    "foundation-models",
+    "ml-history",
+    "interactive-artifact"
+  ],
+  "concepts": [
+    "decision tree",
+    "recursive partitioning",
+    "AID",
+    "CHAID",
+    "CART algorithm",
+    "gini impurity",
+    "ID3",
+    "C4.5",
+    "information gain",
+    "cost-complexity pruning",
+    "bagging",
+    "AdaBoost",
+    "random forest",
+    "out-of-bag error",
+    "gradient boosting",
+    "shrinkage learning rate",
+    "XGBoost",
+    "LightGBM",
+    "CatBoost",
+    "GOSS",
+    "exclusive feature bundling",
+    "ordered boosting",
+    "leaf-wise growth",
+    "oblivious trees",
+    "inductive bias",
+    "tabular data",
+    "tabular foundation model",
+    "TabPFN",
+    "in-context learning",
+    "NODE",
+    "GRANDE",
+    "TreeSHAP",
+    "GOSDT",
+    "NGBoost",
+    "CAAFE",
+    "isolation forest",
+    "TabArena"
+  ],
+  "relations": [
+    {
+      "type": "extends",
+      "target": "01KVM47E4S30QWP21VSSCVYV0W"
+    },
+    {
+      "type": "extends",
+      "target": "01KVM4TNCP4JTXGG36TTGMT6AW"
+    },
+    {
+      "type": "related",
+      "target": "01KVJVZ46BCMXHGTMTBHVGTYF7"
+    },
+    {
+      "type": "related",
+      "target": "01KVN0RSRPWEGNHP0TSNPHC49R"
+    }
+  ],
+  "references": [
+    {
+      "title": "Hollmann et al. (2025). Accurate predictions on small data with a tabular foundation model (TabPFN v2). Nature 637",
+      "url": "https://www.nature.com/articles/s41586-024-08328-6"
+    },
+    {
+      "title": "Prior Labs (2025). TabPFN-2.5: Advancing the State of the Art in Tabular Foundation Models",
+      "url": "https://arxiv.org/abs/2511.08667"
+    },
+    {
+      "title": "Grinsztajn et al. (2022). Why do tree-based models still outperform deep learning on typical tabular data? NeurIPS 2022",
+      "url": "https://openreview.net/forum?id=Fp7__phQszn"
+    },
+    {
+      "title": "Shwartz-Ziv & Armon (2022). Tabular Data: Deep Learning Is Not All You Need",
+      "url": "https://arxiv.org/abs/2106.03253"
+    },
+    {
+      "title": "Chen & Guestrin (2016). XGBoost: A Scalable Tree Boosting System. KDD 2016",
+      "url": "https://arxiv.org/abs/1603.02754"
+    },
+    {
+      "title": "Ke et al. (2017). LightGBM: A Highly Efficient Gradient Boosting Decision Tree. NeurIPS 2017",
+      "url": "https://proceedings.neurips.cc/paper/6907-lightgbm-a-highly-efficient-gradient-boosting-decision-tree.pdf"
+    },
+    {
+      "title": "Prokhorenkova et al. (2018). CatBoost: Unbiased Boosting with Categorical Features. NeurIPS 2018",
+      "url": "https://arxiv.org/abs/1706.09516"
+    },
+    {
+      "title": "Breiman (2001). Random Forests. Machine Learning 45",
+      "url": "https://www.stat.berkeley.edu/~breiman/randomforest2001.pdf"
+    },
+    {
+      "title": "Friedman (2001). Greedy Function Approximation: A Gradient Boosting Machine. Annals of Statistics 29(5)",
+      "url": "https://projecteuclid.org/journals/annals-of-statistics/volume-29/issue-5/Greedy-function-approximation-A-gradient-boosting-machine/10.1214/aos/1013203451.short"
+    },
+    {
+      "title": "Marton et al. (2024). GRANDE: Gradient-Based Decision Tree Ensembles for Tabular Data. ICLR 2024",
+      "url": "https://arxiv.org/abs/2309.17130"
+    },
+    {
+      "title": "McElfresh et al. (2023). When Do Neural Nets Outperform Boosted Trees on Tabular Data? (TabZilla)",
+      "url": "https://arxiv.org/abs/2305.02997"
+    },
+    {
+      "title": "Lin et al. (2020). Generalized and Scalable Optimal Sparse Decision Trees (GOSDT). ICML 2020",
+      "url": "https://arxiv.org/abs/2006.08690"
+    },
+    {
+      "title": "Duan et al. (2020). NGBoost: Natural Gradient Boosting for Probabilistic Prediction. ICML 2020",
+      "url": "https://arxiv.org/abs/1910.03225"
+    },
+    {
+      "title": "Hollmann, Müller & Hutter (2023). CAAFE: Context-Aware Automated Feature Engineering with LLMs. NeurIPS 2023",
+      "url": "https://arxiv.org/abs/2305.03403"
+    }
+  ],
+  "artifact": {
+    "format": "html",
+    "entry": "artifact/index.html",
+    "self_contained": true
+  },
+  "status": "draft",
+  "confidence": "solid",
+  "created_at": "2026-07-04T06:35:28.822117+00:00",
+  "updated_at": "2026-07-04T06:35:28.822117+00:00"
+}

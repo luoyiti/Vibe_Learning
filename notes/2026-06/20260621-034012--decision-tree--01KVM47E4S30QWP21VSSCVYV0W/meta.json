@@ -1,0 +1,71 @@
+{
+  "schema_version": "1.0",
+  "id": "01KVM47E4S30QWP21VSSCVYV0W",
+  "title": "Decision Tree（决策树）",
+  "slug": "decision-tree",
+  "summary": "Decision trees recursively partition feature space using impurity-based splits (entropy, Gini, chi-square) to build interpretable classification models, with pruning to control overfitting.",
+  "original_question": "请给我详细讲解一下决策树算法，包括算法的数学原理、算法的可视化、训练过程、效果评估、真实数据实战等。并构建一个白色、简约、学术风格的React网站进行讲解",
+  "domain": "machine-learning",
+  "tags": [
+    "decision-tree",
+    "classification",
+    "supervised-learning",
+    "tree-models",
+    "information-theory",
+    "cart-algorithm",
+    "pruning"
+  ],
+  "concepts": [
+    "decision tree",
+    "entropy",
+    "information gain",
+    "gini impurity",
+    "chi-square split",
+    "gain ratio",
+    "recursive partitioning",
+    "pre-pruning",
+    "post-pruning",
+    "reduced error pruning",
+    "cost-complexity pruning",
+    "confusion matrix",
+    "precision",
+    "recall",
+    "f1 score",
+    "cross-validation",
+    "overfitting",
+    "CART algorithm",
+    "feature importance",
+    "axis-aligned splits"
+  ],
+  "relations": [
+    {
+      "type": "related",
+      "target": "01KVJ9QQEFZYPQCW86P4JS53V5",
+      "note": "Both are supervised classification models; logistic regression uses linear boundaries while decision trees use axis-aligned recursive partitions."
+    },
+    {
+      "type": "related",
+      "target": "01KVJVZ46BCMXHGTMTBHVGTYF7",
+      "note": "Isolation Forest is built on random decision trees (isolation trees); shares tree-based concepts but used for unsupervised anomaly detection."
+    }
+  ],
+  "references": [
+    {
+      "title": "Breiman et al. (1984) - Classification and Regression Trees",
+      "url": "https://doi.org/10.1201/9781315139470"
+    },
+    {
+      "title": "Scikit-learn Decision Trees documentation",
+      "url": "https://scikit-learn.org/stable/modules/tree.html"
+    }
+  ],
+  "artifact": {
+    "format": "react",
+    "entry": "artifact/index.html",
+    "self_contained": true
+  },
+  "status": "stable",
+  "confidence": "solid",
+  "created_at": "2026-06-21T03:40:12.825287+00:00",
+  "updated_at": "2026-06-21T03:52:45.839528+00:00"
+}

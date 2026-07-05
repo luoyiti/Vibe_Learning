@@ -1,0 +1,15 @@
+{
+  "title": "Database isolation levels",
+  "summary": "The four SQL isolation levels trade consistency for concurrency by choosing which read anomalies they permit.",
+  "original_question": "What are database isolation levels and how do I choose one?",
+  "domain": "databases",
+  "tags": ["databases", "concurrency", "isolation-levels"],
+  "concepts": ["isolation levels", "dirty read", "non-repeatable read", "phantom read", "serializability", "MVCC"],
+  "references": [
+    { "title": "PostgreSQL — Transaction Isolation", "url": "https://www.postgresql.org/docs/current/transaction-iso.html" }
+  ],
+  "artifact": { "format": "markdown", "entry": "note.md", "self_contained": true },
+  "status": "stable",
+  "confidence": "solid",
+  "source": { "channel": "claude-code", "model": "claude-opus-4-8", "transcript": "source/chat.md" }
+}

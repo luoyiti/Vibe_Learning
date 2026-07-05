@@ -1,0 +1,772 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>纳什均衡与囚徒困境 · Nash Equilibrium &amp; the Prisoner's Dilemma</title>
+<script type="application/javascript">
+  MathJax = { tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$','$$'],['\\[','\\]']] } };
+</script>
+<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<style>
+  :root{
+    --bg:#fafaf7;
+    --paper:#ffffff;
+    --ink:#1a1a1a;
+    --ink-soft:#4a4a4a;
+    --muted:#6b6b6b;
+    --line:#d9d4c7;
+    --rule:#2b2b2b;
+    --accent:#7a2d1f;
+    --accent-soft:#c9a286;
+    --table-bg:#f3efe6;
+    --table-border:#b8b09e;
+    --highlight:#fff7e0;
+    --serif: "Noto Serif","Source Han Serif","Songti SC","SimSun","Times New Roman",Georgia,serif;
+    --sans:  "Noto Sans","Source Han Sans","PingFang SC","Helvetica Neue",Arial,sans-serif;
+    --mono:  "SF Mono","Menlo","Consolas","Courier New",monospace;
+  }
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; padding:0; }
+  body{
+    font-family:var(--serif);
+    color:var(--ink);
+    background:var(--bg);
+    line-height:1.75;
+    font-size:17px;
+    -webkit-font-smoothing:antialiased;
+  }
+  .container{
+    max-width:880px;
+    margin:0 auto;
+    padding:60px 48px 120px;
+    background:var(--paper);
+    box-shadow:0 0 0 1px var(--line), 0 20px 60px -30px rgba(0,0,0,0.15);
+    min-height:100vh;
+  }
+  /* ---------- Title Block ---------- */
+  .titleblock{
+    text-align:center;
+    padding:30px 0 50px;
+    border-bottom:double 6px var(--rule);
+    margin-bottom:56px;
+    position:relative;
+  }
+  .epigraph{
+    font-family:var(--serif);
+    font-style:italic;
+    color:var(--muted);
+    font-size:14px;
+    letter-spacing:0.08em;
+    margin-bottom:22px;
+    text-transform:uppercase;
+  }
+  h1.title{
+    font-size:42px;
+    font-weight:700;
+    letter-spacing:0.01em;
+    margin:0 0 14px;
+    line-height:1.2;
+  }
+  h1.title .en{
+    display:block;
+    font-size:20px;
+    font-weight:400;
+    color:var(--ink-soft);
+    font-style:italic;
+    margin-top:10px;
+    letter-spacing:0.02em;
+  }
+  .authors{
+    font-family:var(--sans);
+    color:var(--ink-soft);
+    font-size:15px;
+    margin-top:26px;
+    letter-spacing:0.02em;
+  }
+  .authors .sep{ color:var(--line); margin:0 12px; }
+  .date-line{ font-family:var(--sans); font-size:13px; color:var(--muted); margin-top:8px; letter-spacing:0.1em; }
+
+  /* ---------- Abstract ---------- */
+  .abstract{
+    background:var(--table-bg);
+    border-left:4px solid var(--accent);
+    padding:24px 32px;
+    margin:0 0 56px;
+    font-size:15.5px;
+  }
+  .abstract .label{
+    font-family:var(--sans);
+    font-weight:700;
+    letter-spacing:0.18em;
+    text-transform:uppercase;
+    font-size:13px;
+    color:var(--accent);
+    margin-bottom:10px;
+  }
+  .abstract p{ margin:0; text-indent:2em; color:var(--ink); line-height:1.85; }
+
+  /* ---------- Headings ---------- */
+  h2{
+    font-size:26px;
+    margin:60px 0 22px;
+    padding-bottom:10px;
+    border-bottom:2px solid var(--rule);
+    letter-spacing:0.02em;
+    counter-increment:section;
+    position:relative;
+  }
+  h2::before{
+    content:counter(section,decimal-leading-zero) ".";
+    color:var(--accent);
+    margin-right:14px;
+    font-variant-numeric:tabular-nums;
+  }
+  h3{
+    font-size:19px;
+    margin:32px 0 14px;
+    color:var(--ink);
+    font-weight:600;
+    letter-spacing:0.01em;
+  }
+  h3::before{
+    content:"—";
+    color:var(--accent-soft);
+    margin-right:10px;
+  }
+
+  /* ---------- Body text ---------- */
+  .container{ counter-reset:section; }
+  p{ margin:0 0 18px; text-indent:2em; }
+  .no-indent{ text-indent:0; }
+  em{ font-style:italic; color:var(--ink); }
+  strong{ font-weight:700; color:var(--ink); }
+  .term{ font-style:italic; color:var(--accent); border-bottom:1px dotted var(--accent-soft); }
+
+  blockquote{
+    margin:24px 0;
+    padding:16px 24px;
+    background:var(--table-bg);
+    border-left:3px solid var(--accent-soft);
+    font-style:italic;
+    color:var(--ink-soft);
+  }
+  blockquote p{ text-indent:0; margin:0; }
+  blockquote cite{ display:block; margin-top:8px; font-style:normal; font-size:14px; color:var(--muted); font-family:var(--sans); }
+
+  /* ---------- Lists ---------- */
+  ol, ul{ padding-left:32px; margin:18px 0; }
+  li{ margin-bottom:10px; }
+  ol > li{ text-indent:0; }
+
+  /* ---------- Tables (payoff matrices) ---------- */
+  .game-table-wrap{
+    margin:30px auto;
+    text-align:center;
+    font-family:var(--sans);
+  }
+  .game-table{
+    border-collapse:separate;
+    border-spacing:0;
+    margin:0 auto;
+    font-size:16px;
+  }
+  .game-table th, .game-table td{
+    padding:18px 28px;
+    border:1px solid var(--table-border);
+    text-align:center;
+    min-width:90px;
+  }
+  .game-table thead th{
+    background:var(--table-bg);
+    font-weight:600;
+    letter-spacing:0.05em;
+  }
+  .game-table .row-label{
+    background:var(--table-bg);
+    font-weight:600;
+    vertical-align:middle;
+    letter-spacing:0.05em;
+  }
+  .game-table .player-tag{
+    font-size:12px;
+    color:var(--muted);
+    letter-spacing:0.1em;
+    text-transform:uppercase;
+  }
+  .game-table td .cell-inner{
+    line-height:1.6;
+  }
+  .game-table td .p1, .game-table td .p2{
+    display:inline-block;
+    font-family:var(--mono);
+    font-size:15px;
+    padding:2px 6px;
+    border-radius:3px;
+  }
+  .game-table td .p1{ color:var(--accent); font-weight:600; }
+  .game-table td .p2{ color:#2c5282; font-weight:600; }
+  .game-table td .sep{ color:var(--line); margin:0 6px; }
+  .game-table td.nash-cell{
+    background:var(--highlight);
+    box-shadow:inset 0 0 0 2px var(--accent);
+  }
+  .game-table td.nash-cell .p1,
+  .game-table td.nash-cell .p2{
+    color:var(--accent);
+    font-weight:700;
+  }
+  .caption{
+    font-family:var(--sans);
+    font-size:14px;
+    color:var(--ink-soft);
+    margin-top:14px;
+    font-style:italic;
+    text-indent:0;
+  }
+  .caption::before{
+    content:"表 " counter(section) ".";
+    font-weight:700;
+    color:var(--accent);
+    font-style:normal;
+    margin-right:8px;
+  }
+
+  /* ---------- Definition / Theorem boxes ---------- */
+  .defbox, .theorembox{
+    margin:28px 0;
+    padding:22px 28px;
+    border:1px solid var(--line);
+    background:linear-gradient(180deg, #fdfcfa 0%, #f7f3ec 100%);
+    position:relative;
+  }
+  .defbox{
+    border-left:4px solid var(--accent);
+  }
+  .theorembox{
+    border-left:4px solid #2c5282;
+  }
+  .defbox .label, .theorembox .label{
+    font-family:var(--sans);
+    font-weight:700;
+    letter-spacing:0.12em;
+    text-transform:uppercase;
+    font-size:13px;
+    color:var(--accent);
+    margin-bottom:12px;
+    display:block;
+  }
+  .theorembox .label{ color:#2c5282; }
+  .defbox p, .theorembox p{ text-indent:0; margin:0; }
+
+  /* ---------- Math ---------- */
+  .math{
+    font-family:var(--serif);
+    margin:20px 0;
+    padding:14px 20px;
+    background:#fcfaf3;
+    border:1px dashed var(--line);
+    text-align:center;
+    font-size:18px;
+  }
+
+  /* ---------- Figures / Diagram ---------- */
+  .fig-wrap{
+    margin:30px 0;
+    text-align:center;
+  }
+  svg.diagram{
+    max-width:100%;
+    height:auto;
+    background:#fff;
+    border:1px solid var(--line);
+  }
+
+  /* ---------- Step analysis ---------- */
+  .step{
+    margin:18px 0 18px 20px;
+    padding:14px 20px;
+    border-left:3px solid var(--accent-soft);
+    background:#fbf8f1;
+  }
+  .step .step-head{
+    font-family:var(--sans);
+    font-weight:700;
+    color:var(--accent);
+    letter-spacing:0.04em;
+    margin-bottom:6px;
+    font-size:15px;
+  }
+  .step p{ text-indent:0; margin:0; font-size:16px; }
+
+  /* ---------- References ---------- */
+  .refs{
+    margin-top:70px;
+    padding-top:30px;
+    border-top:double 6px var(--rule);
+  }
+  .refs h2::before{ content:"参考文献."; }
+  .refs ol{ font-size:14.5px; color:var(--ink-soft); }
+  .refs li{ margin-bottom:12px; line-height:1.7; }
+
+  /* ---------- Footer ---------- */
+  footer{
+    margin-top:60px;
+    padding-top:24px;
+    border-top:1px solid var(--line);
+    font-family:var(--sans);
+    font-size:12px;
+    color:var(--muted);
+    text-align:center;
+    letter-spacing:0.1em;
+    text-transform:uppercase;
+  }
+
+  /* ---------- Responsive ---------- */
+  @media (max-width: 720px){
+    .container{ padding:30px 22px 80px; }
+    h1.title{ font-size:30px; }
+    h1.title .en{ font-size:16px; }
+    .game-table th, .game-table td{ padding:12px 14px; min-width:70px; }
+    body{ font-size:16px; }
+  }
+</style>
+</head>
+<body>
+<main class="container">
+
+  <div class="titleblock">
+    <div class="epigraph">An Expository Essay in Game Theory</div>
+    <h1 class="title">
+      纳什均衡与囚徒困境
+      <span class="en">Nash Equilibrium and the Prisoner's Dilemma</span>
+    </h1>
+    <div class="authors">
+      博弈论笔记<span class="sep">|</span>John F. Nash Jr. (1950)
+    </div>
+    <div class="date-line">A Study in Strategic Interaction — 2026</div>
+  </div>
+
+  <!-- ========== Abstract ========== -->
+  <section class="abstract">
+    <div class="label">摘要 · Abstract</div>
+    <p>
+      本文旨在对约翰·纳什（John F. Nash Jr.）于1950年提出的<strong>纳什均衡</strong>（Nash Equilibrium）概念进行一次通俗而严谨的介绍。
+      我们首先给出纳什均衡的形式化定义，揭示其作为"没有人有动机单方面偏离"的策略组合的核心直觉；
+      随后通过经典的<strong>囚徒困境</strong>（Prisoner's Dilemma），以支付矩阵、逐步推理与对比分析的方式，
+      阐明纳什均衡如何预测理性自利个体之间的策略互动结果——即使该结果在集体意义上是"非理性"的。
+      最后，我们讨论纳什均衡的存在性、多重均衡、帕累托最优以及其在经济学、政治学与演化生物学中的意义。
+    </p>
+  </section>
+
+  <!-- ========== 1. 引言 ========== -->
+  <section>
+    <h2>引言 · Motivation</h2>
+    <p>
+      在日常的社会与经济生活中，人们的决策相互影响：一个人的"最佳选择"往往取决于另一个人如何选择。
+      博弈论（Game Theory）正是研究这种<strong>策略互动</strong>的数学框架。而在博弈论中，
+      <span class="term">纳什均衡</span>是最核心、最具代表性的解概念（solution concept）之一。
+    </p>
+    <p>
+      粗略地说，<strong>纳什均衡</strong>是这样一种局势：<em>给定其他人的策略，没有任何一个参与者能够通过单方面改变自己的策略来获得更高的收益</em>。
+      换言之，每个参与者的策略都是对其他参与者策略的"最优回应"（best response）。
+    </p>
+    <blockquote>
+      <p>"用数学方式表达的社会均衡，会成为一种稳定状态——在其中，没有人愿意第一个打破它。"</p>
+      <cite>— 对纳什均衡精神的一种转述</cite>
+    </blockquote>
+  </section>
+
+  <!-- ========== 2. 纳什均衡的形式化定义 ========== -->
+  <section>
+    <h2>定义 · Formal Definition</h2>
+
+    <p>
+      考虑一个 $n$ 人<strong>正则型博弈</strong>（normal-form game），记为 $G = (N, (S_i)_{i\in N}, (u_i)_{i\in N})$，其中：
+    </p>
+    <ol>
+      <li>$N = \{1, 2, \dots, n\}$ 为<strong>参与者</strong>（players）的集合；</li>
+      <li>$S_i$ 为参与者 $i$ 的<strong>策略空间</strong>（strategy set），其典型元素 $s_i \in S_i$ 称为一个纯策略；</li>
+      <li>$u_i : S_1 \times S_2 \times \cdots \times S_n \to \mathbb{R}$ 为参与者 $i$ 的<strong>收益函数</strong>（payoff function）。</li>
+    </ol>
+
+    <p>
+      记策略组合（strategy profile）为 $s = (s_1, s_2, \dots, s_n)$，并记
+      $s_{-i} = (s_1, \dots, s_{i-1}, s_{i+1}, \dots, s_n)$ 为<strong>除参与者 $i$ 外所有人的策略</strong>。
+    </p>
+
+    <div class="defbox">
+      <span class="label">定义 · 纯策略纳什均衡</span>
+      <p>
+        策略组合 $s^* = (s_1^*, s_2^*, \dots, s_n^*)$ 称为一个<strong>纯策略纳什均衡</strong>（pure-strategy Nash equilibrium），
+        当且仅当对每一个参与者 $i \in N$，都有
+      </p>
+      <div class="math">
+        $ u_i(s_i^*, s_{-i}^*) \ge u_i(s_i, s_{-i}^*) \quad \text{对所有} \ s_i \in S_i \text{成立。} $
+      </div>
+      <p>
+        也就是说，<em>在给定其他参与者都选择 $s_{-i}^*$ 的前提下，$s_i^*$ 是参与者 $i$ 的一个最优回应</em>。
+      </p>
+    </div>
+
+    <h3>核心直觉</h3>
+    <p>
+      纳什均衡并不要求"对所有人最好"，而只要求<strong>对每个人单独是最好的</strong>——前提是别人不动。
+      它是一种<strong>自我维持</strong>（self-enforcing）的稳定状态：一旦所有参与者相信结果是 $s^*$，他们就没有动机打破它。
+    </p>
+
+    <p>
+      进一步，若上述不等式对所有 $s_i \neq s_i^*$ 都是<strong>严格</strong>的（strict），则称 $s^*$ 为
+      <em>严格纳什均衡</em>（strict Nash equilibrium）；若参与者还可以使用混合策略（即在 $S_i$ 上的概率分布），
+      则可类似地定义<strong>混合策略纳什均衡</strong>。纳什（1950）证明了：
+    </p>
+
+    <div class="theorembox">
+      <span class="label">定理 · 存在性（Nash, 1950）</span>
+      <p>
+        每一个<strong>有限正则型博弈</strong>（参与者与策略数均有限）都至少存在一个混合策略纳什均衡。
+      </p>
+    </div>
+
+    <p>
+      这一定理的意义在于：它保证了"均衡解"这一概念在广泛的博弈中都不会落空。
+      纳什也因此贡献于 1994 年与 John Harsanyi、Reinhard Selten 共享诺贝尔经济学奖。
+    </p>
+  </section>
+
+  <!-- ========== 3. 囚徒困境 ========== -->
+  <section>
+    <h2>囚徒困境 · The Prisoner's Dilemma</h2>
+
+    <p>
+      要真正理解纳什均衡，最好的方式是通过一个例子——这就是由 Merrill Flood 与 Melvin Dresher 在 1950 年提出、
+      由 Albert W. Tucker 以"囚徒"故事形式包装的经典案例：<span class="term">囚徒困境</span>。
+    </p>
+
+    <h3>情境设定</h3>
+    <p>
+      两名嫌疑人 A 与 B 被警方分别关押在独立的审讯室，彼此之间无法通信。检察官向两人同时提供如下选择：
+    </p>
+    <ol>
+      <li><strong>认罪（Cooperate with police / Defect）</strong>：指证对方；</li>
+      <li><strong>沉默（Cooperate with each other）</strong>：与同伙合作、不坦白。</li>
+    </ol>
+    <p>
+      并且规则如下（以<strong>入狱年数</strong>作为支付——<em>数字越小越好</em>）：
+    </p>
+    <ol>
+      <li>若两人都沉默（互相合作），则各判 1 年；</li>
+      <li>若一人认罪、另一人沉默，认罪者立即释放（0 年），沉默者判 5 年；</li>
+      <li>若两人都认罪（互相背叛），则各判 3 年。</li>
+    </ol>
+
+    <p>
+      我们把"支付"统一表示为收益的形式（为直观，采用<strong>负值</strong>表示入狱年数），得到如下支付矩阵：
+    </p>
+
+    <!-- ======== Payoff Matrix ======== -->
+    <div class="game-table-wrap">
+      <table class="game-table" aria-label="囚徒困境支付矩阵">
+        <thead>
+          <tr>
+            <th rowspan="2" style="width:120px;"></th>
+            <th colspan="2">囚徒 B 的策略 <span class="player-tag">（Player B）</span></th>
+          </tr>
+          <tr>
+            <th scope="col">沉默 (Cooperate)</th>
+            <th scope="col">认罪 (Defect)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="row-label" rowspan="2">
+              <div class="player-tag" style="margin-bottom:4px;">囚徒 A</div>
+              <div>沉默</div>
+              <div style="font-size:12px;color:var(--muted);">(Cooperate)</div>
+            </td>
+            <td>
+              <div class="cell-inner">
+                <span class="p1">-1</span><span class="sep">,</span><span class="p2">-1</span>
+                <div style="font-size:12px;color:var(--muted);margin-top:6px;">各 1 年</div>
+              </div>
+            </td>
+            <td>
+              <div class="cell-inner">
+                <span class="p1">-5</span><span class="sep">,</span><span class="p2">0</span>
+                <div style="font-size:12px;color:var(--muted);margin-top:6px;">A 5 年 · B 释放</div>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <div class="cell-inner">
+                <span class="p1">0</span><span class="sep">,</span><span class="p2">-5</span>
+                <div style="font-size:12px;color:var(--muted);margin-top:6px;">A 释放 · B 5 年</div>
+              </div>
+            </td>
+            <td class="nash-cell">
+              <div class="cell-inner">
+                <span class="p1">-3</span><span class="sep">,</span><span class="p2">-3</span>
+                <div style="font-size:12px;color:var(--muted);margin-top:6px;">各 3 年 · <strong>纳什均衡</strong></div>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <p class="caption no-indent">囚徒困境支付矩阵。每格第一个数字是囚徒 A 的收益，第二个数字是囚徒 B 的收益。<br>其中（认罪，认罪）= (-3, -3) 是<strong>唯一的纯策略纳什均衡</strong>。</p>
+    </div>
+
+    <h3>逐步推理 · Finding the Nash Equilibrium</h3>
+
+    <p>
+      我们按照"对每个参与者分别寻找最优回应"的思路来一步步找出纳什均衡。
+    </p>
+
+    <div class="step">
+      <div class="step-head">第一步：固定 B 的策略为 "沉默"，看 A 会选什么。</div>
+      <p>
+        若 B 沉默，则 A 在"沉默"与"认罪"之间选择：<br>
+        · 沉默 → 收益 $-1$（1 年牢）<br>
+        · 认罪 → 收益 $0$（立即释放）<br>
+        显然 $0 > -1$，所以 <strong>A 选择认罪</strong>。
+      </p>
+    </div>
+
+    <div class="step">
+      <div class="step-head">第二步：固定 B 的策略为 "认罪"，看 A 会选什么。</div>
+      <p>
+        若 B 认罪，则 A 的选择为：<br>
+        · 沉默 → 收益 $-5$（5 年牢）<br>
+        · 认罪 → 收益 $-3$（3 年牢）<br>
+        显然 $-3 > -5$，所以 <strong>A 仍然选择认罪</strong>。
+      </p>
+    </div>
+
+    <div class="step">
+      <div class="step-head">结论（关于 A）</div>
+      <p>
+        不论 B 选择什么，"认罪"对 A 而言都严格优于"沉默"。因此<strong>"认罪"是 A 的严格占优策略</strong>
+        （strictly dominant strategy）。
+      </p>
+    </div>
+
+    <div class="step">
+      <div class="step-head">对称地讨论 B</div>
+      <p>
+        博弈完全对称，对 B 做同样分析可得：<strong>"认罪"也是 B 的严格占优策略</strong>。
+      </p>
+    </div>
+
+    <div class="step">
+      <div class="step-head">第三步：互为最优回应</div>
+      <p>
+        当 A 选择认罪时，B 的最优回应是认罪；当 B 选择认罪时，A 的最优回应也是认罪。
+        因此策略组合 <strong>（认罪，认罪）= (-3, -3)</strong> 构成一个纯策略纳什均衡。
+      </p>
+    </div>
+
+    <h3>"困境"的真正含义</h3>
+
+    <p>
+      最关键的反直觉在于：尽管<strong>（沉默，沉默）= (-1, -1)</strong> 对<strong>双方都比 (-3, -3) 更好</strong>
+      （即它是 <em>帕累托优于</em>（Pareto superior）纳什均衡的），
+      但它<strong>不是</strong>一个纳什均衡。为什么？因为在对方选择"沉默"时，任何一方都有动机单方面"背叛"——
+      选择"认罪"以获得 0（立即释放）而非 -1。
+    </p>
+
+    <div class="theorembox">
+      <span class="label">命题 · 囚徒困境的困境</span>
+      <p>
+        在一次性囚徒困境中，唯一的纯策略纳什均衡为（认罪，认罪），其支付为 $(-3, -3)$。
+        该结果是<strong>帕累托无效</strong>的：存在另一个结果（沉默，沉默），可以让每个人都严格更优，
+        但它<strong>不具有自我维持性</strong>——只要任何一方相信另一方会合作，他就有动机背叛。
+      </p>
+    </div>
+
+    <p>
+      这正是"困境"的本质：<em>个体理性导致集体非理性</em>。
+    </p>
+
+    <!-- ======== 图示：最优回应箭头 ======== -->
+    <h3>最佳回应图示 · Best-Response Arrow Diagram</h3>
+    <p>
+      以下图示用箭头标出每个参与者在给定对方策略下的最优选择方向。<strong>两个箭头交汇</strong>的单元格即为纳什均衡。
+    </p>
+
+    <div class="fig-wrap">
+      <svg class="diagram" viewBox="0 0 720 420" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="囚徒困境最佳回应图">
+        <defs>
+          <marker id="arrow-red" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="#7a2d1f"/>
+          </marker>
+          <marker id="arrow-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="#2c5282"/>
+          </marker>
+          <style>
+            .cell { fill:#fff; stroke:#b8b09e; stroke-width:1.2; }
+            .nash-cell { fill:#fff7e0; stroke:#7a2d1f; stroke-width:2.2; }
+            .hdr  { fill:#f3efe6; stroke:#b8b09e; stroke-width:1.2; }
+            .lbl  { font-family: "Noto Sans","PingFang SC",sans-serif; font-size: 16px; fill:#1a1a1a; }
+            .lbl-small { font-family: "Noto Sans","PingFang SC",sans-serif; font-size: 12px; fill:#6b6b6b; }
+            .p1pay { font-family: "SF Mono","Menlo",monospace; font-size: 20px; fill:#7a2d1f; font-weight:700; }
+            .p2pay { font-family: "SF Mono","Menlo",monospace; font-size: 20px; fill:#2c5282; font-weight:700; }
+            .sep   { font-family: "SF Mono","Menlo",monospace; font-size: 20px; fill:#6b6b6b; }
+            .red-arrow   { stroke:#7a2d1f; stroke-width:2.2; fill:none; }
+            .blue-arrow  { stroke:#2c5282; stroke-width:2.2; fill:none; }
+          </style>
+        </defs>
+
+        <!-- headers -->
+        <rect class="hdr" x="160" y="30"  width="260" height="46"/>
+        <rect class="hdr" x="420" y="30"  width="260" height="46"/>
+        <rect class="hdr" x="30"  y="90"  width="130" height="140"/>
+        <rect class="hdr" x="30"  y="230" width="130" height="140"/>
+
+        <text class="lbl" x="290" y="58" text-anchor="middle">囚徒 B：沉默</text>
+        <text class="lbl" x="550" y="58" text-anchor="middle">囚徒 B：认罪</text>
+
+        <text class="lbl" x="95" y="150" text-anchor="middle">囚徒 A</text>
+        <text class="lbl" x="95" y="172" text-anchor="middle">沉默</text>
+
+        <text class="lbl" x="95" y="290" text-anchor="middle">囚徒 A</text>
+        <text class="lbl" x="95" y="312" text-anchor="middle">认罪</text>
+
+        <!-- four cells -->
+        <rect class="cell" x="160" y="90"  width="260" height="140"/>
+        <rect class="cell" x="420" y="90"  width="260" height="140"/>
+        <rect class="cell" x="160" y="230" width="260" height="140"/>
+        <rect class="nash-cell" x="420" y="230" width="260" height="140"/>
+
+        <!-- payoffs -->
+        <text x="290" y="160" text-anchor="middle"><tspan class="p1pay">-1</tspan><tspan class="sep"> , </tspan><tspan class="p2pay">-1</tspan></text>
+        <text x="550" y="160" text-anchor="middle"><tspan class="p1pay">-5</tspan><tspan class="sep"> , </tspan><tspan class="p2pay">0</tspan></text>
+        <text x="290" y="300" text-anchor="middle"><tspan class="p1pay">0</tspan><tspan class="sep"> , </tspan><tspan class="p2pay">-5</tspan></text>
+        <text x="550" y="300" text-anchor="middle"><tspan class="p1pay">-3</tspan><tspan class="sep"> , </tspan><tspan class="p2pay">-3</tspan></text>
+
+        <!-- A's best-response arrows (red, vertical):
+             when B = 沉默 (col1): A 沉默→-1 vs 认罪→0  => A prefers bottom → arrow from (290,160) down
+             when B = 认罪 (col2): A 沉默→-5 vs 认罪→-3  => A prefers bottom
+        -->
+        <path class="red-arrow"  d="M 290 190 V 260" marker-end="url(#arrow-red)"/>
+        <path class="red-arrow"  d="M 550 190 V 260" marker-end="url(#arrow-red)"/>
+
+        <!-- B's best-response arrows (blue, horizontal):
+             when A = 沉默 (row1): B 沉默→-1 vs 认罪→0  => B prefers right
+             when A = 认罪 (row2): B 沉默→-5 vs 认罪→-3 => B prefers right
+        -->
+        <path class="blue-arrow" d="M 370 160 H 475" marker-end="url(#arrow-blue)"/>
+        <path class="blue-arrow" d="M 370 300 H 475" marker-end="url(#arrow-blue)"/>
+
+        <!-- legend -->
+        <text class="lbl-small" x="30" y="400"><tspan fill="#7a2d1f">→ 红箭头</tspan>：囚徒 A 在给定 B 的策略下的最优方向</text>
+        <text class="lbl-small" x="30" y="416"><tspan fill="#2c5282">→ 蓝箭头</tspan>：囚徒 B 在给定 A 的策略下的最优方向</text>
+      </svg>
+      <p class="caption no-indent">最佳回应箭头图。红箭头（A）始终指向下方，蓝箭头（B）始终指向右方；
+      两箭头共同抵达右下格 <strong>（认罪，认罪）= (-3, -3)</strong>，即唯一的纳什均衡。</p>
+    </div>
+
+    <h3>占优策略均衡 · Dominant-Strategy Equilibrium</h3>
+
+    <p>
+      囚徒困境的特殊之处在于：每个参与者都拥有<strong>占优策略</strong>（dominant strategy）——
+      即无论对方如何选择，自己的最优选择都不变。于是博弈的解还可以被命名为
+      <strong>占优策略均衡</strong>（dominant-strategy equilibrium）：
+    </p>
+
+    <div class="defbox">
+      <span class="label">定义 · 占优策略均衡</span>
+      <p>
+        若策略组合 $s^* = (s_1^*, \dots, s_n^*)$ 中每一个 $s_i^*$ 都是参与者 $i$ 的占优策略，
+        则称 $s^*$ 为一个<strong>占优策略均衡</strong>。显然，任何占优策略均衡一定是纳什均衡。
+      </p>
+    </div>
+
+    <p>
+      注意：纳什均衡是"比占优策略均衡更弱"的解概念——它不要求策略对所有可能的对方回应都最优，
+      只要求对<strong>均衡中的</strong>对方回应最优。
+    </p>
+  </section>
+
+  <!-- ========== 4. 讨论与扩展 ========== -->
+  <section>
+    <h2>讨论与扩展 · Discussion</h2>
+
+    <h3>4.1 帕累托最优与社会最优</h3>
+    <p>
+      对比两种结果：
+    </p>
+    <ul>
+      <li><strong>纳什均衡结果（认罪，认罪）</strong>：支付 $(-3, -3)$，总支付 $-6$。</li>
+      <li><strong>合作结果（沉默，沉默）</strong>：支付 $(-1, -1)$，总支付 $-2$，同时是<strong>帕累托最优</strong>与<strong>社会最优</strong>。</li>
+    </ul>
+    <p>
+      这揭示了博弈论最经典的一课：<em>在存在外部性（externality）的世界里，自利个体的理性决策
+      并不必然导向社会最优。</em>军备竞赛、公地悲剧、寡头定价、团队中的"搭便车"问题等都可以视为囚徒困境的变体。
+    </p>
+
+    <h3>4.2 多重均衡与协调博弈</h3>
+    <p>
+      并非所有博弈都只有唯一的纳什均衡。"协调博弈"（coordination game），如性别战（Battle of the Sexes）
+      或猎鹿博弈（Stag Hunt），可能同时有多个纯策略纳什均衡。此时"哪一个均衡会被选中"成为焦点问题——
+      Thomas Schelling 引入了<strong>聚点</strong>（focal point）的概念来讨论此类问题。
+    </p>
+
+    <h3>4.3 有限理性与演化</h3>
+    <p>
+      纳什均衡的经典推导假定参与者是完全理性、对对手理性具有高阶信念的"超级理性者"。
+      现实中的人们往往并不严格满足这一假设。演化博弈论（evolutionary game theory）则在更弱的理性前提下——
+      通过模仿、试错、自然选择——证明某些策略（例如"以牙还牙"，<em>Tit-for-Tat</em>）
+      在<strong>重复囚徒困境</strong>（repeated Prisoner's Dilemma）中可以演化稳定，
+      从而解释合作行为是如何从自利的互动中涌现的。
+    </p>
+
+    <h3>4.4 从静态到动态</h3>
+    <p>
+      本文介绍的是<strong>静态一次性博弈</strong>。如果囚徒困境重复进行（尤其当结束时间不确定时），
+      子博弈完美均衡（subgame perfect equilibrium）可以支持合作；这引出了重复博弈的"无名氏定理"
+      （folk theorem）。这些课题标志着纳什均衡概念在动态与长期互动中的进一步发展。
+    </p>
+  </section>
+
+  <!-- ========== 5. 要点与易错点 ========== -->
+  <section>
+    <h2>要点总结 · Takeaways</h2>
+
+    <ol>
+      <li><strong>纳什均衡 = 互为最优回应。</strong>每个参与者的策略都是对他人均衡策略的最佳回应；
+        给定他人不动，没有人想动。</li>
+      <li><strong>纳什均衡不保证社会最优。</strong>囚徒困境是最醒目的反例：个体理性的纳什均衡在集体意义上是"糟糕"的。</li>
+      <li><strong>占优策略均衡 ⊂ 纳什均衡。</strong>每个参与者都有占优策略时，博弈的解是占优策略均衡，它一定是纳什均衡；
+        但许多博弈没有占优策略，却存在纳什均衡。</li>
+      <li><strong>有限博弈一定存在（混合）纳什均衡。</strong>这是 Nash (1950) 的存在性定理。</li>
+      <li><strong>现实世界中的"囚徒困境"。</strong>军备竞赛、公地悲剧、卡特尔定价、团队生产中的偷懒、政治献金——
+        凡属"个体动机与集体利益相冲突"的场景，都可视作囚徒困境的变体。</li>
+    </ol>
+
+    <p class="no-indent" style="margin-top:28px;">
+      <em>常见易错点</em>："纳什均衡是对所有人最好的结果。"——错。
+      纳什均衡只要求对每个个体是"给定他人不动时的最好"；它完全可能在帕累托意义上被另一个非均衡结果严格占优。
+    </p>
+  </section>
+
+  <!-- ========== 参考文献 ========== -->
+  <section class="refs">
+    <h2 style="padding-bottom:14px;"></h2>
+    <ol>
+      <li>Nash, J. F. Jr. (1950). <em>Equilibrium Points in N-Person Games.</em> Proceedings of the National Academy of Sciences of the United States of America, 36(1), 48–49.</li>
+      <li>Nash, J. F. Jr. (1951). <em>Non-Cooperative Games.</em> Annals of Mathematics, Second Series, 54(2), 286–295.</li>
+      <li>Tucker, A. W. (1950). <em>A Two-Person Dilemma.</em> (Mimeographed notes, Stanford University.) 经典"囚徒困境"故事的原始表述。</li>
+      <li>Fudenberg, D., &amp; Tirole, J. (1991). <em>Game Theory.</em> MIT Press. 研究生级别教材，第 1 章严格定义纳什均衡并讨论存在性。</li>
+      <li>Osborne, M. J. (2004). <em>An Introduction to Game Theory.</em> Oxford University Press. 本科生入门教材，第 2 章与第 4 章清晰讲解纳什均衡与囚徒困境。</li>
+      <li>Schelling, T. C. (1960). <em>The Strategy of Conflict.</em> Harvard University Press. 关于聚点（focal point）与协调博弈的经典著作。</li>
+      <li>Axelrod, R. (1984). <em>The Evolution of Cooperation.</em> Basic Books. 用计算机锦标赛研究重复囚徒困境，提出"以牙还牙"策略的鲁棒性。</li>
+    </ol>
+  </section>
+
+  <footer>
+    Nash Equilibrium · The Prisoner's Dilemma — An Academic Exposition · 2026
+  </footer>
+
+</main>
+</body>
+</html>

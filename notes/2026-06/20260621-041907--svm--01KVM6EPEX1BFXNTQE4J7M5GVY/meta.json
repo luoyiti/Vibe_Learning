@@ -1,0 +1,87 @@
+{
+  "schema_version": "1.0",
+  "id": "01KVM6EPEX1BFXNTQE4J7M5GVY",
+  "title": "SVM · 支持向量机",
+  "slug": "svm",
+  "summary": "SVM maximizes class margin via hinge loss + duality + kernel trick; only support vectors determine the boundary.",
+  "original_question": "请给我详细讲解一下 SVM 支持向量机算法，包括算法的数学原理、算法的可视化、训练过程、效果评估、真实数据实战等。并构建一个白色、简约、学术风格的React网站进行讲解",
+  "domain": "machine-learning",
+  "tags": [
+    "svm",
+    "support-vector-machine",
+    "classification",
+    "supervised-learning",
+    "kernel-methods",
+    "margin-maximization",
+    "hinge-loss",
+    "duality",
+    "smo-algorithm",
+    "rbf-kernel"
+  ],
+  "concepts": [
+    "support vector machine",
+    "geometric margin",
+    "hard margin",
+    "soft margin",
+    "hinge loss",
+    "slack variable",
+    "lagrangian duality",
+    "kkt conditions",
+    "kernel trick",
+    "rbf kernel",
+    "polynomial kernel",
+    "linear kernel",
+    "support vectors",
+    "sequential minimal optimization",
+    "subgradient descent",
+    "one-vs-rest",
+    "confusion matrix",
+    "precision",
+    "recall",
+    "f1 score",
+    "cross-validation",
+    "hyperparameter tuning",
+    "regularization parameter C",
+    "iris dataset"
+  ],
+  "relations": [
+    {
+      "type": "contrasts",
+      "target": "01KVJ9QQEFZYPQCW86P4JS53V5",
+      "note": "Both are linear classifiers; logistic regression uses logistic loss and outputs probabilities, while SVM uses hinge loss and maximizes the margin. SVM solutions are sparse (only support vectors matter), LR uses all samples."
+    },
+    {
+      "type": "related",
+      "target": "01KVM47E4S30QWP21VSSCVYV0W",
+      "note": "Both are supervised classification models. Decision trees partition feature space with axis-aligned recursive splits; SVM finds a maximum-margin hyperplane (linearly or via kernel in implicit high-dim space)."
+    },
+    {
+      "type": "related",
+      "target": "01KVJVZ46BCMXHGTMTBHVGTYF7",
+      "note": "One-Class SVM extends the margin idea to anomaly detection (learn a boundary enclosing normal data). Isolation Forest also does anomaly detection but via random tree isolation."
+    }
+  ],
+  "references": [
+    {
+      "title": "Cortes & Vapnik (1995) - Support-vector networks",
+      "url": "https://doi.org/10.1007/BF00994018"
+    },
+    {
+      "title": "Platt (1998) - Sequential Minimal Optimization: A Fast Algorithm for Training SVMs",
+      "url": "https://www.microsoft.com/en-us/research/publication/sequential-minimal-optimization-a-fast-algorithm-for-training-support-vector-machines/"
+    },
+    {
+      "title": "Scikit-learn SVM documentation",
+      "url": "https://scikit-learn.org/stable/modules/svm.html"
+    }
+  ],
+  "artifact": {
+    "format": "react",
+    "entry": "artifact/index.html",
+    "self_contained": true
+  },
+  "status": "stable",
+  "confidence": "solid",
+  "created_at": "2026-06-21T04:19:07.869298+00:00",
+  "updated_at": "2026-06-21T04:19:07.869298+00:00"
+}

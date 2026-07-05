@@ -1,0 +1,51 @@
+{
+  "schema_version": "1.0",
+  "id": "01KVJDY8DFZAQF4AMTPG8XG39P",
+  "title": "Hive 桶（Bucket）机制原理与作用",
+  "slug": "hive-bucket",
+  "summary": "Hive 桶通过哈希分桶（hash(col)%N）将数据均匀分布到固定数量的文件中，实现高效采样、Map-side Join 和 SMB Join，是 Hive 大数据仓库中与分区互补的核心数据组织策略。",
+  "original_question": "请给我详细讲一讲 Hive 表中 桶的机制原理和作用。请构建一个简约白色学术风格的 React 网页来介绍",
+  "domain": "big-data",
+  "tags": [
+    "hive",
+    "bucketing",
+    "big-data",
+    "data-warehouse",
+    "mapreduce"
+  ],
+  "concepts": [
+    "hive-bucketing",
+    "hash-partitioning",
+    "map-side-join",
+    "smb-join",
+    "tablesample",
+    "data-organization"
+  ],
+  "relations": [
+    {
+      "type": "extends",
+      "target": "01KVJCPGC841RTJWGZZQ741MB7",
+      "note": "在 Hive 执行流程基础上，深入桶机制这一特定数据组织策略"
+    },
+    {
+      "type": "related",
+      "target": "01KVJBE2N08Q3Q40P7S0HFGAYM",
+      "note": "同属 Hive 大数据知识体系"
+    }
+  ],
+  "references": [
+    {
+      "url": "https://cwiki.apache.org/confluence/display/Hive/LanguageManual+DDL+BucketedTables",
+      "title": "Apache Hive 官方文档 - Bucketed Tables"
+    }
+  ],
+  "artifact": {
+    "format": "html",
+    "entry": "artifact/index.html",
+    "self_contained": true
+  },
+  "status": "draft",
+  "confidence": "solid",
+  "created_at": "2026-06-20T11:51:28.943314+00:00",
+  "updated_at": "2026-06-20T11:51:28.943314+00:00"
+}

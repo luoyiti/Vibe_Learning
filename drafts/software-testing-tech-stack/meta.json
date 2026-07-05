@@ -1,0 +1,40 @@
+{
+  "id": "01KWM58SFMC52HZBKPEBQ24XCG",
+  "title": "软件测试工程师技术栈全景",
+  "summary": "软件测试技术栈是一条从功能测试基础理论出发，经编程语言与自动化工具链，到分层架构与 CI/CD 工程化，最终走向 TDD/BDD 质量内建与测试开发的进阶之路；工具会过时，分层策略与方法论才是地基。",
+  "original_question": "帮我构建一个 React 网页应用，给我详细讲一讲一个软件测试工作应当学习的技术栈。",
+  "domain": "software-testing",
+  "tags": ["software-testing", "test-automation", "test-pyramid", "ci-cd", "qa", "tdd"],
+  "concepts": [
+    "test pyramid",
+    "unit testing",
+    "integration testing",
+    "end-to-end testing",
+    "Selenium",
+    "W3C WebDriver",
+    "Appium",
+    "API testing",
+    "performance testing",
+    "CI/CD",
+    "TDD",
+    "BDD",
+    "regression testing",
+    "Docker"
+  ],
+  "relations": [
+    {
+      "type": "related",
+      "target": "01KVMG457M9FNDBZC4HJSEF2DA",
+      "note": "OSI/TCP-IP 协议栈是接口测试与网络抓包（HTTP/TCP）的底层基础，理解协议模型有助掌握接口测试。"
+    }
+  ],
+  "references": [
+    { "title": "软件测试全栈学习路线图完整指南 — CSDN", "url": "https://blog.csdn.net/weixin_26805451/article/details/154772909" },
+    { "title": "软件测试学习路线、面试全攻略 — 知乎", "url": "https://zhuanlan.zhihu.com/p/359612392" },
+    { "title": "Software Testing Strategies Complete Guide 2025", "url": "https://www.youngju.dev/blog/culture/2026-03-25-software-testing-strategies-unit-integration-e2e-guide-2025.en" }
+  ],
+  "artifact": { "format": "react", "entry": "artifact/index.html", "self_contained": true },
+  "status": "stable",
+  "confidence": "solid",
+  "source": { "channel": "workbuddy", "model": "glm-5.2" }
+}

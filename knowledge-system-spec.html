@@ -1,0 +1,537 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>知识沉淀系统 · 设计与需求说明书</title>
+<style>
+  :root{
+    --canvas:#F4F5F8; --paper:#FFFFFF;
+    --ink:#1B1D24; --ink-soft:#565b67; --ink-faint:#8b909c;
+    --line:#E4E7EC; --line-strong:#D2D6DE;
+    --accent:#4842C7;
+
+    --agent:#5750CE;  --agent-bg:#ECEBFB; --agent-bd:#C9C5F2;
+    --tool:#A9711B;   --tool-bg:#FAF0DC;  --tool-bd:#ECD7A8;
+    --store:#167F6B;  --store-bg:#DCF1EB; --store-bd:#A6DDCE;
+    --show:#B14F76;   --show-bg:#FAE5EC;  --show-bd:#EFC2D2;
+
+    --sans:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+    --serif:Georgia,"Times New Roman","Songti SC","SimSun",serif;
+    --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono","Courier New",monospace;
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0; background:var(--canvas); color:var(--ink);
+    font-family:var(--sans); font-size:16px; line-height:1.72;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:920px; margin:0 auto; padding:0 28px}
+
+  /* ---- masthead ---- */
+  header.mast{padding:64px 0 40px; border-bottom:1px solid var(--line-strong)}
+  .eyebrow{
+    font-size:12px; letter-spacing:.16em; text-transform:uppercase;
+    color:var(--ink-faint); font-weight:600; margin:0 0 20px;
+    display:flex; gap:14px; align-items:center; flex-wrap:wrap;
+  }
+  .eyebrow .dot{width:5px;height:5px;border-radius:50%;background:var(--accent)}
+  h1.title{
+    font-family:var(--serif); font-weight:600; letter-spacing:-.01em;
+    font-size:clamp(34px,6vw,52px); line-height:1.04; margin:0 0 6px;
+  }
+  h1.title .en{
+    display:block; font-family:var(--mono); font-weight:400;
+    font-size:clamp(12px,2.4vw,15px); letter-spacing:.18em; color:var(--ink-faint);
+    text-transform:uppercase; margin-top:14px;
+  }
+  .subtitle{font-size:clamp(17px,2.6vw,21px); color:var(--ink-soft); margin:18px 0 0; max-width:42em}
+  .lead{margin:26px 0 0; max-width:44em; color:var(--ink)}
+  .lead b{color:var(--accent)}
+
+  /* ---- legend ---- */
+  .legend{
+    display:flex; gap:10px 22px; flex-wrap:wrap; align-items:center;
+    margin:30px 0 0; padding:14px 18px; background:var(--paper);
+    border:1px solid var(--line); border-radius:10px; font-size:13.5px; color:var(--ink-soft);
+  }
+  .legend .k{display:inline-flex; gap:8px; align-items:center; white-space:nowrap}
+  .star{font-size:13px; line-height:1}
+  .swatch{width:13px;height:13px;border-radius:3px;display:inline-block;vertical-align:-2px}
+  .sw-a{background:var(--agent)} .sw-t{background:var(--tool)} .sw-s{background:var(--store)} .sw-d{background:var(--show)}
+
+  /* ---- sections ---- */
+  section{padding:48px 0; border-bottom:1px solid var(--line)}
+  .sec-head{display:flex; gap:18px; align-items:baseline; margin:0 0 22px}
+  .sec-num{font-family:var(--serif); font-size:30px; color:var(--accent); line-height:1; font-weight:600; min-width:46px}
+  .sec-head h2{font-size:clamp(21px,3.4vw,27px); margin:0; letter-spacing:-.01em; font-weight:650}
+  .sec-head .sec-en{font-family:var(--mono); font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-faint); margin-top:6px}
+  p{margin:0 0 16px}
+  .muted{color:var(--ink-soft)}
+  .indent{padding-left:64px}
+  @media(max-width:640px){.indent{padding-left:0}}
+
+  /* ---- principle / decision cards ---- */
+  .cards{display:grid; grid-template-columns:1fr 1fr; gap:14px; padding-left:64px}
+  @media(max-width:760px){.cards{grid-template-columns:1fr; padding-left:0}}
+  .card{background:var(--paper); border:1px solid var(--line); border-left:3px solid var(--accent); border-radius:9px; padding:16px 18px}
+  .card h3{margin:0 0 6px; font-size:15.5px; display:flex; gap:9px; align-items:baseline}
+  .card h3 .n{font-family:var(--mono); font-size:12px; color:var(--accent); font-weight:700}
+  .card p{margin:0; font-size:14px; color:var(--ink-soft); line-height:1.62}
+  .card p .em{color:var(--ink); font-weight:600}
+
+  .dlist{padding-left:64px; display:flex; flex-direction:column; gap:14px}
+  @media(max-width:640px){.dlist{padding-left:0}}
+  .drow{background:var(--paper); border:1px solid var(--line); border-radius:9px; padding:15px 18px}
+  .drow .d{font-weight:650; font-size:15px; margin:0 0 4px}
+  .drow .r{margin:0; font-size:14px; color:var(--ink-soft); line-height:1.62}
+
+  /* ---- callout ---- */
+  .callout{
+    margin:22px 0 0 64px; padding:16px 20px; border-radius:10px;
+    background:linear-gradient(0deg,var(--agent-bg),var(--agent-bg)); border:1px solid var(--agent-bd);
+    font-size:14.5px;
+  }
+  @media(max-width:640px){.callout{margin-left:0}}
+  .callout .tag{font-family:var(--mono); font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--agent); font-weight:700; display:block; margin-bottom:5px}
+  .callout b{color:var(--agent)}
+
+  /* ---- generic table ---- */
+  .tbl{padding-left:64px}
+  @media(max-width:640px){.tbl{padding-left:0}}
+  table{width:100%; border-collapse:collapse; font-size:14px; background:var(--paper); border:1px solid var(--line); border-radius:9px; overflow:hidden}
+  th,td{text-align:left; padding:11px 15px; border-bottom:1px solid var(--line); vertical-align:top}
+  th{background:#FBFBFD; font-size:12px; letter-spacing:.04em; text-transform:uppercase; color:var(--ink-faint); font-weight:650}
+  tr:last-child td{border-bottom:none}
+  td .lab{font-weight:650}
+  td code, .codeinline{font-family:var(--mono); font-size:12.5px; background:#F2F3F6; padding:1px 6px; border-radius:4px; color:var(--ink)}
+  .dot-tag{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:7px;vertical-align:0}
+
+  /* ================= DIAGRAM 1 : layered architecture ================= */
+  .diagram{margin:6px 0 0; padding-left:64px}
+  @media(max-width:640px){.diagram{padding-left:0}}
+  .arch{background:var(--paper); border:1px solid var(--line); border-radius:14px; padding:22px 22px 26px}
+
+  .entry{display:flex; justify-content:center; align-items:center; gap:12px; margin-bottom:6px}
+  .pill{
+    font-size:13.5px; font-weight:600; padding:8px 16px; border-radius:999px;
+    background:#fff; border:1px solid var(--line-strong); color:var(--ink);
+  }
+  .pill.user{background:#1B1D24; color:#fff; border-color:#1B1D24}
+  .arr-v{color:var(--ink-faint); font-size:15px; line-height:1; text-align:center; padding:3px 0}
+
+  .layer{
+    border:1px solid var(--line); border-radius:11px; padding:13px 15px;
+    display:grid; grid-template-columns:152px 1fr; gap:16px; align-items:center;
+  }
+  @media(max-width:680px){.layer{grid-template-columns:1fr; gap:10px}}
+  .layer.l-agent{background:var(--agent-bg); border-color:var(--agent-bd)}
+  .layer.l-tool {background:var(--tool-bg);  border-color:var(--tool-bd)}
+  .layer.l-store{background:var(--store-bg); border-color:var(--store-bd)}
+  .layer.l-show {background:var(--show-bg);  border-color:var(--show-bd)}
+
+  .l-tag{border-left:3px solid; padding-left:12px}
+  .l-agent .l-tag{border-color:var(--agent)} .l-tool .l-tag{border-color:var(--tool)}
+  .l-store .l-tag{border-color:var(--store)} .l-show .l-tag{border-color:var(--show)}
+  .l-tag .name{font-weight:700; font-size:15px}
+  .l-agent .l-tag .name{color:var(--agent)} .l-tool .l-tag .name{color:var(--tool)}
+  .l-store .l-tag .name{color:var(--store)} .l-show .l-tag .name{color:var(--show)}
+  .l-tag .role{font-size:11.5px; color:var(--ink-soft); margin-top:2px; line-height:1.4}
+
+  .l-nodes{display:flex; gap:10px; flex-wrap:wrap; align-items:stretch}
+  .node{
+    background:#fff; border:1px solid var(--line-strong); border-radius:8px;
+    padding:9px 13px; font-size:13.5px; min-width:0;
+  }
+  .node .nt{font-weight:600; display:block; line-height:1.3}
+  .node .ns{font-size:11px; color:var(--ink-soft); display:block; margin-top:2px; line-height:1.35}
+  .node.truth{border:1.5px solid var(--store); background:#fff; box-shadow:0 1px 0 var(--store-bd)}
+  .node.truth .nt{color:var(--store)}
+  .node.derived{border:1.5px dashed var(--store-bd); background:#FCFEFD}
+  .node.output{border:1.5px dashed var(--ink-faint); background:#FBFBFD; color:var(--ink-soft); align-self:center}
+  .node.output .nt{color:var(--ink-soft)}
+  .node.flow-in{display:flex; align-items:center; gap:8px}
+  .node.flow-in::before{content:"→"; color:var(--ink-faint); font-weight:700}
+
+  .flow-band{
+    display:flex; justify-content:center; gap:26px; flex-wrap:wrap;
+    font-size:11.5px; color:var(--ink-faint); padding:7px 0; font-family:var(--mono); letter-spacing:.02em;
+  }
+  .flow-band b{color:var(--ink-soft); font-weight:600}
+
+  /* ================= DIAGRAM 2 : data flow lanes ================= */
+  .flowmap{background:var(--paper); border:1px solid var(--line); border-radius:14px; padding:8px 20px 18px}
+  .lane{padding:16px 0; border-bottom:1px dashed var(--line)}
+  .lane:last-child{border-bottom:none}
+  .lane-lab{font-family:var(--mono); font-size:11px; letter-spacing:.12em; text-transform:uppercase; font-weight:700; margin-bottom:11px}
+  .lane.write .lane-lab{color:var(--accent)}
+  .lane.read  .lane-lab{color:var(--store)}
+  .seq{display:flex; gap:8px; align-items:center; flex-wrap:wrap}
+  .seq + .seq{margin-top:10px}
+  .chip{
+    font-size:13px; padding:7px 12px; border-radius:7px; background:#fff;
+    border:1px solid var(--line-strong); white-space:nowrap; font-weight:560;
+  }
+  .chip.c-user{background:#1B1D24;color:#fff;border-color:#1B1D24}
+  .chip.c-agent{background:var(--agent-bg); border-color:var(--agent-bd); color:var(--agent)}
+  .chip.c-tool{background:var(--tool-bg); border-color:var(--tool-bd); color:var(--tool)}
+  .chip.c-tool::before{content:"⚙ "; opacity:.7}
+  .chip.c-store{background:var(--store-bg); border-color:var(--store); color:var(--store); font-weight:680}
+  .chip.c-store.d{border-style:dashed; border-color:var(--store-bd); font-weight:560}
+  .chip.c-show{background:var(--show-bg); border-color:var(--show-bd); color:var(--show)}
+  .chip.c-out{background:#FBFBFD; border:1px dashed var(--ink-faint); color:var(--ink-soft)}
+  .a{color:var(--ink-faint); font-weight:700; font-size:14px}
+  .plus{color:var(--ink-faint); font-weight:700; padding:0 2px}
+
+  /* ---- code blocks ---- */
+  pre{
+    background:#1C1F2A; color:#E6E8EF; border-radius:11px; padding:18px 20px;
+    overflow-x:auto; font-family:var(--mono); font-size:12.8px; line-height:1.62; margin:0 0 0 64px;
+    border:1px solid #2a2e3c;
+  }
+  @media(max-width:640px){pre{margin-left:0}}
+  pre .cm{color:#8b93a7} pre .k{color:#9db4ff} pre .s{color:#a9e0b6} pre .p{color:#e7c07a}
+  .pre-cap{margin:0 0 9px 64px; font-size:12px; color:var(--ink-faint); font-family:var(--mono); letter-spacing:.06em; text-transform:uppercase; font-weight:600}
+  @media(max-width:640px){.pre-cap{margin-left:0}}
+
+  .unit-parts{padding-left:64px; display:flex; flex-direction:column; gap:9px; margin:0 0 22px}
+  @media(max-width:640px){.unit-parts{padding-left:0}}
+  .upart{display:flex; gap:12px; align-items:baseline; font-size:14.5px}
+  .upart .mk{font-family:var(--mono); font-weight:700; min-width:26px; text-align:center}
+  .upart .mk.req{color:var(--store)} .upart .mk.opt{color:var(--ink-faint)}
+  .upart .nm{font-family:var(--mono); font-weight:650}
+  .upart .ds{color:var(--ink-soft)}
+
+  .grouplist{padding-left:64px; margin:0 0 4px}
+  @media(max-width:640px){.grouplist{padding-left:0}}
+  .grp{padding:11px 0; border-bottom:1px solid var(--line); display:grid; grid-template-columns:160px 1fr; gap:16px}
+  .grp:last-child{border-bottom:none}
+  @media(max-width:640px){.grp{grid-template-columns:1fr; gap:4px}}
+  .grp .gname{font-weight:650; font-size:14px}
+  .grp .gbody{font-size:13.5px; color:var(--ink-soft); line-height:1.6}
+  .grp .gbody code{font-family:var(--mono); font-size:12.5px; background:#F2F3F6; padding:1px 5px; border-radius:4px; color:var(--ink)}
+
+  footer{padding:40px 0 70px; color:var(--ink-faint); font-size:13px}
+  footer .rule{height:1px;background:var(--line-strong);margin-bottom:20px}
+
+  @media(prefers-reduced-motion:no-preference){
+    .node,.chip{transition:transform .12s ease, box-shadow .12s ease}
+    .node:hover,.chip:hover{transform:translateY(-1px)}
+  }
+
+  @media print{
+    body{background:#fff}
+    section,header.mast{break-inside:avoid}
+    .arch,.flowmap,.layer,.card,.drow,table,pre{break-inside:avoid}
+    pre{background:#f4f5f8;color:#1b1d24;border:1px solid #d2d6de}
+    pre .cm{color:#7a8092} pre .k{color:#3a47b0} pre .s{color:#1f7a55} pre .p{color:#9a6b12}
+    .node:hover,.chip:hover{transform:none}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="mast">
+    <p class="eyebrow"><span class="dot"></span>项目规划文档 <span>·</span> 供审阅 <span>·</span> 2026-06-20</p>
+    <h1 class="title">知识沉淀系统
+      <span class="en">Knowledge Sedimentation System · Design Spec</span>
+    </h1>
+    <p class="subtitle">把与 AI 对话中学到的知识,沉淀为可复用、可复盘的结构化资产。</p>
+    <p class="lead">向任意 AI agent 提出学习问题,agent 不受模板约束、自由选择最合适的方式讲解;但每一次学习都有一条绕不过的硬性要求——<b>有产出、有沉淀</b>。它同时交付两类输出:<b>自由产物</b>(自包含,脱离当下对话日后也能单独看懂)与 <b>格式化信封</b>(一句话总结、标签、关系、元数据)。这些沉淀统一落入存储层,其中文件是事实来源,索引与知识图谱只是从文件派生、随时可重建的查询层。</p>
+
+    <div class="legend">
+      <span class="k"><span class="star">★</span>&nbsp;文件 · 事实来源</span>
+      <span class="k"><span class="star">☆</span>&nbsp;派生 · 可重建</span>
+      <span class="k"><span class="swatch sw-a"></span>Agent 层</span>
+      <span class="k"><span class="swatch sw-t"></span>工具层</span>
+      <span class="k"><span class="swatch sw-s"></span>存储层</span>
+      <span class="k"><span class="swatch sw-d"></span>展示层</span>
+    </div>
+  </header>
+
+  <!-- 01 -->
+  <section>
+    <div class="sec-head">
+      <span class="sec-num">01</span>
+      <div><h2>项目概述</h2><div class="sec-en">Overview</div></div>
+    </div>
+    <p class="indent">系统把"学习"标准化成一条可重复的流水线:<span class="muted">提问 → agent 自由讲解 → 双产出(产物+信封) → 落入存储 → 派生索引与知识图谱 → 按需复盘内化</span>。agent 的讲解方式完全自由(notebook、单文件 HTML、React、图或纯文字皆可),被约束的只有"必须产出可沉淀的东西"这一点。</p>
+    <p class="indent">学习指导 agent 生成的每一份内容,都会被抽象成一个<strong>统一知识单元</strong>——这是全系统唯一的内容抽象。围绕它,内容持久化 agent 负责维护(纠错、维护索引与图谱),全局分析 agent 负责按索引与时间复盘。</p>
+    <div class="callout">
+      <span class="tag">范围说明</span>
+      复盘<b>不</b>做成带调度状态(间隔、卡片、记忆因子)的独立复习子系统——那会引入大量可变状态、徒增复杂度。复盘改由<b>全局分析 agent</b> 按索引与时间戳<b>按需</b>完成:无状态、无机械负担。
+    </div>
+  </section>
+
+  <!-- 02 -->
+  <section>
+    <div class="sec-head">
+      <span class="sec-num">02</span>
+      <div><h2>设计原则</h2><div class="sec-en">Invariants</div></div>
+    </div>
+    <div class="cards">
+      <div class="card">
+        <h3><span class="n">01</span> 文件即事实来源</h3>
+        <p>索引与知识图谱<span class="em">全部从单元派生、可随时重建</span>。检验铁律:删掉派生层,系统能否仅凭单元完整重生。</p>
+      </div>
+      <div class="card">
+        <h3><span class="n">02</span> 判断与执行分离</h3>
+        <p>LLM agent 只做判断/生成/分析(不确定);确定性脚本负责全部读写/构建。<span class="em">agent 永不直接触碰文件系统</span>。</p>
+      </div>
+      <div class="card">
+        <h3><span class="n">03</span> 机器严格 / 人类自由</h3>
+        <p>承重墙只设在 <span class="em">meta.json</span>(严格 schema、工具校验);正文与产物完全自由,不被结构污染。</p>
+      </div>
+      <div class="card">
+        <h3><span class="n">04</span> ID 即身份</h3>
+        <p>单元以稳定 <span class="em">ULID</span> 标识;索引、图谱、关系一律引用 ID 而非路径,改名移动不破坏任何引用。</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 03 -->
+  <section>
+    <div class="sec-head">
+      <span class="sec-num">03</span>
+      <div><h2>系统架构</h2><div class="sec-en">Layered Architecture</div></div>
+    </div>
+    <p class="indent">四层自上而下堆叠。<strong>写入沿层向下</strong>(Agent → 工具 → 存储),<strong>读取沿层向上</strong>;层与层之间不跨越——所有文件 I/O 都收口在工具层。</p>
+
+    <div class="diagram">
+      <div class="arch">
+        <div class="entry">
+          <span class="pill user">用户输入</span>
+          <span style="color:var(--ink-faint)">→</span>
+          <span class="pill">Agent 路由</span>
+        </div>
+        <div class="arr-v">↓</div>
+
+        <div class="layer l-agent">
+          <div class="l-tag"><div class="name">① Agent 层</div><div class="role">提示词驱动的 LLM · 判断/生成/分析</div></div>
+          <div class="l-nodes">
+            <div class="node"><span class="nt">学习指导 agent</span><span class="ns">生成自由产物</span></div>
+            <div class="node"><span class="nt">内容持久化 agent</span><span class="ns">抽象成单元 · 纠错 · 维护派生层</span></div>
+            <div class="node"><span class="nt">全局分析 agent</span><span class="ns">按索引与时间复盘</span></div>
+            <div class="node output"><span class="nt">→ 复盘报告</span></div>
+          </div>
+        </div>
+
+        <div class="flow-band"><span><b>↓</b> 调用</span><span><b>↑</b> 取数 / 返回</span></div>
+
+        <div class="layer l-tool">
+          <div class="l-tag"><div class="name">② 工具层</div><div class="role">不可修改的确定性脚本 · py / web</div></div>
+          <div class="l-nodes">
+            <div class="node"><span class="nt">单元写入 · 校验</span></div>
+            <div class="node"><span class="nt">索引构建</span></div>
+            <div class="node"><span class="nt">图谱抽取</span></div>
+            <div class="node"><span class="nt">查询 · 复盘取数</span></div>
+          </div>
+        </div>
+
+        <div class="flow-band"><span><b>↓</b> 写入 / 构建</span><span><b>↑</b> 读取</span></div>
+
+        <div class="layer l-store">
+          <div class="l-tag"><div class="name">③ 存储层</div><div class="role">文件=真相 · 派生可重建</div></div>
+          <div class="l-nodes">
+            <div class="node truth"><span class="nt">★ 统一知识单元</span><span class="ns">meta.json · note.md · artifact/</span></div>
+            <div class="node derived"><span class="nt">☆ 索引</span></div>
+            <div class="node derived"><span class="nt">☆ 知识图谱</span></div>
+          </div>
+        </div>
+
+        <div class="flow-band"><span><b>↓</b> 读取 · 渲染 知识图谱</span></div>
+
+        <div class="layer l-show">
+          <div class="l-tag"><div class="name">④ 展示层</div><div class="role">只读前端</div></div>
+          <div class="l-nodes">
+            <div class="node"><span class="nt">知识图谱可视化</span><span class="ns">检索 · 筛选</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tbl" style="margin-top:24px">
+      <table>
+        <tr><th style="width:26%">层</th><th>职责</th></tr>
+        <tr><td><span class="dot-tag" style="background:var(--agent)"></span><span class="lab">Agent 层</span></td><td>三个由提示词驱动的 LLM,负责判断、生成与分析;不直接读写文件。</td></tr>
+        <tr><td><span class="dot-tag" style="background:var(--tool)"></span><span class="lab">工具层</span></td><td>不可修改的确定性脚本,承担全部读写与构建,是触碰存储的唯一通道。</td></tr>
+        <tr><td><span class="dot-tag" style="background:var(--store)"></span><span class="lab">存储层</span></td><td>统一知识单元(文件)是唯一事实来源;索引与知识图谱从单元派生、可重建。</td></tr>
+        <tr><td><span class="dot-tag" style="background:var(--show)"></span><span class="lab">展示层</span></td><td>只读前端,渲染知识图谱、提供检索与筛选。</td></tr>
+      </table>
+    </div>
+
+    <div class="callout" style="margin-top:24px">
+      <span class="tag">核心不变量</span>
+      所有文件 I/O <b>仅经工具层</b>;写入只走「内容持久化 → 工具」<b>一条路径</b>(单写者),store 的一致性只需守住这一条。这条分工(LLM 管判断、脚本管 I/O)正是"实施不易出错"的根本保障。
+    </div>
+  </section>
+
+  <!-- 04 -->
+  <section>
+    <div class="sec-head">
+      <span class="sec-num">04</span>
+      <div><h2>核心数据流</h2><div class="sec-en">Data Flow</div></div>
+    </div>
+    <p class="indent">把双向流拆成两条互不交叉的路径:沉淀(写)与消费(读)。</p>
+
+    <div class="diagram">
+      <div class="flowmap">
+        <div class="lane write">
+          <div class="lane-lab">沉淀路径 · 写入</div>
+          <div class="seq">
+            <span class="chip c-user">用户输入</span><span class="a">→</span>
+            <span class="chip c-agent">学习指导〔生成产物〕</span><span class="a">→</span>
+            <span class="chip c-agent">内容持久化〔抽象成单元〕</span><span class="a">→</span>
+            <span class="chip c-tool">单元写入·校验</span><span class="a">→</span>
+            <span class="chip c-store">★ 统一知识单元</span><span class="a">→</span>
+            <span class="chip c-tool">索引构建 · 图谱抽取</span><span class="a">→</span>
+            <span class="chip c-store d">☆ 索引</span><span class="plus">＋</span><span class="chip c-store d">☆ 知识图谱</span>
+          </div>
+        </div>
+        <div class="lane read">
+          <div class="lane-lab">消费路径 · 读取</div>
+          <div class="seq">
+            <span class="chip c-store d">☆ 索引 / 单元</span><span class="a">→</span>
+            <span class="chip c-tool">查询·复盘取数</span><span class="a">→</span>
+            <span class="chip c-agent">全局分析</span><span class="a">→</span>
+            <span class="chip c-out">复盘报告</span>
+          </div>
+          <div class="seq">
+            <span class="chip c-store d">☆ 知识图谱</span><span class="a">→</span>
+            <span class="chip c-show">展示层</span><span class="a">→</span>
+            <span class="chip c-user">用户浏览</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 05 -->
+  <section>
+    <div class="sec-head">
+      <span class="sec-num">05</span>
+      <div><h2>统一知识单元</h2><div class="sec-en">The Unit</div></div>
+    </div>
+    <p class="indent">一次学习 = 一个目录(因 React 等富产物可能是多文件)。目录内只放事实来源;派生的索引与图谱在存储层另置。</p>
+
+    <p class="pre-cap">目录结构</p>
+<pre><span class="cm">20260620-143000--db-isolation-levels--01HXY8ZQ3F.../   目录名 = 时间戳--slug--短ID</span>
+├── <span class="k">meta.json</span>     ★ 元数据信封(承重墙):严格 schema、索引与图谱的唯一依据
+├── <span class="k">note.md</span>       ★ 规范文本正文:知识的耐久文本,检索/图谱/复盘都读它
+├── <span class="k">artifact/</span>     ○ 自由产物(富表现形式,自包含、可独立打开)
+│   └── index.html    或 notebook.ipynb / React 构建 / diagram.svg
+├── <span class="k">assets/</span>       ○ note.md 引用的图片、数据
+└── <span class="k">source/</span>       ○ 溯源留档(原始对话;original_question 已结构化进 meta)</pre>
+
+    <div class="unit-parts" style="margin-top:22px">
+      <div class="upart"><span class="mk req">★</span><span class="nm">meta.json</span><span class="ds">——严格 JSON、工具校验的承重墙;索引与图谱完全据此构建。</span></div>
+      <div class="upart"><span class="mk req">★</span><span class="nm">note.md</span><span class="ds">——知识的耐久文本表示。工具只能读文本,富产物未必可提取,故文本正文是地基。</span></div>
+      <div class="upart"><span class="mk opt">○</span><span class="nm">artifact/</span><span class="ds">——可交互/可视的富产物;纯文本学习可没有它,此时 note.md 即产物。</span></div>
+    </div>
+
+    <p class="indent" style="font-weight:650; margin-bottom:8px">meta.json 字段(按用途分组)</p>
+    <div class="grouplist">
+      <div class="grp"><div class="gname">身份与版本</div><div class="gbody"><code>id</code>(ULID,稳定主键)· <code>schema_version</code> · <code>title</code> · <code>slug</code></div></div>
+      <div class="grp"><div class="gname">信封核心</div><div class="gbody"><code>summary</code>(一句话总结)· <code>original_question</code>(触发学习的问题,最准的检索钩子)· <code>tags</code>(归一化标签)</div></div>
+      <div class="grp"><div class="gname">关系 · 图谱来源</div><div class="gbody"><code>concepts</code>(概念节点,多单元借共享概念连通)· <code>relations</code>(有类型的单元边:前置/深化/相关/对比/应用/从属)</div></div>
+      <div class="grp"><div class="gname">产物描述符</div><div class="gbody"><code>artifact</code>:{ format · entry · self_contained } —— 告诉展示层和"重新打开"如何开启</div></div>
+      <div class="grp"><div class="gname">来源与时间</div><div class="gbody"><code>created_at</code> · <code>updated_at</code>(复盘按时间分析)· <code>source</code>:{ channel · model · transcript }</div></div>
+      <div class="grp"><div class="gname">工作流与可选</div><div class="gbody"><code>status</code>(draft/stable/needs_review)· <code>references</code>(外部引用)· <code>confidence</code>(一次性自评,仅供复盘分组)</div></div>
+    </div>
+
+    <p class="pre-cap" style="margin-top:26px">强约束契约 · JSON Schema(写入工具据此校验,additionalProperties:false 拒绝未知字段)</p>
+<pre>{
+  <span class="p">"$schema"</span>: <span class="s">"http://json-schema.org/draft-07/schema#"</span>,
+  <span class="p">"type"</span>: <span class="s">"object"</span>,
+  <span class="p">"additionalProperties"</span>: <span class="k">false</span>,
+  <span class="p">"required"</span>: [<span class="s">"schema_version"</span>,<span class="s">"id"</span>,<span class="s">"title"</span>,<span class="s">"summary"</span>,<span class="s">"original_question"</span>,<span class="s">"tags"</span>,<span class="s">"artifact"</span>,<span class="s">"status"</span>,<span class="s">"created_at"</span>,<span class="s">"updated_at"</span>],
+  <span class="p">"properties"</span>: {
+    <span class="p">"schema_version"</span>: { <span class="p">"type"</span>:<span class="s">"string"</span>, <span class="p">"pattern"</span>:<span class="s">"^\\d+\\.\\d+$"</span> },
+    <span class="p">"id"</span>:    { <span class="p">"type"</span>:<span class="s">"string"</span>, <span class="p">"pattern"</span>:<span class="s">"^[0-9A-HJKMNP-TV-Z]{26}$"</span> },   <span class="cm">// ULID,大写 Crockford base32</span>
+    <span class="p">"title"</span>: { <span class="p">"type"</span>:<span class="s">"string"</span>, <span class="p">"minLength"</span>:1, <span class="p">"maxLength"</span>:80 },
+    <span class="p">"slug"</span>:  { <span class="p">"type"</span>:<span class="s">"string"</span>, <span class="p">"pattern"</span>:<span class="s">"^[a-z0-9-]+$"</span> },
+    <span class="p">"summary"</span>:           { <span class="p">"type"</span>:<span class="s">"string"</span>, <span class="p">"minLength"</span>:1, <span class="p">"maxLength"</span>:200 },
+    <span class="p">"original_question"</span>: { <span class="p">"type"</span>:<span class="s">"string"</span>, <span class="p">"minLength"</span>:1 },
+    <span class="p">"domain"</span>: { <span class="p">"type"</span>:<span class="s">"string"</span> },
+    <span class="p">"tags"</span>:     { <span class="p">"type"</span>:<span class="s">"array"</span>, <span class="p">"minItems"</span>:1, <span class="p">"uniqueItems"</span>:<span class="k">true</span>,
+                  <span class="p">"items"</span>:{ <span class="p">"type"</span>:<span class="s">"string"</span>, <span class="p">"pattern"</span>:<span class="s">"^[a-z0-9-]+$"</span> } },
+    <span class="p">"concepts"</span>: { <span class="p">"type"</span>:<span class="s">"array"</span>, <span class="p">"uniqueItems"</span>:<span class="k">true</span>, <span class="p">"items"</span>:{ <span class="p">"type"</span>:<span class="s">"string"</span>, <span class="p">"minLength"</span>:1 } },
+    <span class="p">"relations"</span>:{ <span class="p">"type"</span>:<span class="s">"array"</span>, <span class="p">"items"</span>:{ <span class="p">"$ref"</span>:<span class="s">"#/$defs/relation"</span> } },
+    <span class="p">"references"</span>:{ <span class="p">"type"</span>:<span class="s">"array"</span>, <span class="p">"items"</span>:{
+        <span class="p">"type"</span>:<span class="s">"object"</span>, <span class="p">"additionalProperties"</span>:<span class="k">false</span>, <span class="p">"required"</span>:[<span class="s">"url"</span>],
+        <span class="p">"properties"</span>:{ <span class="p">"title"</span>:{<span class="p">"type"</span>:<span class="s">"string"</span>}, <span class="p">"url"</span>:{<span class="p">"type"</span>:<span class="s">"string"</span>,<span class="p">"format"</span>:<span class="s">"uri"</span>} } } },
+    <span class="p">"artifact"</span>: {
+      <span class="p">"type"</span>:<span class="s">"object"</span>, <span class="p">"additionalProperties"</span>:<span class="k">false</span>, <span class="p">"required"</span>:[<span class="s">"format"</span>,<span class="s">"entry"</span>],
+      <span class="p">"properties"</span>:{
+        <span class="p">"format"</span>:{ <span class="p">"enum"</span>:[<span class="s">"markdown"</span>,<span class="s">"html"</span>,<span class="s">"notebook"</span>,<span class="s">"react"</span>,<span class="s">"svg"</span>,<span class="s">"image"</span>,<span class="s">"none"</span>] },
+        <span class="p">"entry"</span>:{ <span class="p">"type"</span>:<span class="s">"string"</span>, <span class="p">"minLength"</span>:1 },
+        <span class="p">"self_contained"</span>:{ <span class="p">"type"</span>:<span class="k">"boolean"</span> } } },
+    <span class="p">"source"</span>: { <span class="p">"type"</span>:<span class="s">"object"</span>, <span class="p">"additionalProperties"</span>:<span class="k">false</span>,
+                <span class="p">"properties"</span>:{ <span class="p">"channel"</span>:{<span class="p">"type"</span>:<span class="s">"string"</span>}, <span class="p">"model"</span>:{<span class="p">"type"</span>:<span class="s">"string"</span>}, <span class="p">"transcript"</span>:{<span class="p">"type"</span>:<span class="s">"string"</span>} } },
+    <span class="p">"status"</span>:     { <span class="p">"enum"</span>:[<span class="s">"draft"</span>,<span class="s">"stable"</span>,<span class="s">"needs_review"</span>] },
+    <span class="p">"confidence"</span>: { <span class="p">"enum"</span>:[<span class="s">"shaky"</span>,<span class="s">"moderate"</span>,<span class="s">"solid"</span>] },
+    <span class="p">"created_at"</span>: { <span class="p">"type"</span>:<span class="s">"string"</span>, <span class="p">"format"</span>:<span class="s">"date-time"</span> },
+    <span class="p">"updated_at"</span>: { <span class="p">"type"</span>:<span class="s">"string"</span>, <span class="p">"format"</span>:<span class="s">"date-time"</span> }
+  },
+  <span class="p">"$defs"</span>: {
+    <span class="p">"relation"</span>: {
+      <span class="p">"type"</span>:<span class="s">"object"</span>, <span class="p">"additionalProperties"</span>:<span class="k">false</span>, <span class="p">"required"</span>:[<span class="s">"type"</span>,<span class="s">"target"</span>],
+      <span class="p">"properties"</span>:{
+        <span class="p">"type"</span>:{ <span class="p">"enum"</span>:[<span class="s">"prerequisite"</span>,<span class="s">"extends"</span>,<span class="s">"related"</span>,<span class="s">"contrasts"</span>,<span class="s">"applies"</span>,<span class="s">"part_of"</span>] },
+        <span class="p">"target"</span>:{ <span class="p">"type"</span>:<span class="s">"string"</span>, <span class="p">"pattern"</span>:<span class="s">"^[0-9A-HJKMNP-TV-Z]{26}$"</span> },
+        <span class="p">"note"</span>:{ <span class="p">"type"</span>:<span class="s">"string"</span> } } }
+  }
+}</pre>
+
+    <p class="pre-cap" style="margin-top:26px">字段 → 派生消费者(验证设计完整性)</p>
+    <div class="tbl">
+      <table>
+        <tr><th style="width:30%">派生消费者</th><th>读取的字段</th></tr>
+        <tr><td><span class="lab">索引构建</span></td><td><code>id</code> · <code>title</code> · <code>summary</code> · <code>tags</code> · <code>domain</code> · <code>concepts</code> · <code>created_at</code> · <code>status</code> ＋ note.md 全文</td></tr>
+        <tr><td><span class="lab">图谱抽取</span></td><td><code>concepts</code>(概念节点) · <code>relations</code>(有类型的单元边)——纯确定性装配</td></tr>
+        <tr><td><span class="lab">全局分析 · 复盘</span></td><td><code>created_at</code> · <code>updated_at</code> · <code>tags</code> · <code>domain</code> · <code>confidence</code></td></tr>
+      </table>
+    </div>
+    <p class="indent muted" style="margin-top:16px">三者所需字段全在 meta.json 内,故"删掉索引与图谱能否从单元完整重生"这条铁律成立。</p>
+  </section>
+
+  <!-- 06 -->
+  <section>
+    <div class="sec-head">
+      <span class="sec-num">06</span>
+      <div><h2>关键设计决策</h2><div class="sec-en">Key Decisions · Rationale</div></div>
+    </div>
+    <div class="dlist">
+      <div class="drow"><p class="d">不设独立复习子系统</p><p class="r">间隔重复需要可变的调度状态(间隔、卡片、记忆因子),是上一版最重的部分。改由全局分析 agent 按索引与时间"复盘",无状态,复杂度骤降。</p></div>
+      <div class="drow"><p class="d">知识图谱来自声明式关系</p><p class="r">关系判断由能纵览全库的内容持久化 agent 写入单元元数据,图谱抽取脚本只做确定性装配。判断与装配分离,化解了"无状态 agent 无法可靠建链接"的难题。</p></div>
+      <div class="drow"><p class="d">meta.json 用独立 JSON 而非 YAML frontmatter</p><p class="r">JSON 无歧义、易做 schema 校验,agent 也更不易写错(避免 YAML 缩进坑)。代价是与正文分两个文件,但由持久化 agent 统一维护,不会失同步。</p></div>
+      <div class="drow"><p class="d">ULID 而非 UUID</p><p class="r">ULID 可按生成时间字典序排列,文件名前缀排序与之一致,既稳定又自带时间序。</p></div>
+      <div class="drow"><p class="d">note.md 保证一份可提取文本</p><p class="r">检索、图谱、复盘等工具只能读文本;React/notebook 等富产物未必可提取。文本正文既是工具的输入地基,也是富产物"腐烂"后的耐久兜底。</p></div>
+    </div>
+  </section>
+
+  <!-- 07 -->
+  <section style="border-bottom:none">
+    <div class="sec-head">
+      <span class="sec-num">07</span>
+      <div><h2>待定与下一步</h2><div class="sec-en">Open Items</div></div>
+    </div>
+    <p class="indent muted">以下为尚需敲定、提请审阅的事项。</p>
+    <div class="dlist">
+      <div class="drow"><p class="d">工具层四脚本的 I/O 契约</p><p class="r">写入·校验 / 索引构建 / 图谱抽取 / 查询取数 各自的输入、输出,以及对 meta.json 的读写边界——定清即可开工。</p></div>
+      <div class="drow"><p class="d">采集落盘按渠道区分</p><p class="r">Claude Code / Cursor 可直接写盘;claude.ai 等对话类碰不到文件系统,需一个低摩擦的 CLI 导入(吃粘贴的产物+信封,校验后归档)。这是系统能否存活的关键。</p></div>
+      <div class="drow"><p class="d">标签受控词表与归一化</p><p class="r">避免 ML / machine-learning / 机器学习 漂移;现在就定一份词表 + 落盘时归一,免得攒到数百条再治理。</p></div>
+      <div class="drow"><p class="d">整库进 git</p><p class="r">版本史、备份、同步、diff 全部白送,并强化"文件即真相";知识被反复修订时,纠错与回溯都有迹可循。</p></div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="rule"></div>
+    知识沉淀系统 · 设计与需求说明书 · 规划阶段草案 · 2026-06-20 ｜ 本文档为自包含 HTML,可离线打开、可打印为 PDF 审阅。
+  </footer>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,52 @@
+{
+  "schema_version": "1.0",
+  "id": "01KVJ9QQEFZYPQCW86P4JS53V5",
+  "title": "逻辑回归 (Logistic Regression)",
+  "slug": "logistic-regression",
+  "summary": "在线性打分外套 Sigmoid 得到概率，用交叉熵极大似然学出线性决策边界的可解释概率分类器。",
+  "original_question": "给我介绍一下逻辑回归的机器学习方法，包括数学推理、训练方式、训练过程、真实数据实战、评估方式、可解释性、最新发展等等（构建交互式 React 网页）。",
+  "domain": "machine-learning",
+  "tags": [
+    "machine-learning",
+    "classification",
+    "logistic-regression",
+    "supervised-learning"
+  ],
+  "concepts": [
+    "sigmoid",
+    "log-odds",
+    "cross-entropy loss",
+    "maximum likelihood",
+    "gradient descent",
+    "regularization",
+    "decision boundary",
+    "ROC AUC",
+    "confusion matrix",
+    "odds ratio",
+    "softmax regression",
+    "model interpretability"
+  ],
+  "references": [
+    {
+      "title": "scikit-learn — Logistic Regression",
+      "url": "https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression"
+    },
+    {
+      "title": "Wikipedia — Logistic regression",
+      "url": "https://en.wikipedia.org/wiki/Logistic_regression"
+    }
+  ],
+  "artifact": {
+    "format": "react",
+    "entry": "artifact/index.html",
+    "self_contained": true
+  },
+  "source": {
+    "channel": "claude-code",
+    "model": "claude-opus-4-8"
+  },
+  "status": "stable",
+  "confidence": "solid",
+  "created_at": "2026-06-20T10:38:00.655657+00:00",
+  "updated_at": "2026-06-20T10:52:54.656394+00:00"
+}

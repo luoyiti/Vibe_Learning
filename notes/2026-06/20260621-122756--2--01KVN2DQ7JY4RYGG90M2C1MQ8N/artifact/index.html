@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>第2章 物理层 · 核心知识</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #faf9f7;
+      --surface: #ffffff;
+      --border: #e8e4df;
+      --text: #2c2c2c;
+      --muted: #7a7571;
+      --accent: #3d5a80;
+      --accent2: #5b8cb8;
+      --highlight: #e8f0f8;
+      --formula-bg: #f4f6f8;
+      --map-root: #3d5a80;
+      --map-branch: #5b8cb8;
+      --map-leaf: #7a9cb8;
+      --map-line: #c9d4de;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.75;
+      -webkit-font-smoothing: antialiased;
+    }
+    .page { max-width: 960px; margin: 0 auto; padding: 56px 36px 72px; }
+
+    .page-header {
+      text-align: center;
+      margin-bottom: 48px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 36px;
+    }
+    .page-header h1 {
+      font-family: Georgia, 'Songti SC', SimSun, serif;
+      font-size: 1.85rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+    }
+    .page-header .subtitle {
+      font-size: 0.88rem;
+      color: var(--muted);
+      margin-top: 10px;
+      letter-spacing: 0.04em;
+    }
+    .page-header .lead {
+      font-size: 0.9rem;
+      color: #4a4a4a;
+      margin-top: 18px;
+      max-width: 680px;
+      margin-left: auto;
+      margin-right: auto;
+      text-align: justify;
+    }
+
+    .section { margin-bottom: 44px; scroll-margin-top: 24px; }
+    .section-title {
+      font-family: Georgia, 'Songti SC', serif;
+      font-size: 1.15rem;
+      font-weight: 600;
+      color: var(--accent);
+      margin-bottom: 16px;
+      padding-bottom: 6px;
+      border-bottom: 2px solid var(--accent);
+      display: inline-block;
+    }
+    .section p, .section li {
+      font-size: 0.9rem;
+      text-align: justify;
+    }
+    .section p { margin-bottom: 12px; }
+    .section ul { padding-left: 1.25rem; margin-bottom: 12px; }
+    .section li { margin-bottom: 6px; }
+
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 16px;
+      margin: 16px 0;
+    }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 18px 20px;
+      border-left: 3px solid var(--accent2);
+    }
+    .card h4 {
+      font-family: Georgia, 'Songti SC', serif;
+      font-size: 0.88rem;
+      color: var(--accent);
+      margin-bottom: 8px;
+    }
+    .card p, .card li { font-size: 0.82rem; color: #444; }
+    .card ul { padding-left: 1rem; margin-top: 6px; }
+
+    .formula-box {
+      background: var(--formula-bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 16px 20px;
+      margin: 16px 0;
+      font-family: 'Times New Roman', 'Songti SC', serif;
+      text-align: center;
+      font-size: 0.95rem;
+    }
+    .formula-box .label {
+      font-family: inherit;
+      font-size: 0.78rem;
+      color: var(--muted);
+      margin-top: 8px;
+    }
+
+    .compare-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.82rem;
+      margin: 16px 0;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      overflow: hidden;
+    }
+    .compare-table th, .compare-table td {
+      border: 1px solid var(--border);
+      padding: 10px 12px;
+      text-align: left;
+    }
+    .compare-table th {
+      background: var(--highlight);
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    /* Mind map */
+    .mindmap-wrap {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 24px 16px 28px;
+      margin: 20px 0;
+      overflow-x: auto;
+    }
+    .mindmap-title {
+      text-align: center;
+      font-size: 0.78rem;
+      color: var(--muted);
+      letter-spacing: 0.1em;
+      margin-bottom: 16px;
+    }
+    .mindmap svg { display: block; margin: 0 auto; min-width: 720px; }
+    .mindmap .node {
+      cursor: pointer;
+      transition: filter 0.15s;
+    }
+    .mindmap .node:hover { filter: brightness(1.08); }
+    .mindmap .node.active rect { stroke: var(--accent); stroke-width: 2; }
+    .mindmap-hint {
+      text-align: center;
+      font-size: 0.72rem;
+      color: var(--muted);
+      margin-top: 12px;
+    }
+
+    .tag-row { display: flex; flex-wrap: wrap; gap: 6px; margin: 12px 0; }
+    .tag {
+      font-size: 0.68rem;
+      padding: 2px 10px;
+      border-radius: 12px;
+      background: var(--highlight);
+      color: var(--accent);
+      font-weight: 500;
+    }
+
+    .summary-box {
+      background: var(--highlight);
+      border-left: 3px solid var(--accent);
+      padding: 18px 22px;
+      border-radius: 0 6px 6px 0;
+      margin-top: 8px;
+    }
+    .summary-box p { font-size: 0.86rem; margin: 0; }
+
+    footer {
+      text-align: center;
+      font-size: 0.72rem;
+      color: var(--muted);
+      margin-top: 48px;
+      padding-top: 24px;
+      border-top: 1px solid var(--border);
+    }
+
+    @media (max-width: 640px) {
+      .page { padding: 32px 18px 48px; }
+      .page-header h1 { font-size: 1.45rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header class="page-header">
+      <h1>第2章 物理层</h1>
+      <p class="subtitle">计算机网络 · Physical Layer</p>
+      <p class="lead">
+        物理层定义数据作为信号在信道上发送时的电气、时序与接口特性，是所有网络协议栈的根基。
+        介质特性决定吞吐量、延迟与误码率；奈奎斯特与香农极限则为任何信道划定了理论上界。
+      </p>
+    </header>
+
+    <!-- Mind Map -->
+    <section class="section" id="mindmap">
+      <h2 class="section-title">知识结构思维导图</h2>
+      <div class="mindmap-wrap">
+        <p class="mindmap-title">PHYSICAL LAYER · KNOWLEDGE MAP</p>
+        <div class="mindmap">
+          <svg viewBox="0 0 900 520" width="100%" height="auto" aria-label="物理层思维导图">
+            <defs>
+              <marker id="arrow" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+                <path d="M0,0 L6,3 L0,6 Z" fill="#c9d4de"/>
+              </marker>
+            </defs>
+
+            <!-- Lines from root to branches -->
+            <line x1="450" y1="68" x2="130" y2="130" stroke="var(--map-line)" stroke-width="1.5"/>
+            <line x1="450" y1="68" x2="290" y2="130" stroke="var(--map-line)" stroke-width="1.5"/>
+            <line x1="450" y1="68" x2="450" y2="130" stroke="var(--map-line)" stroke-width="1.5"/>
+            <line x1="450" y1="68" x2="610" y2="130" stroke="var(--map-line)" stroke-width="1.5"/>
+            <line x1="450" y1="68" x2="770" y2="130" stroke="var(--map-line)" stroke-width="1.5"/>
+
+            <!-- Branch 1: Media -->
+            <line x1="130" y1="158" x2="55" y2="220" stroke="var(--map-line)" stroke-width="1"/>
+            <line x1="130" y1="158" x2="130" y2="220" stroke="var(--map-line)" stroke-width="1"/>
+            <line x1="130" y1="158" x2="205" y2="220" stroke="var(--map-line)" stroke-width="1"/>
+
+            <!-- Branch 2: Theory -->
+            <line x1="290" y1="158" x2="240" y2="220" stroke="var(--map-line)" stroke-width="1"/>
+            <line x1="290" y1="158" x2="290" y2="220" stroke="var(--map-line)" stroke-width="1"/>
+            <line x1="290" y1="158" x2="340" y2="220" stroke="var(--map-line)" stroke-width="1"/>
+
+            <!-- Branch 3: Modulation -->
+            <line x1="450" y1="158" x2="400" y2="220" stroke="var(--map-line)" stroke-width="1"/>
+            <line x1="450" y1="158" x2="450" y2="220" stroke="var(--map-line)" stroke-width="1"/>
+            <line x1="450" y1="158" x2="500" y2="220" stroke="var(--map-line)" stroke-width="1"/>
+
+            <!-- Branch 4: Multiplexing -->
+            <line x1="610" y1="158" x2="560" y2="220" stroke="var(--map-line)" stroke-width="1"/>
+            <line x1="610" y1="158" x2="610" y2="220" stroke="var(--map-line)" stroke-width="1"/>
+            <line x1="610" y1="158" x2="660" y2="220" stroke="var(--map-line)" stroke-width="1"/>
+
+            <!-- Branch 5: Systems -->
+            <line x1="770" y1="158" x2="700" y2="220" stroke="var(--map-line)" stroke-width="1"/>
+            <line x1="770" y1="158" x2="770" y2="220" stroke="var(--map-line)" stroke-width="1"/>
+            <line x1="770" y1="158" x2="840" y2="220" stroke="var(--map-line)" stroke-width="1"/>
+
+            <!-- Root -->
+            <g class="node" data-target="overview" onclick="scrollToSection('overview')">
+              <rect x="370" y="28" width="160" height="40" rx="20" fill="var(--map-root)" stroke="none"/>
+              <text x="450" y="53" text-anchor="middle" fill="#fff" font-size="13" font-weight="600">物理层</text>
+            </g>
+
+            <!-- Level 1 branches -->
+            <g class="node" data-target="media" onclick="scrollToSection('media')">
+              <rect x="70" y="130" width="120" height="28" rx="4" fill="var(--map-branch)" stroke="none"/>
+              <text x="130" y="149" text-anchor="middle" fill="#fff" font-size="11">传输介质</text>
+            </g>
+            <g class="node" data-target="theory" onclick="scrollToSection('theory')">
+              <rect x="230" y="130" width="120" height="28" rx="4" fill="var(--map-branch)" stroke="none"/>
+              <text x="290" y="149" text-anchor="middle" fill="#fff" font-size="11">理论基础</text>
+            </g>
+            <g class="node" data-target="modulation" onclick="scrollToSection('modulation')">
+              <rect x="390" y="130" width="120" height="28" rx="4" fill="var(--map-branch)" stroke="none"/>
+              <text x="450" y="149" text-anchor="middle" fill="#fff" font-size="11">数字调制</text>
+            </g>
+            <g class="node" data-target="multiplex" onclick="scrollToSection('multiplex')">
+              <rect x="550" y="130" width="120" height="28" rx="4" fill="var(--map-branch)" stroke="none"/>
+              <text x="610" y="149" text-anchor="middle" fill="#fff" font-size="11">多路复用</text>
+            </g>
+            <g class="node" data-target="systems" onclick="scrollToSection('systems')">
+              <rect x="710" y="130" width="120" height="28" rx="4" fill="var(--map-branch)" stroke="none"/>
+              <text x="770" y="149" text-anchor="middle" fill="#fff" font-size="11">通信系统</text>
+            </g>
+
+            <!-- Level 2 leaves - Media -->
+            <g class="node" onclick="scrollToSection('media')">
+              <rect x="10" y="220" width="90" height="24" rx="3" fill="var(--map-leaf)" stroke="none"/>
+              <text x="55" y="236" text-anchor="middle" fill="#fff" font-size="9.5">导向介质</text>
+            </g>
+            <g class="node" onclick="scrollToSection('media')">
+              <rect x="85" y="220" width="90" height="24" rx="3" fill="var(--map-leaf)" stroke="none"/>
+              <text x="130" y="236" text-anchor="middle" fill="#fff" font-size="9.5">无线频谱</text>
+            </g>
+            <g class="node" onclick="scrollToSection('media')">
+              <rect x="160" y="220" width="90" height="24" rx="3" fill="var(--map-leaf)" stroke="none"/>
+              <text x="205" y="236" text-anchor="middle" fill="#fff" font-size="9.5">卫星</text>
+            </g>
+
+            <!-- Level 2 leaves - Theory -->
+            <g class="node" onclick="scrollToSection('theory')">
+              <rect x="195" y="220" width="90" height="24" rx="3" fill="var(--map-leaf)" stroke="none"/>
+              <text x="240" y="236" text-anchor="middle" fill="#fff" font-size="9.5">傅里叶/带宽</text>
+            </g>
+            <g class="node" onclick="scrollToSection('theory')">
+              <rect x="245" y="220" width="90" height="24" rx="3" fill="var(--map-leaf)" stroke="none"/>
+              <text x="290" y="236" text-anchor="middle" fill="#fff" font-size="9.5">奈奎斯特</text>
+            </g>
+            <g class="node" onclick="scrollToSection('theory')">
+              <rect x="295" y="220" width="90" height="24" rx="3" fill="var(--map-leaf)" stroke="none"/>
+              <text x="340" y="236" text-anchor="middle" fill="#fff" font-size="9.5">香农容量</text>
+            </g>
+
+            <!-- Level 2 leaves - Modulation -->
+            <g class="node" onclick="scrollToSection('modulation')">
+              <rect x="355" y="220" width="90" height="24" rx="3" fill="var(--map-leaf)" stroke="none"/>
+              <text x="400" y="236" text-anchor="middle" fill="#fff" font-size="9.5">基带编码</text>
+            </g>
+            <g class="node" onclick="scrollToSection('modulation')">
+              <rect x="405" y="220" width="90" height="24" rx="3" fill="var(--map-leaf)" stroke="none"/>
+              <text x="450" y="236" text-anchor="middle" fill="#fff" font-size="9.5">通带调制</text>
+            </g>
+            <g class="node" onclick="scrollToSection('modulation')">
+              <rect x="455" y="220" width="90" height="24" rx="3" fill="var(--map-leaf)" stroke="none"/>
+              <text x="500" y="236" text-anchor="middle" fill="#fff" font-size="9.5">扩频技术</text>
+            </g>
+
+            <!-- Level 2 leaves - Multiplex -->
+            <g class="node" onclick="scrollToSection('multiplex')">
+              <rect x="515" y="220" width="90" height="24" rx="3" fill="var(--map-leaf)" stroke="none"/>
+              <text x="560" y="236" text-anchor="middle" fill="#fff" font-size="9.5">FDM/OFDM</text>
+            </g>
+            <g class="node" onclick="scrollToSection('multiplex')">
+              <rect x="565" y="220" width="90" height="24" rx="3" fill="var(--map-leaf)" stroke="none"/>
+              <text x="610" y="236" text-anchor="middle" fill="#fff" font-size="9.5">TDM</text>
+            </g>
+            <g class="node" onclick="scrollToSection('multiplex')">
+              <rect x="615" y="220" width="90" height="24" rx="3" fill="var(--map-leaf)" stroke="none"/>
+              <text x="660" y="236" text-anchor="middle" fill="#fff" font-size="9.5">CDMA/WDM</text>
+            </g>
+
+            <!-- Level 2 leaves - Systems -->
+            <g class="node" onclick="scrollToSection('systems')">
+              <rect x="655" y="220" width="90" height="24" rx="3" fill="var(--map-leaf)" stroke="none"/>
+              <text x="700" y="236" text-anchor="middle" fill="#fff" font-size="9.5">电话网</text>
+            </g>
+            <g class="node" onclick="scrollToSection('systems')">
+              <rect x="725" y="220" width="90" height="24" rx="3" fill="var(--map-leaf)" stroke="none"/>
+              <text x="770" y="236" text-anchor="middle" fill="#fff" font-size="9.5">蜂窝/5G</text>
+            </g>
+            <g class="node" onclick="scrollToSection('systems')">
+              <rect x="795" y="220" width="90" height="24" rx="3" fill="var(--map-leaf)" stroke="none"/>
+              <text x="840" y="236" text-anchor="middle" fill="#fff" font-size="9.5">有线电视</text>
+            </g>
+
+            <!-- Detail panel below map -->
+            <rect x="40" y="290" width="820" height="200" rx="6" fill="#f8f9fb" stroke="#e8e4df"/>
+            <text x="450" y="318" text-anchor="middle" fill="var(--muted)" font-size="11" font-weight="600" id="detail-title">点击上方节点查看对应章节</text>
+            <text x="60" y="348" fill="#444" font-size="11" id="detail-line1"></text>
+            <text x="60" y="370" fill="#444" font-size="11" id="detail-line2"></text>
+            <text x="60" y="392" fill="#444" font-size="11" id="detail-line3"></text>
+            <text x="60" y="414" fill="#444" font-size="11" id="detail-line4"></text>
+            <text x="60" y="436" fill="#444" font-size="11" id="detail-line5"></text>
+            <text x="60" y="458" fill="#444" font-size="11" id="detail-line6"></text>
+          </svg>
+        </div>
+        <p class="mindmap-hint">点击节点可跳转至正文对应章节，并在下方显示要点摘要</p>
+      </div>
+    </section>
+
+    <!-- Overview -->
+    <section class="section" id="overview">
+      <h2 class="section-title">2.0 章节概览</h2>
+      <p>物理层关注比特如何在真实世界中以信号形式传输。本章从三种传输路径展开：导向介质（铜线、光纤）、无线（地面无线电）与卫星；继而分析信道容量极限、数字调制与多路复用；最后考察电话网、蜂窝网与有线电视三大广域接入基础设施。</p>
+      <div class="tag-row">
+        <span class="tag">带宽</span>
+        <span class="tag">延迟</span>
+        <span class="tag">误码率</span>
+        <span class="tag">奈奎斯特</span>
+        <span class="tag">香农</span>
+      </div>
+    </section>
+
+    <!-- Media -->
+    <section class="section" id="media">
+      <h2 class="section-title">2.1–2.3 传输介质与频谱</h2>
+      <div class="card-grid">
+        <div class="card">
+          <h4>导向介质</h4>
+          <ul>
+            <li><strong>磁带/存储运输</strong>：海量数据场景下有效带宽可达 Tb/s 级（"Snowmobile"）</li>
+            <li><strong>双绞线</strong>：Cat 5e/6/7/8，差分传输抗噪；全/半/单工</li>
+            <li><strong>同轴电缆</strong>：50Ω 数字 / 75Ω 有线电视，带宽可达 6 GHz</li>
+            <li><strong>电力线</strong>：数据叠加在 50–60 Hz 电力信号上，家庭短距可达 500 Mb/s</li>
+            <li><strong>光纤</strong>：全内反射；多模 vs 单模；0.85/1.30/1.55 μm 三波段；WDM 潜力 &gt;50 Tb/s</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h4>非导向介质</h4>
+          <ul>
+            <li><strong>无线电</strong>：全向传播，路径损耗 ∝ 1/r²；VLF–MF 沿地，HF–VHF 电离层反射</li>
+            <li><strong>微波</strong>：定向、需视距中继；多径衰落；&gt;10 GHz 受雨水吸收</li>
+            <li><strong>红外</strong>：短距、不可穿墙，无需频谱许可</li>
+            <li><strong>扩频</strong>：跳频（蓝牙）、直序 CDMA（3G/GPS）、UWB（&gt;500 MHz 带宽）</li>
+          </ul>
+        </div>
+      </div>
+      <table class="compare-table">
+        <thead><tr><th>介质</th><th>优势</th><th>局限</th></tr></thead>
+        <tbody>
+          <tr><td>光纤 vs 铜线</td><td>更高带宽、更低衰减（~50 km/中继）、抗 EMI、更安全</td><td>成本高、需专业技能、单向需双纤或双波段</td></tr>
+          <tr><td>微波 vs 光纤</td><td>无需路权、部署快、相对便宜</td><td>需视距、受天气影响、容量低于光纤</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- Theory -->
+    <section class="section" id="theory">
+      <h2 class="section-title">2.4.1–2.4.2 理论基础</h2>
+      <p><strong>傅里叶分析</strong>：任何周期信号可分解为正弦/余弦谐波之和。有限带宽信道会滤掉高频分量，导致信号失真——带宽越窄，可承载的数据速率越低。注意"带宽"有两义：电气工程师指 Hz，计算机科学家指 b/s。</p>
+      <div class="formula-box">
+        奈奎斯特（无噪声）：最大速率 = 2B log₂V
+        <div class="label">B = 信道带宽(Hz)，V = 信号离散等级数；二进制 3 kHz 信道上限 6000 b/s</div>
+      </div>
+      <div class="formula-box">
+        香农（有噪声）：最大速率 = B log₂(1 + S/N)
+        <div class="label">S/N 为信噪比；ADSL ~1 MHz + 40 dB SNR → 上限约 13 Mb/s，无法逾越</div>
+      </div>
+      <p>这两个极限是物理层给所有信道施加的根本约束：无噪声看奈奎斯特，有噪声看香农。</p>
+    </section>
+
+    <!-- Modulation -->
+    <section class="section" id="modulation">
+      <h2 class="section-title">2.4.3 数字调制</h2>
+      <p>信道承载模拟信号，比特须通过<strong>数字调制</strong>映射到物理量上。</p>
+      <div class="card-grid">
+        <div class="card">
+          <h4>基带传输（有线常见）</h4>
+          <ul>
+            <li><strong>NRZ</strong>：正/负电压或光/无光表示 1/0</li>
+            <li><strong>NRZI</strong>：跳变表 1（USB 采用）</li>
+            <li><strong>曼彻斯特</strong>：每比特中间跳变，自带时钟，带宽翻倍（经典以太网）</li>
+            <li><strong>4B/5B / 8B/10B</strong>：打破长 0 串，兼顾时钟恢复与 DC 平衡</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h4>通带传输（无线/光纤常见）</h4>
+          <ul>
+            <li><strong>ASK</strong>：幅移键控</li>
+            <li><strong>FSK</strong>：频移键控</li>
+            <li><strong>PSK</strong>：BPSK / QPSK（相位偏移）</li>
+            <li><strong>QAM</strong>：幅相联合，每符号多位（如 QAM-64）</li>
+          </ul>
+        </div>
+      </div>
+      <p>符号率（波特率）× 每符号比特数 = 比特率。多级信号可在不增加带宽的情况下提高速率，但需足够 SNR 区分各级。</p>
+    </section>
+
+    <!-- Multiplex -->
+    <section class="section" id="multiplex">
+      <h2 class="section-title">2.4.4 多路复用</h2>
+      <table class="compare-table">
+        <thead><tr><th>技术</th><th>原理</th><th>典型应用</th></tr></thead>
+        <tbody>
+          <tr><td>FDM</td><td>频谱分带，每用户独占频段 + 保护带</td><td>AM 广播、早期电话</td></tr>
+          <tr><td>OFDM</td><td>正交子载波紧密排列，FFT 实现；抗衰落</td><td>802.11、4G、ADSL、电力线</td></tr>
+          <tr><td>TDM</td><td>时间轮转，每用户固定时隙</td><td>电话网、蜂窝网</td></tr>
+          <tr><td>CDMA</td><td>正交码片序列，全频段同时发送</td><td>3G、GPS、有线电视</td></tr>
+          <tr><td>WDM/DWDM</td><td>光域 FDM，不同波长并行</td><td>光纤骨干，单纤 &gt;16 Tb/s</td></tr>
+        </tbody>
+      </table>
+      <p>CDMA 类比：各站"说不同语言"——接收方用码片内积提取目标信号，其余视为噪声。Walsh 码保证正交性。</p>
+    </section>
+
+    <!-- Systems -->
+    <section class="section" id="systems">
+      <h2 class="section-title">2.5–2.10 通信系统与政策</h2>
+      <div class="card-grid">
+        <div class="card">
+          <h4>公共电话交换网 (PSTN)</h4>
+          <ul>
+            <li>结构：本地回路 → 中继线 → 交换机</li>
+            <li>ADSL：OFDM 子载波，上行 ~3.5 Mb/s，下行 ~40 Mb/s</li>
+            <li>FTTx/PON：光纤到户，速率高于 ADSL</li>
+            <li>SONET/SDH + WDM 骨干；T1/T3 时分复用</li>
+            <li>电路交换 vs 分组交换并存</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h4>蜂窝网络演进</h4>
+          <ul>
+            <li><strong>1G</strong>：模拟 AMPS</li>
+            <li><strong>2G</strong>：数字 GSM（全球最广）</li>
+            <li><strong>3G</strong>：宽带 CDMA</li>
+            <li><strong>4G</strong>：全 IP 分组交换核心，语音也走数据包</li>
+            <li><strong>5G</strong>：更小蜂窝、Massive MIMO、更多频谱</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h4>有线电视 (HFC)</h4>
+          <ul>
+            <li>混合光纤同轴：光纤到节点，同轴到户</li>
+            <li>DOCSIS 标准；上行 TDM + 下行广播</li>
+            <li>容量由服务节点用户共享（~1 Gb/s，未来 10 Gb/s）</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h4>卫星与政策</h4>
+          <ul>
+            <li>GEO（同步）、MEO、LEO（Starlink 等）</li>
+            <li>GEO 延迟高；LEO 低延迟但需大量卫星</li>
+            <li>频谱分配受监管机构严格管制，拍卖与再分配持续进行</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- Summary -->
+    <section class="section" id="summary">
+      <h2 class="section-title">2.11 本章要点</h2>
+      <div class="summary-box">
+        <p>
+          物理层为所有上层协议划定边界：介质决定可达带宽与误码特性，奈奎斯特与香农给出理论上限；
+          调制将比特映射到模拟信号，复用让单条链路服务多路会话；电话网、蜂窝网与有线电视是现实中
+          "最后一公里"与骨干的三条主路径，其演进方向是从电路交换走向分组交换、从铜线走向光纤、
+          从模拟走向全数字——而频谱政策则与技术同样深刻地塑造着这一层。
+        </p>
+      </div>
+    </section>
+
+    <footer>基于《计算机网络》第2章 · 物理层 · 简约学术摘要</footer>
+  </div>
+
+  <script>
+    const DETAILS = {
+      overview: {
+        title: '物理层 · 总览',
+        lines: [
+          '• 定义：数据作为信号在信道上发送的电气、时序与接口特性',
+          '• 三大路径：导向介质 / 无线 / 卫星',
+          '• 两大极限：奈奎斯特（无噪）与香农（有噪）',
+          '• 三大系统：PSTN、蜂窝网、有线电视',
+          '• 关键指标：带宽、延迟、误码率'
+        ]
+      },
+      media: {
+        title: '传输介质',
+        lines: [
+          '• 导向：双绞线(Cat5e–8)、同轴、光纤(单/多模)、电力线',
+          '• 光纤三波段 0.85/1.30/1.55 μm，衰减 0.2–2 dB/km',
+          '• 无线：λf=c；路径损耗 ∝ 1/r²',
+          '• 扩频：跳频(蓝牙)、直序 CDMA(3G)、UWB',
+          '• 磁带运输：Snowmobile 100 PB，极端场景最优解'
+        ]
+      },
+      theory: {
+        title: '理论基础',
+        lines: [
+          '• 傅里叶：有限带宽 → 高频被滤 → 速率受限',
+          '• 奈奎斯特：2B log₂V（无噪声上限）',
+          '• 香农：B log₂(1+S/N)（有噪声容量）',
+          '• 带宽双义：Hz（模拟）vs b/s（数字）',
+          '• ADSL 例：~1 MHz, 40 dB → 上限 ~13 Mb/s'
+        ]
+      },
+      modulation: {
+        title: '数字调制',
+        lines: [
+          '• 基带：NRZ → NRZI → Manchester → 4B/5B',
+          '• 通带：ASK / FSK / PSK / QAM',
+          '• 时钟恢复：跳变编码、扰码、平衡信号',
+          '• 符号率 × bits/symbol = 比特率',
+          '• 多级信号提高频谱效率，需更高 SNR'
+        ]
+      },
+      multiplex: {
+        title: '多路复用',
+        lines: [
+          '• FDM：频带分割 + 保护带',
+          '• OFDM：正交子载波，802.11/4G/ADSL',
+          '• TDM：固定时隙轮转',
+          '• CDMA：Walsh 正交码片，内积解码',
+          '• WDM/DWDM：光域并行，单纤 Tb/s 级'
+        ]
+      },
+      systems: {
+        title: '通信系统',
+        lines: [
+          '• PSTN：ADSL/FTTx + SONET/WDM 骨干',
+          '• 蜂窝：1G 模拟 → 5G 分组 + MIMO',
+          '• 有线电视：HFC + DOCSIS，节点共享带宽',
+          '• 卫星：GEO/MEO/LEO，延迟-覆盖权衡',
+          '• 政策：频谱拍卖与再分配'
+        ]
+      }
+    };
+
+    function scrollToSection(id) {
+      const el = document.getElementById(id);
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      showDetail(id);
+      document.querySelectorAll('.mindmap .node').forEach(n => {
+        n.classList.toggle('active', n.dataset.target === id);
+      });
+    }
+
+    function showDetail(id) {
+      const d = DETAILS[id];
+      if (!d) return;
+      document.getElementById('detail-title').textContent = d.title;
+      for (let i = 1; i <= 6; i++) {
+        const line = document.getElementById('detail-line' + i);
+        line.textContent = d.lines[i - 1] || '';
+      }
+    }
+
+    showDetail('overview');
+  </script>
+</body>
+</html>

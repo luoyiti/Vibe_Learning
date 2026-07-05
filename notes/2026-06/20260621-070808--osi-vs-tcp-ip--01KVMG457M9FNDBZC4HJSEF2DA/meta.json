@@ -1,0 +1,41 @@
+{
+  "schema_version": "1.0",
+  "id": "01KVMG457M9FNDBZC4HJSEF2DA",
+  "title": "OSI vs TCP/IP 参考模型对比",
+  "slug": "osi-vs-tcp-ip",
+  "summary": "OSI 七层理论模型与 TCP/IP 四层实用模型的分层对应关系、核心差异与共同设计原则。",
+  "original_question": "结合图片，制作一份简约学术风格的 React 网页，详细介绍 OSI 参考模型和 TCP/IP 参考模型之间的区别、联系以及各层级之间的对应关系",
+  "domain": "computer-networking",
+  "tags": [
+    "networking",
+    "osi-model",
+    "tcp-ip",
+    "layered-architecture",
+    "protocol-stack"
+  ],
+  "concepts": [
+    "OSI reference model",
+    "TCP/IP reference model",
+    "layered architecture",
+    "application layer",
+    "presentation layer",
+    "session layer",
+    "transport layer",
+    "network layer",
+    "data link layer",
+    "physical layer",
+    "internet layer",
+    "network access layer",
+    "protocol stack",
+    "encapsulation"
+  ],
+  "artifact": {
+    "format": "html",
+    "entry": "artifact/index.html",
+    "self_contained": true
+  },
+  "status": "stable",
+  "confidence": "solid",
+  "created_at": "2026-06-21T07:08:08.308525+00:00",
+  "updated_at": "2026-06-21T07:08:08.308525+00:00"
+}

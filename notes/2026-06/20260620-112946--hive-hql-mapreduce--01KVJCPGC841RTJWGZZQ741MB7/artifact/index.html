@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Hive 执行流程 · 交互式架构导读</title>
+<script src="vendor/react.production.min.js"></script>
+<script src="vendor/react-dom.production.min.js"></script>
+<script src="vendor/babel.min.js"></script>
+<style>
+  :root {
+    --bg: #ffffff;
+    --bg-subtle: #f7f7f5;
+    --ink: #1a1a1a;
+    --muted: #5c5c5c;
+    --light: #8a8a8a;
+    --line: #e4e4e0;
+    --accent: #2c5282;
+    --accent-light: #ebf2f8;
+    --hive: #3d7a4a;
+    --hive-light: #e8f4ec;
+    --hadoop: #6b4c9a;
+    --hadoop-light: #f0ebf8;
+    --active-glow: rgba(44, 82, 130, 0.35);
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; font-size: 17px; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font-family: "Source Serif 4", Georgia, "Times New Roman", serif;
+    line-height: 1.72; -webkit-font-smoothing: antialiased;
+  }
+  .sans { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif; }
+
+  .wrap { display: flex; min-height: 100vh; }
+  aside {
+    position: sticky; top: 0; align-self: flex-start;
+    width: 220px; flex: 0 0 220px; height: 100vh;
+    padding: 36px 20px 40px 28px;
+    border-right: 1px solid var(--line); background: var(--bg-subtle);
+  }
+  aside .brand { font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--light); margin-bottom: 6px; }
+  aside h1 { font-size: 15px; font-weight: 600; margin: 0 0 28px; line-height: 1.4; }
+  nav a {
+    display: block; font-size: 13px; color: var(--muted); text-decoration: none;
+    padding: 6px 0; transition: color .15s;
+  }
+  nav a:hover { color: var(--accent); }
+
+  main { flex: 1; max-width: 820px; padding: 48px 48px 100px; }
+  @media (max-width: 768px) {
+    aside { display: none; }
+    main { padding: 32px 24px 80px; }
+  }
+
+  .hero { margin-bottom: 48px; padding-bottom: 32px; border-bottom: 1px solid var(--line); }
+  .hero h2 { font-size: 2.1rem; font-weight: 400; margin: 0 0 12px; letter-spacing: -0.02em; line-height: 1.25; }
+  .hero .lead { font-size: 1.05rem; color: var(--muted); margin: 0; font-style: italic; }
+  .hero .meta { margin-top: 20px; font-size: 12px; color: var(--light); }
+
+  section { margin-bottom: 52px; scroll-margin-top: 24px; }
+  section h3 {
+    font-size: 1.35rem; font-weight: 600; margin: 0 0 16px;
+    padding-bottom: 8px; border-bottom: 1px solid var(--line);
+  }
+  section h4 { font-size: 1rem; font-weight: 600; margin: 24px 0 8px; }
+  p { margin: 0 0 14px; }
+  ul, ol { margin: 0 0 14px; padding-left: 1.4em; }
+  li { margin-bottom: 6px; color: var(--muted); }
+  li strong { color: var(--ink); }
+
+  .abstract {
+    background: var(--bg-subtle); border: 1px solid var(--line);
+    padding: 20px 24px; margin: 20px 0; font-size: 0.95rem;
+  }
+  .abstract strong {
+    display: block; font-size: 11px; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--light); margin-bottom: 8px;
+  }
+
+  .callout {
+    border-left: 3px solid var(--accent); background: var(--accent-light);
+    padding: 14px 18px; margin: 20px 0; font-size: 0.92rem; color: var(--muted);
+  }
+  code {
+    font-family: "SF Mono", Menlo, Consolas, monospace; font-size: 0.85em;
+    background: var(--bg-subtle); padding: 1px 5px; border: 1px solid var(--line);
+  }
+
+  /* Interactive diagram */
+  .diagram-panel {
+    border: 1px solid var(--line); background: var(--bg-subtle);
+    padding: 24px; margin: 24px 0;
+  }
+  .diagram-controls {
+    display: flex; gap: 10px; flex-wrap: wrap; align-items: center;
+    margin-bottom: 20px;
+  }
+  .diagram-controls button {
+    font-family: inherit; font-size: 13px; padding: 8px 16px;
+    border: 1px solid var(--line); background: var(--bg); color: var(--ink);
+    border-radius: 4px; cursor: pointer; transition: all .15s;
+  }
+  .diagram-controls button:hover { border-color: var(--accent); color: var(--accent); }
+  .diagram-controls button.primary {
+    background: var(--accent); color: #fff; border-color: var(--accent);
+  }
+  .diagram-controls button.primary:hover { filter: brightness(1.08); }
+  .diagram-controls button:disabled { opacity: 0.45; cursor: not-allowed; }
+  .step-indicator {
+    font-size: 12px; color: var(--muted); flex: 1; min-width: 180px;
+  }
+  .step-indicator b { color: var(--accent); }
+
+  .arch-svg { width: 100%; height: auto; display: block; }
+  .zone-label {
+    font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+    fill: var(--light); font-family: -apple-system, sans-serif;
+  }
+  .node-box {
+    cursor: pointer; transition: filter .2s;
+  }
+  .node-box:hover rect { filter: brightness(0.97); }
+  .node-box.active rect { stroke: var(--accent); stroke-width: 2.5; filter: drop-shadow(0 0 6px var(--active-glow)); }
+  .node-box.active text { fill: var(--accent); font-weight: 600; }
+  .node-label {
+    font-size: 11px; fill: var(--ink); font-family: -apple-system, sans-serif;
+    pointer-events: none;
+  }
+  .node-sublabel {
+    font-size: 9px; fill: var(--muted); font-family: -apple-system, sans-serif;
+    pointer-events: none;
+  }
+  .flow-line { stroke: var(--line); stroke-width: 1.5; fill: none; }
+  .flow-line.active { stroke: var(--accent); stroke-width: 2.5; }
+  .flow-dot {
+    fill: var(--accent); opacity: 0;
+    transition: opacity .3s;
+  }
+  .flow-dot.visible { opacity: 1; }
+  @keyframes pulse-dot {
+    0%, 100% { r: 4; opacity: 1; }
+    50% { r: 6; opacity: 0.7; }
+  }
+  .flow-dot.animating { animation: pulse-dot 0.8s ease-in-out infinite; }
+
+  .hive-zone { fill: #fafaf8; stroke: var(--line); stroke-width: 1.5; }
+  .hadoop-zone { fill: #f5f5f3; stroke: var(--line); stroke-width: 1.5; stroke-dasharray: 6 4; }
+  .cylinder { fill: var(--hive-light); stroke: var(--hive); stroke-width: 1.5; }
+
+  .detail-panel {
+    margin-top: 20px; padding: 16px 20px;
+    border: 1px solid var(--line); background: var(--bg);
+    min-height: 100px;
+  }
+  .detail-panel h5 {
+    margin: 0 0 8px; font-size: 14px; color: var(--accent);
+    font-family: -apple-system, sans-serif;
+  }
+  .detail-panel p { font-size: 0.9rem; margin: 0; color: var(--muted); }
+
+  .step-list { list-style: none; padding: 0; margin: 20px 0; }
+  .step-list li {
+    display: flex; gap: 14px; padding: 12px 0;
+    border-bottom: 1px solid var(--line); color: var(--muted); font-size: 0.92rem;
+  }
+  .step-list li:last-child { border-bottom: none; }
+  .step-num {
+    flex: 0 0 28px; height: 28px; border-radius: 50%;
+    background: var(--bg-subtle); border: 1px solid var(--line);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 600; color: var(--accent);
+    font-family: -apple-system, sans-serif;
+  }
+  .step-list li.current .step-num { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .step-list li.current { color: var(--ink); }
+
+  table {
+    width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 0.88rem;
+  }
+  th, td {
+    border: 1px solid var(--line); padding: 10px 14px; text-align: left; vertical-align: top;
+  }
+  th { background: var(--bg-subtle); font-weight: 600; font-size: 12px; color: var(--muted); }
+  td { color: var(--muted); }
+  td:first-child { color: var(--ink); font-weight: 500; width: 26%; }
+
+  .footnote {
+    font-size: 0.82rem; color: var(--light);
+    border-top: 1px solid var(--line); padding-top: 20px; margin-top: 40px;
+  }
+  .refs a { color: var(--accent); text-decoration: none; }
+  .refs a:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useEffect, useCallback, useRef } = React;
+
+const STEPS = [
+  {
+    id: 'ui',
+    title: '提交查询',
+    short: '用户通过 CLI / JDBC / Web UI 提交 HQL',
+    nodes: ['cli', 'jdbc', 'webui', 'thrift'],
+    edges: ['ui-driver'],
+    detail: '用户界面层提供三种入口：CLI（最常用）、JDBC/ODBC（应用集成）、Web UI（管理与监控）。JDBC 请求经 Thrift Server 转发给 Driver。'
+  },
+  {
+    id: 'driver-receive',
+    title: 'Driver 接收',
+    short: 'Driver 接管查询生命周期',
+    nodes: ['driver'],
+    edges: ['ui-driver'],
+    detail: 'Driver 是 Hive 的核心引擎，内含 Compiler（编译器）、Optimizer（优化器）、Executor（执行器）三个子模块，负责从接收到返回的完整流程。'
+  },
+  {
+    id: 'metastore',
+    title: '元数据查询',
+    short: 'Driver 向 Meta Store 获取表结构与 HDFS 路径',
+    nodes: ['driver', 'metastore'],
+    edges: ['driver-metastore'],
+    detail: 'Meta Store 将元数据持久化在外部 RDBMS（如 MySQL、Derby）中，存储库表名、列类型、分区信息，以及数据在 HDFS 上的实际目录路径。Driver 必须在此确认表存在且 schema 合法。'
+  },
+  {
+    id: 'compile',
+    title: '编译与优化',
+    short: '词法/语法分析 → 逻辑计划 → 物理执行计划',
+    nodes: ['driver'],
+    edges: [],
+    detail: 'Driver 的 Compiler 做词法与语法分析，检查 HQL 错误；Optimizer 改写并优化执行计划（谓词下推、列裁剪等）；最终生成的物理计划写入 HDFS，等待调度执行。'
+  },
+  {
+    id: 'submit',
+    title: '提交到 YARN',
+    short: 'Driver 将 MapReduce 作业提交给 Resource Manager',
+    nodes: ['driver', 'rm'],
+    edges: ['driver-rm', 'driver-nn'],
+    detail: 'Driver 同时联系 Name Node（定位数据块）和 Resource Manager（申请计算资源）。现代 Hive 也支持 Tez、Spark 等引擎，但经典路径仍是 MapReduce on YARN。'
+  },
+  {
+    id: 'execute',
+    title: '分布式执行',
+    short: 'Node Manager 调度 Task，Data Node 读取 HDFS 数据',
+    nodes: ['rm', 'nm', 'nn', 'dn'],
+    edges: ['rm-nm', 'nn-dn', 'driver-rm'],
+    detail: 'Resource Manager 分配 Container，Node Manager 在本机启动 Map/Reduce Task。Task 通过 Name Node 获知 Data Node 位置，就近读取 HDFS 上的表数据并计算。'
+  },
+  {
+    id: 'result',
+    title: '返回结果',
+    short: '结果集经 Driver 回传给用户界面',
+    nodes: ['driver', 'cli'],
+    edges: ['ui-driver'],
+    detail: 'MapReduce 作业完成后，Driver 收集输出（通常写回 HDFS 临时目录），再将结果集返回给发起查询的客户端。对于 SELECT，客户端收到行集；对于 DDL/DML，返回执行状态。'
+  }
+];
+
+const NODE_INFO = {
+  cli: { label: 'CLI', sub: 'Shell', x: 60, y: 70, w: 90, h: 44, role: 'ui' },
+  jdbc: { label: 'JDBC/ODBC', sub: '', x: 170, y: 70, w: 100, h: 44, role: 'ui' },
+  webui: { label: 'Web UI', sub: '', x: 290, y: 70, w: 90, h: 44, role: 'ui' },
+  thrift: { label: 'Thrift Server', sub: 'JDBC 网关', x: 170, y: 130, w: 120, h: 40, role: 'ui' },
+  driver: { label: 'Driver', sub: 'Compiler / Optimizer / Executor', x: 200, y: 210, w: 160, h: 52, role: 'hive' },
+  metastore: { label: 'Meta Store', sub: '外部 RDBMS', x: 420, y: 200, w: 110, h: 60, role: 'cylinder' },
+  rm: { label: 'Resource Manager', sub: 'YARN', x: 80, y: 420, w: 130, h: 44, role: 'hadoop' },
+  nm: { label: 'Node Manager', sub: 'YARN', x: 280, y: 420, w: 120, h: 44, role: 'hadoop' },
+  nn: { label: 'Name Node', sub: 'HDFS', x: 80, y: 490, w: 110, h: 44, role: 'hadoop' },
+  dn: { label: 'Data Node', sub: 'HDFS', x: 280, y: 490, w: 110, h: 44, role: 'hadoop' },
+};
+
+const EDGES = {
+  'ui-driver': { from: { x: 230, y: 170 }, to: { x: 230, y: 210 }, path: 'M230,170 L230,210' },
+  'driver-metastore': { from: { x: 360, y: 236 }, to: { x: 420, y: 230 }, path: 'M360,236 L420,230' },
+  'driver-rm': { from: { x: 230, y: 262 }, to: { x: 145, y: 420 }, path: 'M230,262 L230,340 L145,340 L145,420' },
+  'driver-nn': { from: { x: 280, y: 262 }, to: { x: 135, y: 490 }, path: 'M280,262 L280,360 L135,360 L135,490', dashed: true },
+  'rm-nm': { from: { x: 210, y: 442 }, to: { x: 280, y: 442 }, path: 'M210,442 L280,442' },
+  'nn-dn': { from: { x: 190, y: 512 }, to: { x: 280, y: 512 }, path: 'M190,512 L280,512' },
+};
+
+function NodeBox({ id, info, active, onClick }) {
+  const cx = info.x + info.w / 2;
+  const cy = info.y + info.h / 2;
+  if (info.role === 'cylinder') {
+    return (
+      <g className={`node-box sans${active ? ' active' : ''}`} onClick={() => onClick(id)}>
+        <ellipse cx={cx} cy={info.y + 8} rx={info.w / 2} ry={8} className="cylinder" />
+        <rect x={info.x} y={info.y + 8} width={info.w} height={info.h - 16} className="cylinder" />
+        <ellipse cx={cx} cy={info.y + info.h - 8} rx={info.w / 2} ry={8} className="cylinder" />
+        <text x={cx} y={cy - 2} textAnchor="middle" className="node-label">{info.label}</text>
+        <text x={cx} y={cy + 12} textAnchor="middle" className="node-sublabel">{info.sub}</text>
+      </g>
+    );
+  }
+  return (
+    <g className={`node-box sans${active ? ' active' : ''}`} onClick={() => onClick(id)}>
+      <rect x={info.x} y={info.y} width={info.w} height={info.h} rx={4}
+        fill={info.role === 'hadoop' ? '#f0ebf8' : info.role === 'hive' ? '#e8f4ec' : '#fff'}
+        stroke={info.role === 'hadoop' ? '#6b4c9a' : info.role === 'hive' ? '#3d7a4a' : '#ccc'} strokeWidth={1.5} />
+      <text x={cx} y={info.sub ? cy - 4 : cy + 4} textAnchor="middle" className="node-label">{info.label}</text>
+      {info.sub && <text x={cx} y={cy + 12} textAnchor="middle" className="node-sublabel">{info.sub}</text>}
+    </g>
+  );
+}
+
+function ArchitectureDiagram({ stepIndex, selectedNode, onSelectNode, playing }) {
+  const step = stepIndex >= 0 ? STEPS[stepIndex] : null;
+  const activeNodes = step ? new Set(step.nodes) : (selectedNode ? new Set([selectedNode]) : new Set());
+  const activeEdges = step ? new Set(step.edges) : new Set();
+
+  return (
+    <svg className="arch-svg sans" viewBox="0 0 560 560" xmlns="http://www.w3.org/2000/svg">
+      <rect x={20} y={20} width={520} height={300} rx={8} className="hive-zone" />
+      <text x={40} y={48} className="zone-label">Hive</text>
+
+      <rect x={20} y={340} width={520} height={200} rx={8} className="hadoop-zone" />
+      <text x={40} y={368} className="zone-label">Hadoop 生态</text>
+      <text x={400} y={368} className="zone-label" style={{ fontSize: 9 }}>HDFS · YARN / MapReduce</text>
+
+      {Object.entries(EDGES).map(([key, e]) => (
+        <g key={key}>
+          <path d={e.path} className={`flow-line${activeEdges.has(key) ? ' active' : ''}`}
+            strokeDasharray={e.dashed ? '4 3' : undefined} />
+          {activeEdges.has(key) && playing && (
+            <circle className="flow-dot visible animating">
+              <animateMotion dur="1.2s" repeatCount="indefinite" path={e.path} />
+            </circle>
+          )}
+        </g>
+      ))}
+
+      {Object.entries(NODE_INFO).map(([id, info]) => (
+        <NodeBox key={id} id={id} info={info} active={activeNodes.has(id)} onClick={onSelectNode} />
+      ))}
+
+      <text x={60} y={400} className="node-sublabel" fill="#6b4c9a">存储层</text>
+      <text x={420} y={400} className="node-sublabel" fill="#6b4c9a">计算调度</text>
+    </svg>
+  );
+}
+
+function InteractiveSection() {
+  const [stepIndex, setStepIndex] = useState(-1);
+  const [selectedNode, setSelectedNode] = useState(null);
+  const [playing, setPlaying] = useState(false);
+  const timerRef = useRef(null);
+
+  const clearTimer = () => {
+    if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null; }
+  };
+
+  useEffect(() => () => clearTimer(), []);
+
+  const runAnimation = useCallback(() => {
+    clearTimer();
+    setPlaying(true);
+    setSelectedNode(null);
+    setStepIndex(0);
+    let i = 0;
+    timerRef.current = setInterval(() => {
+      i += 1;
+      if (i >= STEPS.length) {
+        clearTimer();
+        setPlaying(false);
+        setStepIndex(STEPS.length - 1);
+      } else {
+        setStepIndex(i);
+      }
+    }, 1800);
+  }, []);
+
+  const goStep = (i) => {
+    clearTimer();
+    setPlaying(false);
+    setSelectedNode(null);
+    setStepIndex(i);
+  };
+
+  const onSelectNode = (id) => {
+    clearTimer();
+    setPlaying(false);
+    setSelectedNode(id);
+    setStepIndex(-1);
+  };
+
+  const currentStep = stepIndex >= 0 ? STEPS[stepIndex] : null;
+  const detailText = selectedNode
+    ? (() => {
+        const labels = { cli: 'CLI (Command Line Interface)', jdbc: 'JDBC/ODBC', webui: 'Web UI', thrift: 'Thrift Server', driver: 'Driver', metastore: 'Meta Store', rm: 'Resource Manager', nm: 'Node Manager', nn: 'Name Node', dn: 'Data Node' };
+        const descs = {
+          cli: 'Hive 最常用的交互入口，通过 hive 命令行 shell 执行 HQL。',
+          jdbc: '标准数据库连接接口，让 Java 等应用程序远程提交查询。',
+          webui: '基于 Web 的管理与监控界面（HiveServer2 时代后逐步弱化）。',
+          thrift: 'Apache Thrift RPC 服务，JDBC/ODBC 客户端通过它连接 Driver。',
+          driver: '核心引擎：Compiler 解析 HQL，Optimizer 生成高效计划，Executor 提交并监控作业。',
+          metastore: '元数据中心，表结构存外部 RDBMS；支持 embedded / local / remote 三种模式。',
+          rm: 'YARN 资源管理器，负责全局资源调度与作业队列管理。',
+          nm: 'YARN 节点管理器，管理单台机器上的 Container 生命周期。',
+          nn: 'HDFS 名称节点，维护文件系统命名空间与块映射。',
+          dn: 'HDFS 数据节点，实际存储表数据文件（如 ORC、Parquet）。',
+        };
+        return { title: labels[selectedNode], text: descs[selectedNode] };
+      })()
+    : currentStep
+      ? { title: `步骤 ${stepIndex + 1}：${currentStep.title}`, text: currentStep.detail }
+      : { title: '点击组件或运行演示', text: '点击架构图中的任意组件查看说明；或点击「运行查询演示」逐步观看 HQL 从提交到返回的完整路径。' };
+
+  return (
+    <section id="interactive">
+      <h3>2. 交互式架构图</h3>
+      <p>下图还原 Hive 与 Hadoop 的分层结构。点击组件查看职责，或运行逐步演示观察数据流。</p>
+
+      <div className="diagram-panel sans">
+        <div className="diagram-controls">
+          <button className="primary" onClick={runAnimation} disabled={playing}>
+            {playing ? '演示进行中…' : '▶ 运行查询演示'}
+          </button>
+          <button onClick={() => goStep(Math.max(0, stepIndex - 1))} disabled={stepIndex <= 0}>上一步</button>
+          <button onClick={() => goStep(Math.min(STEPS.length - 1, stepIndex + 1))} disabled={stepIndex >= STEPS.length - 1}>下一步</button>
+          <button onClick={() => { clearTimer(); setPlaying(false); setStepIndex(-1); setSelectedNode(null); }}>重置</button>
+          <div className="step-indicator">
+            {currentStep ? <>当前：<b>{currentStep.title}</b> — {currentStep.short}</> : '未选择步骤'}
+          </div>
+        </div>
+
+        <ArchitectureDiagram
+          stepIndex={stepIndex}
+          selectedNode={selectedNode}
+          onSelectNode={onSelectNode}
+          playing={playing}
+        />
+
+        <div className="detail-panel">
+          <h5>{detailText.title}</h5>
+          <p>{detailText.text}</p>
+        </div>
+
+        <ol className="step-list">
+          {STEPS.map((s, i) => (
+            <li key={s.id} className={stepIndex === i ? 'current' : ''} style={{ cursor: 'pointer' }} onClick={() => goStep(i)}>
+              <span className="step-num">{i + 1}</span>
+              <span><strong>{s.title}</strong> — {s.short}</span>
+            </li>
+          ))}
+        </ol>
+      </div>
+    </section>
+  );
+}
+
+function App() {
+  return (
+    <div className="wrap">
+      <aside className="sans">
+        <div className="brand">Big Data · Hive</div>
+        <h1>Hive 执行流程</h1>
+        <nav>
+          <a href="#abstract">摘要</a>
+          <a href="#overview">架构概览</a>
+          <a href="#interactive">交互演示</a>
+          <a href="#stages">分阶段详解</a>
+          <a href="#metastore">Meta Store</a>
+          <a href="#pitfalls">易错点</a>
+          <a href="#refs">参考</a>
+        </nav>
+      </aside>
+
+      <main>
+        <header className="hero">
+          <h2>Hive 查询的生命周期<br/>从 HQL 到 MapReduce</h2>
+          <p className="lead">Hive 不是存储引擎——它是跑在 Hadoop 之上的 SQL 翻译层，把分析查询编译成分布式作业。</p>
+          <p className="meta sans">Driver · Meta Store · HDFS · YARN · MapReduce</p>
+        </header>
+
+        <section id="abstract">
+          <h3>摘要</h3>
+          <div className="abstract">
+            <strong>Abstract</strong>
+            用户通过 CLI、JDBC 或 Web UI 提交 HQL；<strong>Driver</strong> 向 <strong>Meta Store</strong> 读取表元数据，
+            经编译与优化生成物理执行计划，提交给 <strong>YARN Resource Manager</strong> 调度 MapReduce 作业；
+            <strong>Node Manager</strong> 在 <strong>Data Node</strong> 上读取 HDFS 数据完成计算，结果经 Driver 返回客户端。
+          </div>
+        </section>
+
+        <section id="overview">
+          <h3>1. 架构两层</h3>
+          <p>Hive 架构可分为上下两层：<strong>Hive 服务层</strong>（接收、编译、调度查询）与 <strong>Hadoop 生态层</strong>（存储与计算）。Driver 是唯一的调度枢纽，连接所有 UI 入口与底层集群。</p>
+
+          <table className="sans">
+            <thead>
+              <tr><th>组件</th><th>职责</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>CLI / JDBC / Web UI</td><td>用户交互入口；CLI 最常用，JDBC 经 Thrift Server 连接</td></tr>
+              <tr><td>Driver</td><td>Compiler + Optimizer + Executor；管理查询全生命周期</td></tr>
+              <tr><td>Meta Store</td><td>元数据持久化（外部 MySQL/Derby）；表结构、分区、HDFS 路径</td></tr>
+              <tr><td>Name Node</td><td>HDFS 元数据；Driver 查询数据块位置</td></tr>
+              <tr><td>Resource Manager</td><td>YARN 全局调度；接收 MapReduce 作业</td></tr>
+              <tr><td>Node Manager / Data Node</td><td>执行 Task；读取 HDFS 上的表文件</td></tr>
+            </tbody>
+          </table>
+
+          <div className="callout sans">
+            <strong>关键认知：</strong>Hive 表的数据<strong>物理存储在 HDFS</strong>，Meta Store 只存「数据在哪里、长什么样」的描述，不存业务数据本身。
+          </div>
+        </section>
+
+        <InteractiveSection />
+
+        <section id="stages">
+          <h3>3. 分阶段详解</h3>
+
+          <h4>阶段 A — 接入与路由</h4>
+          <p>CLI 直接与 Driver 通信；JDBC/ODBC 客户端先连 <strong>HiveServer2</strong>（基于 Thrift），再由 Thrift Server 把请求转给 Driver。Web UI 提供辅助管理功能。无论哪条路径，最终都汇聚到 Driver。</p>
+
+          <h4>阶段 B — 元数据校验</h4>
+          <p>Driver 向 Meta Store 发起元数据查询：目标表/视图是否存在？列类型是否匹配？分区信息？数据对应的 HDFS 目录？Meta Store 支持三种部署模式：</p>
+          <ul>
+            <li><strong>Embedded</strong> — 内嵌 Derby，单用户开发用</li>
+            <li><strong>Local</strong> — Meta Store 进程与 Hive 同机，共享远程 RDBMS</li>
+            <li><strong>Remote</strong> — 独立 Meta Store 服务，生产环境标准配置</li>
+          </ul>
+
+          <h4>阶段 C — 编译管线（Driver 内部）</h4>
+          <ol>
+            <li><strong>词法 & 语法分析</strong> — 解析 HQL，构建 AST，报告语法错误</li>
+            <li><strong>语义分析</strong> — 绑定 Meta Store 中的 schema，类型检查</li>
+            <li><strong>逻辑计划生成</strong> — 生成 Operator 树（TableScan → Filter → GroupBy …）</li>
+            <li><strong>优化</strong> — 谓词下推、列裁剪、Join 重排序、分区裁剪</li>
+            <li><strong>物理计划</strong> — 映射为 MapReduce Stage（或 Tez/Spark DAG）</li>
+          </ol>
+
+          <h4>阶段 D — 提交与执行</h4>
+          <p>Executor 将物理计划序列化到 HDFS，向 Resource Manager 提交 ApplicationMaster。YARN 分配 Container 后，Node Manager 启动 Map/Reduce Task。Task 通过 Name Node 获取 Data Node 地址，<strong>数据本地化</strong>读取 HDFS 块并计算。</p>
+
+          <h4>阶段 E — 结果返回</h4>
+          <p>作业完成后，输出写入 HDFS 临时目录（或指定的 INSERT 目标路径）。Driver 监控作业状态，将 SELECT 结果集或执行摘要返回客户端。整个过程中 Driver 维护 Session 与作业句柄。</p>
+        </section>
+
+        <section id="metastore">
+          <h3>4. Meta Store 存什么</h3>
+          <table className="sans">
+            <thead>
+              <tr><th>元数据项</th><th>示例</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>库与表名</td><td><code>warehouse.orders</code></td></tr>
+              <tr><td>列名与类型</td><td><code>order_id BIGINT, amount DOUBLE</code></td></tr>
+              <tr><td>分区</td><td><code>dt=2024-01-01</code> → 子目录</td></tr>
+              <tr><td>存储格式</td><td>ORC / Parquet / TextFile</td></tr>
+              <tr><td>HDFS 路径</td><td><code>/user/hive/warehouse/orders</code></td></tr>
+              <tr><td>Serde 信息</td><td>序列化/反序列化类与属性</td></tr>
+            </tbody>
+          </table>
+        </section>
+
+        <section id="pitfalls">
+          <h3>5. 易错点</h3>
+          <ul>
+            <li><strong>Meta Store ≠ 数据存储</strong> — 删 Meta Store 记录不会删 HDFS 文件；反之 HDFS 文件被删，查询会报路径不存在</li>
+            <li><strong>Hive 慢 ≠ Hadoop 慢</strong> — 小文件过多、无分区、全表扫描等 HQL 写法问题常是根因</li>
+            <li><strong>执行引擎可选</strong> — 现代 Hive 默认可能是 Tez/Spark 而非 MapReduce，但架构流程不变</li>
+            <li><strong>UDF 在 Task 侧执行</strong> — 自定义函数随 MapReduce Task 分发到各 Node Manager</li>
+          </ul>
+        </section>
+
+        <footer className="footnote sans refs" id="refs">
+          <strong>References</strong>
+          <ul>
+            <li><a href="https://hive.apache.org/" target="_blank" rel="noopener">Apache Hive 官方文档</a></li>
+            <li><a href="https://hadoop.apache.org/" target="_blank" rel="noopener">Apache Hadoop</a></li>
+            <li>Related: HBase 与 Hive 的区别（本知识库 hbase-hive 单元）</li>
+          </ul>
+        </footer>
+      </main>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>

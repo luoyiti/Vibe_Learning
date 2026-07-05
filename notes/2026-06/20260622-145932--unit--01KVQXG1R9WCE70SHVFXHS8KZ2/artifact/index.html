@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>逆向选择问题及其经典案例</title>
+<style>
+  :root{
+    --ink:#1a1a1a; --ink-soft:#444; --ink-faint:#777;
+    --line:#e4e4e4; --line-soft:#efefef;
+    --accent:#5b2a86;        /* 学术紫 */
+    --accent-soft:#8b5fb8;
+    --accent-wash:#f5f1f9;
+    --gold:#b8860b;
+    --bg:#ffffff; --panel:#fbfbfc;
+    --good:#2e7d59; --bad:#b3402f;
+    --maxw:860px;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font-family:"Songti SC","SimSun","Noto Serif SC",Georgia,"Times New Roman",serif;
+    line-height:1.85; font-size:17px;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:var(--maxw); margin:0 auto; padding:0 28px;}
+
+  /* ---- header ---- */
+  header.masthead{
+    border-bottom:2px solid var(--accent);
+    padding:64px 0 32px; margin-bottom:8px;
+  }
+  .eyebrow{
+    font-family:-apple-system,"Helvetica Neue",Arial,sans-serif;
+    letter-spacing:.28em; text-transform:uppercase;
+    font-size:12px; color:var(--accent); font-weight:600; margin-bottom:18px;
+  }
+  h1{
+    font-size:38px; line-height:1.25; margin:0 0 16px; font-weight:700;
+    letter-spacing:.01em;
+  }
+  .subtitle{color:var(--ink-soft); font-size:18px; margin:0; max-width:62ch;}
+  .meta-line{
+    margin-top:22px; font-family:-apple-system,Arial,sans-serif;
+    font-size:13px; color:var(--ink-faint); letter-spacing:.02em;
+  }
+
+  /* ---- TOC ---- */
+  nav.toc{
+    background:var(--panel); border:1px solid var(--line);
+    border-radius:10px; padding:22px 26px; margin:34px 0 12px;
+  }
+  nav.toc .toc-title{
+    font-family:-apple-system,Arial,sans-serif; font-size:12px; letter-spacing:.2em;
+    text-transform:uppercase; color:var(--ink-faint); margin-bottom:12px;
+  }
+  nav.toc ol{margin:0; padding-left:1.3em; columns:2; column-gap:40px;}
+  nav.toc li{margin:5px 0; break-inside:avoid;}
+  nav.toc a{color:var(--ink-soft); text-decoration:none;}
+  nav.toc a:hover{color:var(--accent); text-decoration:underline;}
+
+  /* ---- sections ---- */
+  section{padding:40px 0 8px; border-top:1px solid var(--line-soft);}
+  section:first-of-type{border-top:none;}
+  h2{
+    font-size:26px; margin:0 0 6px; font-weight:700; letter-spacing:.01em;
+    scroll-margin-top:24px;
+  }
+  h2 .num{
+    font-family:-apple-system,Arial,sans-serif; color:var(--accent);
+    font-size:15px; font-weight:600; display:block; letter-spacing:.16em; margin-bottom:6px;
+  }
+  h3{font-size:19px; margin:30px 0 8px; font-weight:700; color:var(--accent);}
+  p{margin:14px 0;}
+  strong{color:var(--ink); font-weight:700;}
+  .hl{color:var(--accent); font-weight:700;}
+  em{font-style:normal; background:linear-gradient(transparent 62%,var(--accent-wash) 62%); padding:0 1px;}
+
+  /* ---- callout ---- */
+  .callout{
+    border-left:3px solid var(--accent); background:var(--accent-wash);
+    padding:16px 22px; margin:24px 0; border-radius:0 8px 8px 0;
+  }
+  .callout .lbl{
+    font-family:-apple-system,Arial,sans-serif; font-size:11px; letter-spacing:.18em;
+    text-transform:uppercase; color:var(--accent); font-weight:700; margin-bottom:6px; display:block;
+  }
+  .callout p{margin:6px 0;}
+
+  .keydef{
+    border:1px solid var(--accent-soft); border-radius:10px; padding:20px 24px;
+    margin:22px 0; background:#fff;
+  }
+  .keydef .term{font-weight:700; color:var(--accent); font-size:18px;}
+
+  /* ---- table ---- */
+  table{
+    width:100%; border-collapse:collapse; margin:22px 0; font-size:16px;
+    font-family:-apple-system,Arial,sans-serif;
+  }
+  caption{caption-side:top; text-align:left; font-size:13px; color:var(--ink-faint); margin-bottom:8px;}
+  th,td{padding:11px 14px; border:1px solid var(--line); text-align:center;}
+  thead th{background:var(--accent); color:#fff; font-weight:600; border-color:var(--accent);}
+  tbody tr:nth-child(even){background:var(--panel);}
+  td.rowh{font-weight:700; background:var(--accent-wash); color:var(--accent);}
+
+  /* ---- figure / svg ---- */
+  figure{margin:26px 0; text-align:center;}
+  figure svg{max-width:100%; height:auto;}
+  figcaption{font-size:13px; color:var(--ink-faint); margin-top:10px; font-family:-apple-system,Arial,sans-serif;}
+
+  /* ---- steps ---- */
+  .steps{counter-reset:s; margin:22px 0; padding:0; list-style:none;}
+  .steps li{
+    position:relative; padding:6px 0 18px 46px; margin:0;
+    border-left:2px solid var(--line); margin-left:14px;
+  }
+  .steps li:last-child{border-left-color:transparent;}
+  .steps li::before{
+    counter-increment:s; content:counter(s);
+    position:absolute; left:-15px; top:2px; width:28px; height:28px;
+    background:var(--accent); color:#fff; border-radius:50%;
+    font-family:-apple-system,Arial,sans-serif; font-size:14px; font-weight:600;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .steps li b{color:var(--accent);}
+
+  /* ---- case cards ---- */
+  .case-grid{display:grid; grid-template-columns:1fr 1fr; gap:16px; margin:22px 0;}
+  .case-card{border:1px solid var(--line); border-radius:10px; padding:18px 20px; background:#fff;}
+  .case-card h4{margin:0 0 6px; font-size:16px; color:var(--accent); font-family:-apple-system,Arial,sans-serif;}
+  .case-card p{margin:4px 0; font-size:15px; color:var(--ink-soft);}
+
+  .twocol{display:grid; grid-template-columns:1fr 1fr; gap:24px; margin:20px 0;}
+  .twocol .box{border:1px solid var(--line); border-radius:10px; padding:16px 18px;}
+  .twocol .box h4{margin:0 0 8px; font-size:15px; font-family:-apple-system,Arial,sans-serif;}
+  .box.good h4{color:var(--good);} .box.bad h4{color:var(--bad);}
+
+  ul.clean{margin:14px 0; padding-left:1.25em;}
+  ul.clean li{margin:7px 0;}
+
+  footer{border-top:2px solid var(--accent); margin-top:56px; padding:28px 0 70px; color:var(--ink-faint); font-size:13px; font-family:-apple-system,Arial,sans-serif;}
+
+  @media (max-width:680px){
+    body{font-size:16px;}
+    h1{font-size:30px;}
+    nav.toc ol{columns:1;}
+    .case-grid,.twocol{grid-template-columns:1fr;}
+  }
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <div class="wrap">
+    <div class="eyebrow">信息经济学 · 市场失灵</div>
+    <h1>逆向选择问题及其经典案例</h1>
+    <p class="subtitle">当卖方比买方更了解商品质量，信息不对称会让“劣品驱逐良品”——市场如何一步步走向萎缩甚至失灵。</p>
+    <div class="meta-line">学习笔记 · 基于《第5讲 信息市场失灵》整理 · 含旧车市场、兰州百合、劳动市场、保险市场等六组案例</div>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <nav class="toc">
+    <div class="toc-title">目录</div>
+    <ol>
+      <li><a href="#intro">什么是逆向选择</a></li>
+      <li><a href="#lemon">旧车市场（柠檬市场）</a></li>
+      <li><a href="#lemon-num">数字推演：1000～2400 美元</a></li>
+      <li><a href="#lemon-concl">柠檬市场的三个结论</a></li>
+      <li><a href="#lily">兰州百合市场</a></li>
+      <li><a href="#labor">劳动市场性别歧视</a></li>
+      <li><a href="#insurance">保险市场的逆向选择</a></li>
+      <li><a href="#mooncake">月饼事件（冠生园）</a></li>
+      <li><a href="#degree">不同产品的逆向选择程度</a></li>
+      <li><a href="#takeaway">要点与易错点</a></li>
+    </ol>
+  </nav>
+
+  <!-- ===== INTRO ===== -->
+  <section id="intro">
+    <h2><span class="num">01 / 概念</span>什么是逆向选择</h2>
+    <p>设想一个简单的问题：<strong>你刚买的新车，开出去一两公里就想转手，为什么二手价会比车行的新车价低一大截？</strong>车几乎是全新的，价格却“跳水”了。这正是逆向选择问题最直观的入口。</p>
+
+    <p>经济学家 <span class="hl">Akerlof</span>（阿克洛夫）给出的解释是：根本原因不是车变旧了，而是<em>信息不对称</em>——<strong>卖家比潜在买家掌握更多关于车况质量的信息</strong>。这种只有一方知道、另一方不知道的信息，称为<strong>私人信息（private information）</strong>。哪怕是刚从车行开出来的新车，一旦进入二手市场，买家也无从分辨它是好车还是次品（俗称“柠檬 / lemon”），于是只愿出一个“防被坑”的较低价。</p>
+
+    <div class="keydef">
+      <span class="term">逆向选择（Adverse Selection）</span>
+      <p style="margin:8px 0 0;">在<strong>交易发生之前</strong>，由于一方拥有另一方无法观察到的<strong>隐藏信息（hidden information）</strong>，导致市场上<strong>低质量的一方更有动机参与交易、把高质量的一方挤出市场</strong>的现象。结果是“劣品驱逐良品”，交易萎缩，资源无法实现最优配置。</p>
+    </div>
+
+    <div class="callout">
+      <span class="lbl">关键区分</span>
+      <p>逆向选择发生在<strong>签约之前</strong>，源于<strong>隐藏信息</strong>（你不知道对方“是什么类型”）；它的“孪生兄弟”道德风险则发生在<strong>签约之后</strong>，源于<strong>隐藏行动</strong>（你看不到对方签约后“做了什么”）。本讲聚焦前者。</p>
+    </div>
+
+    <p>下面用六组经典案例，看逆向选择在现实中如何反复上演。</p>
+  </section>
+
+  <!-- ===== LEMON ===== -->
+  <section id="lemon">
+    <h2><span class="num">02 / 案例一</span>旧车市场：柠檬市场模型</h2>
+    <p>这是逆向选择的奠基案例，由 Akerlof 在 1970 年的论文《柠檬市场》中提出，并因此奠定了他获得诺贝尔经济学奖的基础。我们用一个最简版本来推演。</p>
+
+    <p>假设市场上有 <strong>100 辆二手车</strong>：<strong>50 辆高品质</strong>、<strong>50 辆低品质</strong>，对面是 <strong>100 个消费者</strong>。买卖双方对两类车的心理价位如下：</p>
+
+    <table>
+      <caption>表 1　买卖双方对两类二手车的期望价格</caption>
+      <thead>
+        <tr><th>车的品质</th><th>卖家期望价格（美元）</th><th>买家期望价格（美元）</th></tr>
+      </thead>
+      <tbody>
+        <tr><td class="rowh">高品质</td><td>2000</td><td>2400</td></tr>
+        <tr><td class="rowh">低品质</td><td>1000</td><td>1200</td></tr>
+      </tbody>
+    </table>
+
+    <p><strong>如果信息对称、充分</strong>（买家一眼能看出车的好坏），市场没有任何问题：低质车会在 <span class="hl">1000～1200 美元</span>之间成交，高质车会在 <span class="hl">2000～2400 美元</span>之间成交，各得其所，皆大欢喜。</p>
+
+    <h3 id="lemon-num">问题出在哪里：买家“分不清”</h3>
+    <p>现实是买家<strong>无法分辨</strong>眼前这辆车是高品质还是低品质。在他看来，每辆车都像是“抛硬币”决定好坏的随机事件——高、低品质各占一半。于是理性买家只能按<strong>“中等品质”的期望来出价</strong>：</p>
+
+    <figure>
+      <svg viewBox="0 0 640 220" role="img" aria-label="买家无法分辨好坏，只能按中等品质期望出价">
+        <rect x="0" y="0" width="640" height="220" fill="none"/>
+        <!-- left: high -->
+        <text x="120" y="40" text-anchor="middle" font-size="15" font-weight="700" fill="#1a1a1a">高品质</text>
+        <rect x="70" y="52" width="100" height="44" rx="8" fill="#f5f1f9" stroke="#8b5fb8"/>
+        <text x="120" y="80" text-anchor="middle" font-size="14" fill="#5b2a86">买家愿付 2400</text>
+        <!-- right: low -->
+        <text x="520" y="40" text-anchor="middle" font-size="15" font-weight="700" fill="#1a1a1a">低品质</text>
+        <rect x="470" y="52" width="100" height="44" rx="8" fill="#f5f1f9" stroke="#8b5fb8"/>
+        <text x="520" y="80" text-anchor="middle" font-size="14" fill="#5b2a86">买家愿付 1200</text>
+        <!-- coin -->
+        <circle cx="320" cy="74" r="34" fill="#fff" stroke="#b8860b" stroke-width="2"/>
+        <text x="320" y="70" text-anchor="middle" font-size="12" fill="#b8860b" font-weight="700">抛硬币</text>
+        <text x="320" y="86" text-anchor="middle" font-size="11" fill="#b8860b">各 50%</text>
+        <!-- arrows to coin -->
+        <line x1="175" y1="74" x2="282" y2="74" stroke="#b3402f" stroke-width="2" marker-end="url(#ah)"/>
+        <line x1="465" y1="74" x2="358" y2="74" stroke="#b3402f" stroke-width="2" marker-end="url(#ah)"/>
+        <!-- down to expectation -->
+        <line x1="320" y1="110" x2="320" y2="150" stroke="#5b2a86" stroke-width="2" marker-end="url(#ap)"/>
+        <rect x="200" y="156" width="240" height="46" rx="8" fill="#5b2a86"/>
+        <text x="320" y="178" text-anchor="middle" font-size="14" fill="#fff" font-weight="700">按中等品质期望出价</text>
+        <text x="320" y="195" text-anchor="middle" font-size="12" fill="#e8dff2">≈ (2400+1200)/2 = 1800 美元</text>
+        <defs>
+          <marker id="ah" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 Z" fill="#b3402f"/></marker>
+          <marker id="ap" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 Z" fill="#5b2a86"/></marker>
+        </defs>
+      </svg>
+      <figcaption>图 1　买家分不清好坏，只好按“中等品质”的期望价（约 1800 美元）出价</figcaption>
+    </figure>
+
+    <p>致命之处在于这个 <strong>1800 美元</strong>的出价：</p>
+    <ul class="clean">
+      <li>对<strong>低品质车</strong>的卖家来说，1800 远高于他的心理价位 1000——<span style="color:var(--good);font-weight:700;">他乐意卖</span>。</li>
+      <li>对<strong>高品质车</strong>的卖家来说，1800 低于他的心理价位 2000——<span style="color:var(--bad);font-weight:700;">他不愿卖，退出市场</span>。</li>
+    </ul>
+
+    <h3>恶性循环：劣品挤出良品</h3>
+    <p>高品质车被价格挤出后，市场上剩下的好车比例下降、次品比例上升。买家会“识破”这一点，进一步<strong>下调出价</strong>；价格再降，又有相对更好的车退出……如此循环，<em>低质量商品不断挤兑高质量商品</em>，市场逐渐被次品充斥，最终退化成只剩“柠檬”的<span class="hl">柠檬市场</span>。</p>
+
+    <figure>
+      <svg viewBox="0 0 640 250" role="img" aria-label="供求图：高品质车被部分挤出，低品质车充斥市场">
+        <!-- panel A: high quality -->
+        <g>
+          <text x="60" y="22" font-size="14" font-weight="700" fill="#1a1a1a">高品质市场</text>
+          <line x1="40" y1="40" x2="40" y2="200" stroke="#333" stroke-width="1.5"/>
+          <line x1="40" y1="200" x2="300" y2="200" stroke="#333" stroke-width="1.5"/>
+          <text x="20" y="120" font-size="11" fill="#777" transform="rotate(-90 20,120)">市场价格</text>
+          <text x="270" y="218" font-size="11" fill="#777">交易量</text>
+          <!-- supply -->
+          <line x1="55" y1="195" x2="280" y2="55" stroke="#b3402f" stroke-width="2"/>
+          <text x="284" y="55" font-size="12" fill="#b3402f">S</text>
+          <!-- Dh -->
+          <line x1="80" y1="60" x2="250" y2="190" stroke="#444" stroke-width="2"/>
+          <text x="252" y="195" font-size="12" fill="#444">Dₕ</text>
+          <!-- Dm shifted in -->
+          <line x1="55" y1="80" x2="200" y2="195" stroke="#aaa" stroke-width="2" stroke-dasharray="4 3"/>
+          <text x="195" y="190" font-size="12" fill="#999">Dₘ</text>
+          <!-- points -->
+          <circle cx="178" cy="118" r="3.5" fill="#1a1a1a"/><text x="184" y="113" font-size="11">A</text>
+          <circle cx="133" cy="138" r="3.5" fill="#1a1a1a"/><text x="112" y="134" font-size="11">A′</text>
+          <line x1="178" y1="118" x2="178" y2="200" stroke="#4a90d9" stroke-width="1" stroke-dasharray="3 3"/>
+          <line x1="133" y1="138" x2="133" y2="200" stroke="#4a90d9" stroke-width="1" stroke-dasharray="3 3"/>
+          <text x="170" y="214" font-size="10" fill="#4a90d9">50</text>
+          <text x="123" y="214" font-size="10" fill="#4a90d9">25</text>
+          <text x="60" y="240" font-size="11" fill="#b3402f">部分高品质车被挤出 →交易量 50→25</text>
+        </g>
+        <!-- panel B: low quality -->
+        <g transform="translate(330,0)">
+          <text x="30" y="22" font-size="14" font-weight="700" fill="#1a1a1a">低品质市场</text>
+          <line x1="40" y1="40" x2="40" y2="200" stroke="#333" stroke-width="1.5"/>
+          <line x1="40" y1="200" x2="300" y2="200" stroke="#333" stroke-width="1.5"/>
+          <text x="270" y="218" font-size="11" fill="#777">交易量</text>
+          <line x1="55" y1="195" x2="280" y2="55" stroke="#b3402f" stroke-width="2"/>
+          <text x="284" y="55" font-size="12" fill="#b3402f">S</text>
+          <!-- Dl -->
+          <line x1="80" y1="60" x2="250" y2="190" stroke="#444" stroke-width="2"/>
+          <text x="252" y="195" font-size="12" fill="#444">Dₗ</text>
+          <!-- Dm shifted out -->
+          <line x1="120" y1="55" x2="285" y2="180" stroke="#aaa" stroke-width="2" stroke-dasharray="4 3"/>
+          <text x="288" y="185" font-size="12" fill="#999">Dₘ</text>
+          <circle cx="150" cy="135" r="3.5" fill="#1a1a1a"/><text x="128" y="132" font-size="11">B</text>
+          <circle cx="205" cy="105" r="3.5" fill="#1a1a1a"/><text x="210" y="100" font-size="11">B′</text>
+          <line x1="150" y1="135" x2="150" y2="200" stroke="#4a90d9" stroke-width="1" stroke-dasharray="3 3"/>
+          <line x1="205" y1="105" x2="205" y2="200" stroke="#4a90d9" stroke-width="1" stroke-dasharray="3 3"/>
+          <text x="142" y="214" font-size="10" fill="#4a90d9">50</text>
+          <text x="198" y="214" font-size="10" fill="#4a90d9">75</text>
+          <text x="50" y="240" font-size="11" fill="#b3402f">市场充斥低品质车 →交易量 50→75</text>
+        </g>
+      </svg>
+      <figcaption>图 2　需求从 Dₕ/Dₗ 移到“中等品质”需求 Dₘ：高品质车交易量被压缩（50→25），低品质车反而扩张（50→75）</figcaption>
+    </figure>
+
+    <p>从质量分布看，每一轮“选择”都会把整体质量分布向<strong>低质量方向</strong>推移——第一轮选择后分布左移，第二轮选择后进一步左移，因为<em>不同质量的商品都在同一个价格水平上出售</em>，好车持续被低估、持续退出。</p>
+
+    <figure>
+      <svg viewBox="0 0 560 230" role="img" aria-label="旧车市场质量分布逐轮左移">
+        <line x1="40" y1="190" x2="530" y2="190" stroke="#333" stroke-width="1.5"/>
+        <line x1="40" y1="30" x2="40" y2="190" stroke="#333" stroke-width="1.5"/>
+        <text x="20" y="100" font-size="11" fill="#777" transform="rotate(-90 20,100)">概率密度</text>
+        <text x="500" y="207" font-size="11" fill="#777">质量</text>
+        <!-- before (black) right -->
+        <path d="M40,190 Q260,40 360,90 T520,188" fill="none" stroke="#1a1a1a" stroke-width="2"/>
+        <text x="430" y="120" font-size="11" fill="#1a1a1a">选择前分布</text>
+        <!-- round1 (dashed) middle -->
+        <path d="M40,190 Q200,70 300,110 T500,189" fill="none" stroke="#b8860b" stroke-width="2" stroke-dasharray="6 4"/>
+        <text x="300" y="78" font-size="11" fill="#b8860b">第一轮后</text>
+        <!-- round2 (purple) left -->
+        <path d="M40,190 Q150,50 230,110 T430,189" fill="none" stroke="#5b2a86" stroke-width="2"/>
+        <text x="120" y="60" font-size="11" fill="#5b2a86">第二轮后</text>
+      </svg>
+      <figcaption>图 3　旧车市场质量分布的逐轮“左移”：好车不断退出，市场整体质量持续下滑</figcaption>
+    </figure>
+
+    <h3 id="lemon-concl">柠檬市场模型的三个重要结论</h3>
+    <ol class="steps">
+      <li><b>质量依赖于价格。</b>在不对称信息市场中，同种商品的质量会随价格高低而变化——这正是“<em>便宜没好货</em>”的经济学解释。</li>
+      <li><b>市场运行是低效率的。</b>不对称信息导致市场上买主和高质量卖主的数量，比完全信息下少得多，甚至非常少，交易严重萎缩。</li>
+      <li><b>逆向选择可能导致市场失灵。</b>在不完全竞争市场下，资源<em>无法实现最优配置</em>——本该成交的好车没能成交，本该得到好车的买家空手而归。</li>
+    </ol>
+  </section>
+
+  <!-- ===== LILY ===== -->
+  <section id="lily">
+    <h2><span class="num">03 / 案例二</span>兰州百合市场</h2>
+    <p>兰州百合是中国四大百合系中<strong>唯一可食用</strong>的品种，质量上乘，还能作药用，市场价较高，<span class="hl">最高可达 26 元/公斤</span>；而普通百合每公斤仅 <span class="hl">5–6 元</span>。</p>
+    <p>问题在于消费者<strong>难辨真伪</strong>：外观相似，买家无法在购买前确认是不是正宗兰州百合。于是大量普通百合冒充充斥市场，正品卖不出应有的高价、逐渐退出，<em>“次品将正品逐出市场”</em>——这与旧车市场是完全相同的逻辑，只是商品换成了农产品。</p>
+    <div class="callout">
+      <span class="lbl">同构</span>
+      <p>旧车的“高/低品质” = 百合的“正品/次品”；买家无法事前鉴别 = 私人信息；结果都是低质品挤出高质品。逆向选择的模型可以套用到任何“质量看不见、卖家更清楚”的市场。</p>
+    </div>
+  </section>
+
+  <!-- ===== LABOR ===== -->
+  <section id="labor">
+    <h2><span class="num">04 / 案例三</span>劳动市场的性别歧视</h2>
+    <p>现实中存在大量性别歧视：在美国，企业管理者、政府官员、自由职业者等高薪职业中，有色人种和女性的比例远低于白人男性；在中国，政府官员、企业管理者、专业技术人员等职业中，女性比例也明显低于男性。</p>
+    <p>逆向选择给出一个（冷峻的）解释：<strong>雇主无法事前观察到每个应聘者的真实劳动生产率</strong>——这是典型的信息不对称。雇主当然有办法去考察，但每种办法都有成本：</p>
+
+    <div class="case-grid">
+      <div class="case-card"><h4>到原单位调查</h4><p>需支付调查成本</p></div>
+      <div class="case-card"><h4>设试用期</h4><p>需支付监督考察成本，且并非所有职位都适用</p></div>
+      <div class="case-card"><h4>应聘测试</h4><p>需支付测试成本，同时结果会有偏差</p></div>
+      <div class="case-card"><h4>凭关系介绍</h4><p>需承担“人情/感情投资”风险</p></div>
+    </div>
+
+    <p>既然逐一甄别成本高昂，理性的雇主会选择<strong>预期招工成本最小</strong>的办法——诉诸<em>经验与统计</em>。如果统计上“男性平均劳动生产率高于女性”，雇主便倾向于用性别这个<strong>易观察的“信号”</strong>来替代昂贵的个体甄别，结果可能是“全部招收男性”。</p>
+
+    <figure>
+      <svg viewBox="0 0 560 250" role="img" aria-label="男女劳动生产率分布及招聘统计依据">
+        <line x1="40" y1="200" x2="530" y2="200" stroke="#333" stroke-width="1.5"/>
+        <line x1="40" y1="30" x2="40" y2="200" stroke="#333" stroke-width="1.5"/>
+        <text x="22" y="110" font-size="11" fill="#777" transform="rotate(-90 22,110)">人数</text>
+        <text x="470" y="218" font-size="11" fill="#777">劳动生产率</text>
+        <!-- female (blue) left -->
+        <path d="M50,200 Q170,40 250,110 T440,199" fill="none" stroke="#2f5fb3" stroke-width="2.2"/>
+        <text x="120" y="70" font-size="12" fill="#2f5fb3">女性</text>
+        <!-- male (black) right -->
+        <path d="M150,200 Q300,45 360,90 T520,199" fill="none" stroke="#1a1a1a" stroke-width="2.2"/>
+        <text x="420" y="70" font-size="12" fill="#1a1a1a">男性</text>
+        <!-- zones A B C D -->
+        <line x1="200" y1="200" x2="200" y2="120" stroke="#bbb" stroke-dasharray="3 3"/>
+        <line x1="270" y1="200" x2="270" y2="120" stroke="#bbb" stroke-dasharray="3 3"/>
+        <line x1="340" y1="200" x2="340" y2="120" stroke="#bbb" stroke-dasharray="3 3"/>
+        <text x="160" y="195" font-size="12" font-weight="700" fill="#555">A</text>
+        <text x="232" y="195" font-size="12" font-weight="700" fill="#555">B</text>
+        <text x="302" y="195" font-size="12" font-weight="700" fill="#555">C</text>
+        <text x="410" y="195" font-size="12" font-weight="700" fill="#555">D</text>
+      </svg>
+      <figcaption>图 4　男女劳动生产率分布：均值上男性偏高，但大量个体重叠。位于高产率 D 区的女性被“一刀切”政策误伤最深</figcaption>
+    </figure>
+
+    <p>基本依据是一个概率事实：<strong>从 10 个男性中招到 5 名高生产率者的概率，平均高于从男女各 5 名中招到 5 名高生产率者的概率。</strong>因此对雇主而言，“只招男性”在统计上是省成本的有效政策。</p>
+
+    <div class="callout">
+      <span class="lbl">公平的代价</span>
+      <p>这种“有效”的招工政策对图中位于高产率 <strong>D 区的女性最不公平</strong>：她们实际能力很强，却因为所属群体的统计均值而被牺牲。<em>社会为维持劳动市场的“效率”，牺牲了这部分人的利益。</em>这就是统计性歧视背后的逆向选择机制——也说明为何反歧视需要制度干预，而非寄望市场自发纠正。</p>
+    </div>
+  </section>
+
+  <!-- ===== INSURANCE ===== -->
+  <section id="insurance">
+    <h2><span class="num">05 / 案例四</span>保险市场的逆向选择</h2>
+    <p>保险市场通常有两类投保人：<strong>高风险</strong>者（出险/损失概率为 H）和<strong>低风险</strong>者（损失概率为 L），且 H &gt; L。</p>
+    <p><strong>若信息对称</strong>，保险公司能轻松按风险类别定价：高风险者保费高、低风险者保费低，各自公平。但现实是投保人自己最清楚风险高低，保险公司不清楚——市场上存在<em>隐藏信息</em>。那么保费该怎么定？</p>
+
+    <p>保险公司只能按<strong>平均风险</strong>定一个统一保费。但这会触发逆向选择的链条：</p>
+    <ol class="steps">
+      <li>按平均风险定价 → 对<b>低风险者偏贵</b>，对高风险者偏便宜。</li>
+      <li>低风险者觉得不划算，<b>退保离场</b>；留下的多是高风险者。</li>
+      <li>投保群体平均风险上升 → 保险公司<b>被迫提高保费</b>。</li>
+      <li>保费一升，相对更低风险的人又退出……如此往复。</li>
+      <li>最终“只有更高风险的人愿意投保”，<b>在任何保费水平上都难以签出合同</b>，保险市场趋于瓦解。</li>
+    </ol>
+
+    <div class="callout">
+      <span class="lbl">现实对策</span>
+      <p>正因如此，保险业才发明了体检、既往病史审核、风险分级、强制保险（如社保、交强险把所有人都纳入以稀释风险池）等机制——本质都是<strong>对抗逆向选择</strong>、把“隐藏信息”重新暴露出来。</p>
+    </div>
+  </section>
+
+  <!-- ===== MOONCAKE ===== -->
+  <section id="mooncake">
+    <h2><span class="num">06 / 案例五</span>月饼事件：信任崩塌的连锁反应</h2>
+    <p>2001 年 9 月 5 日，央视等多家媒体报道了南京冠生园用<strong>陈馅（隔年旧馅）翻新做月饼</strong>的事件。后果是全行业的信任危机：</p>
+    <div class="twocol">
+      <div class="box bad">
+        <h4>行业层面</h4>
+        <p>全国月饼整体销量下降 <strong>40%</strong>——消费者无法分辨哪家月饼“干净”，干脆少买所有月饼。</p>
+      </div>
+      <div class="box bad">
+        <h4>企业层面</h4>
+        <p>各地带“冠生园”字号的企业受冲击最大。上海冠生园 10 天内销量降 <strong>50%</strong>，在全国 12 个主要市场中退出 5 个，估计损失 <strong>70–80%</strong>。</p>
+      </div>
+    </div>
+    <p>这个案例展示了逆向选择的另一面：当质量信息不对称、又缺乏可信甄别手段时，<strong>一次曝光会让消费者对整类商品（甚至同名无关企业）失去信任</strong>，好厂商被坏厂商“连坐”拖累——这正是“次品驱逐良品”在品牌与声誉维度的体现。</p>
+  </section>
+
+  <!-- ===== DEGREE ===== -->
+  <section id="degree">
+    <h2><span class="num">07 / 归纳</span>不同产品，逆向选择程度不同</h2>
+    <p>逆向选择的严重程度，取决于<strong>商品质量“可被事前观察”的难易</strong>。质量越透明、越标准化，逆向选择越轻；质量越隐蔽、越异质，逆向选择越重。</p>
+
+    <table>
+      <caption>表 2　按质量可观察性排序的逆向选择程度</caption>
+      <thead>
+        <tr><th>产品类型</th><th>典型例子</th><th>逆向选择程度</th></tr>
+      </thead>
+      <tbody>
+        <tr><td class="rowh">标准化产品</td><td>煤炭、钢铁、木材（可做期货交易）</td><td style="color:var(--good);font-weight:700;">最低</td></tr>
+        <tr><td class="rowh">一般产品</td><td>化妆品、家具、装饰材料</td><td style="color:var(--gold);font-weight:700;">居中</td></tr>
+        <tr><td class="rowh">二手产品</td><td>旧汽车、旧家电、旧房子</td><td style="color:var(--bad);font-weight:700;">最高</td></tr>
+      </tbody>
+    </table>
+    <p>从标准化产品到二手产品，质量越来越“看不见”，<strong>逆向选择程度逐级提高</strong>。这也解释了为什么标准化大宗商品能搞期货交易（质量有公认标准、信息对称），而二手车、二手房市场总是充满讨价还价、第三方检测和担保服务——都是在补救信息不对称。</p>
+
+    <p>其它常被提及的逆向选择场景还有：大学“三本”招生的逆向选择、学术“垃圾文章”的逆向选择、“欧洲酒市”的逆向选择等等，机制都一脉相承。</p>
+  </section>
+
+  <!-- ===== TAKEAWAY ===== -->
+  <section id="takeaway">
+    <h2><span class="num">08 / 小结</span>要点与易错点</h2>
+    <h3>三句话记住逆向选择</h3>
+    <ul class="clean">
+      <li><strong>根源：</strong>交易前的<span class="hl">信息不对称 / 隐藏信息</span>——卖方（或一方）掌握买方看不到的私人信息。</li>
+      <li><strong>机制：</strong>买方只能按平均质量出价 → 高质量方觉得吃亏退出 → 平均质量下降 → 价格再降……<span class="hl">劣品驱逐良品</span>。</li>
+      <li><strong>后果：</strong>交易萎缩、市场低效，极端时<span class="hl">市场失灵</span>，资源无法最优配置。</li>
+    </ul>
+
+    <h3>容易混淆/出错的地方</h3>
+    <ul class="clean">
+      <li><strong>别和道德风险弄混。</strong>逆向选择＝签约<em>前</em>的隐藏信息（你不知道对方是什么“类型”）；道德风险＝签约<em>后</em>的隐藏行动（你看不到对方做了什么）。</li>
+      <li><strong>“便宜没好货”不是废话，是结论。</strong>它恰恰是“质量依赖于价格”这一柠檬市场结论的民间版本。</li>
+      <li><strong>逆向选择伤害的是“好的一方”。</strong>真正被挤出市场的是高质量车、低风险投保人、高能力的女性应聘者——记住受害者是优质方，不是劣质方。</li>
+      <li><strong>对策方向＝消除信息不对称。</strong>卖方主动发<em>信号</em>（signaling，如质保、品牌、文凭），买方主动<em>甄别</em>（screening，如体检、试用期、第三方检测），或靠制度（强制保险、信息披露）兜底。</li>
+    </ul>
+
+    <div class="callout">
+      <span class="lbl">一句话总览</span>
+      <p>逆向选择是“看不见质量”的市场的通病：从旧车、百合、保险到招聘和品牌声誉，只要一方比另一方更懂质量、又无法低成本证明，<strong>市场就会自发地把好东西挤走</strong>。理解它，才能理解质保、品牌、文凭、体检、强制险这些制度为什么存在。</p>
+    </div>
+  </section>
+
+  <footer>
+    逆向选择问题及其经典案例 · 学习笔记 · 整理自《第5讲 信息市场失灵》<br>
+    案例：Akerlof 柠檬市场 · 兰州百合 · 劳动市场性别歧视 · 保险市场 · 月饼事件（冠生园） · 产品分类
+  </footer>
+
+</div>
+</body>
+</html>

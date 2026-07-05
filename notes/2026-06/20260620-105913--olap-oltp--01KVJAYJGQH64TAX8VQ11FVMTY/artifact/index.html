@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>OLAP 与 OLTP · 学术导读</title>
+<style>
+  :root {
+    --bg: #ffffff;
+    --bg-subtle: #f7f7f5;
+    --ink: #1a1a1a;
+    --muted: #5c5c5c;
+    --light: #8a8a8a;
+    --line: #e4e4e0;
+    --accent: #2c5282;
+    --accent-light: #ebf2f8;
+    --oltp: #2d6a4f;
+    --olap: #6b4c9a;
+  }
+  * { box-sizing: border-box; }
+  html {
+    scroll-behavior: smooth;
+    font-size: 17px;
+  }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "Source Serif 4", Georgia, "Times New Roman", serif;
+    line-height: 1.72;
+    -webkit-font-smoothing: antialiased;
+  }
+  .sans { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif; }
+
+  /* layout */
+  .wrap { display: flex; min-height: 100vh; }
+  aside {
+    position: sticky; top: 0; align-self: flex-start;
+    width: 220px; flex: 0 0 220px; height: 100vh;
+    padding: 36px 20px 40px 28px;
+    border-right: 1px solid var(--line);
+    background: var(--bg-subtle);
+  }
+  aside .brand {
+    font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--light); margin-bottom: 6px;
+  }
+  aside h1 {
+    font-size: 15px; font-weight: 600; margin: 0 0 28px;
+    line-height: 1.4; color: var(--ink);
+  }
+  nav a {
+    display: block; font-size: 13px; color: var(--muted);
+    text-decoration: none; padding: 6px 0;
+    border-bottom: 1px solid transparent;
+    transition: color .15s;
+  }
+  nav a:hover { color: var(--accent); }
+  nav a.active { color: var(--accent); font-weight: 600; }
+
+  main {
+    flex: 1; max-width: 720px;
+    padding: 48px 48px 100px;
+  }
+  @media (max-width: 768px) {
+    aside { display: none; }
+    main { padding: 32px 24px 80px; }
+  }
+
+  /* typography */
+  .hero { margin-bottom: 48px; padding-bottom: 32px; border-bottom: 1px solid var(--line); }
+  .hero h2 {
+    font-size: 2.1rem; font-weight: 400; margin: 0 0 12px;
+    letter-spacing: -0.02em; line-height: 1.25;
+  }
+  .hero .lead {
+    font-size: 1.05rem; color: var(--muted); margin: 0;
+    font-style: italic;
+  }
+  .hero .meta {
+    margin-top: 20px; font-size: 12px; color: var(--light);
+  }
+
+  section { margin-bottom: 52px; scroll-margin-top: 24px; }
+  section h3 {
+    font-size: 1.35rem; font-weight: 600; margin: 0 0 16px;
+    padding-bottom: 8px; border-bottom: 1px solid var(--line);
+  }
+  section h4 {
+    font-size: 1rem; font-weight: 600; margin: 24px 0 8px;
+    color: var(--ink);
+  }
+  p { margin: 0 0 14px; }
+  ul, ol { margin: 0 0 14px; padding-left: 1.4em; }
+  li { margin-bottom: 6px; color: var(--muted); }
+  li strong { color: var(--ink); }
+  em { font-style: italic; color: var(--muted); }
+
+  /* cards & blocks */
+  .abstract {
+    background: var(--bg-subtle); border: 1px solid var(--line);
+    padding: 20px 24px; margin: 20px 0; font-size: 0.95rem;
+  }
+  .abstract strong { display: block; font-size: 11px; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--light); margin-bottom: 8px; }
+
+  .two-col {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 20px 0;
+  }
+  @media (max-width: 600px) { .two-col { grid-template-columns: 1fr; } }
+
+  .card {
+    border: 1px solid var(--line); padding: 18px 20px;
+    background: var(--bg);
+  }
+  .card.oltp { border-top: 3px solid var(--oltp); }
+  .card.olap { border-top: 3px solid var(--olap); }
+  .card .label {
+    font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+    font-weight: 600; margin-bottom: 8px;
+  }
+  .card.oltp .label { color: var(--oltp); }
+  .card.olap .label { color: var(--olap); }
+  .card p { font-size: 0.92rem; margin: 0; color: var(--muted); }
+
+  /* table */
+  table {
+    width: 100%; border-collapse: collapse; margin: 20px 0;
+    font-size: 0.88rem;
+  }
+  th, td {
+    border: 1px solid var(--line); padding: 10px 14px;
+    text-align: left; vertical-align: top;
+  }
+  th {
+    background: var(--bg-subtle); font-weight: 600;
+    font-size: 12px; letter-spacing: 0.04em;
+    color: var(--muted);
+  }
+  td { color: var(--muted); }
+  td:first-child { color: var(--ink); font-weight: 500; width: 28%; }
+  .col-oltp { color: var(--oltp); }
+  .col-olap { color: var(--olap); }
+
+  /* diagram */
+  .diagram {
+    border: 1px solid var(--line); background: var(--bg-subtle);
+    padding: 28px 24px; margin: 24px 0; text-align: center;
+  }
+  .flow {
+    display: flex; align-items: center; justify-content: center;
+    gap: 0; flex-wrap: wrap; margin: 16px 0;
+  }
+  .flow .box {
+    padding: 12px 18px; border: 1px solid var(--line);
+    background: var(--bg); font-size: 13px; min-width: 100px;
+  }
+  .flow .box.oltp-box { border-color: var(--oltp); color: var(--oltp); }
+  .flow .box.olap-box { border-color: var(--olap); color: var(--olap); }
+  .flow .arrow {
+    font-size: 18px; color: var(--light); padding: 0 8px;
+  }
+  .flow-caption { font-size: 12px; color: var(--light); margin-top: 8px; }
+
+  /* callout */
+  .callout {
+    border-left: 3px solid var(--accent);
+    background: var(--accent-light);
+    padding: 14px 18px; margin: 20px 0;
+    font-size: 0.92rem; color: var(--muted);
+  }
+  .callout.warn {
+    border-left-color: #c05621;
+    background: #fdf6ec;
+  }
+
+  code, .mono {
+    font-family: "SF Mono", Menlo, Consolas, monospace;
+    font-size: 0.85em; background: var(--bg-subtle);
+    padding: 1px 5px; border: 1px solid var(--line);
+  }
+
+  .footnote {
+    font-size: 0.82rem; color: var(--light);
+    border-top: 1px solid var(--line); padding-top: 20px; margin-top: 40px;
+  }
+  .refs { font-size: 0.85rem; }
+  .refs a { color: var(--accent); text-decoration: none; }
+  .refs a:hover { text-decoration: underline; }
+  .refs li { color: var(--light); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <aside class="sans">
+    <div class="brand">Database Systems</div>
+    <h1>OLAP 与 OLTP</h1>
+    <nav>
+      <a href="#abstract">摘要</a>
+      <a href="#definitions">定义</a>
+      <a href="#comparison">对照表</a>
+      <a href="#architecture">典型架构</a>
+      <a href="#examples">实例</a>
+      <a href="#pitfalls">易错点</a>
+      <a href="#refs">参考文献</a>
+    </nav>
+  </aside>
+
+  <main>
+    <header class="hero">
+      <h2>OLAP 与 OLTP：<br>两类在线数据处理范式</h2>
+      <p class="lead">同一组织往往同时需要「把业务跑起来」和「把数据看清楚」——这两件事对数据库的要求截然不同。</p>
+      <p class="meta sans">Online Transaction Processing · Online Analytical Processing</p>
+    </header>
+
+  <section id="abstract">
+    <h3>摘要</h3>
+    <div class="abstract">
+      <strong>Abstract</strong>
+      OLTP（联机事务处理）面向<strong>日常业务操作</strong>：大量短小、高并发的增删改查，强调 ACID 与低延迟。
+      OLAP（联机分析处理）面向<strong>决策分析</strong>：复杂只读查询、跨维度聚合与历史趋势，强调吞吐与扫描效率。
+      实践中二者常通过 ETL/ELT 管道分离部署，而非在同一套 schema 上混用。
+    </div>
+  </section>
+
+  <section id="definitions">
+    <h3>1. 定义与核心诉求</h3>
+
+    <div class="two-col">
+      <div class="card oltp">
+        <div class="label sans">OLTP</div>
+        <p><strong>联机事务处理</strong>——支撑正在发生的业务：下单、转账、挂号、库存扣减。每次操作通常只触及<strong>少量行</strong>，要求毫秒级响应与强一致性。</p>
+      </div>
+      <div class="card olap">
+        <div class="label sans">OLAP</div>
+        <p><strong>联机分析处理</strong>——支撑事后决策：销售额趋势、用户留存、区域对比。查询往往扫描<strong>大量历史数据</strong>，做 SUM / GROUP BY / JOIN 多维聚合。</p>
+      </div>
+    </div>
+
+    <h4>OLTP 的典型特征</h4>
+    <ul>
+      <li><strong>工作负载</strong>：高并发、短事务；读写比接近 1:1 或写多读少</li>
+      <li><strong>数据模型</strong>：高度<strong>规范化</strong>（通常 3NF），减少冗余、保证更新一致</li>
+      <li><strong>查询模式</strong>：按主键 / 索引点查，<code>INSERT</code>、<code>UPDATE</code>、<code>DELETE</code></li>
+      <li><strong>一致性</strong>：ACID 事务是默认要求（银行余额不能「算错」）</li>
+      <li><strong>存储倾向</strong>：<strong>行存</strong>（row-oriented）——一次读/写整行记录更高效</li>
+    </ul>
+
+    <h4>OLAP 的典型特征</h4>
+    <ul>
+      <li><strong>工作负载</strong>：并发用户较少，但单个查询重、耗时长</li>
+      <li><strong>数据模型</strong>：<strong>反规范化</strong>——星型 / 雪花 schema，宽表、预聚合</li>
+      <li><strong>查询模式</strong>：只读为主；全表扫描、多维切片（slice / dice / drill-down）</li>
+      <li><strong>一致性</strong>：常接受<strong>最终一致</strong>或 T+1 延迟（分析不必与每一笔交易实时同步）</li>
+      <li><strong>存储倾向</strong>：<strong>列存</strong>（column-oriented）——只读少数列时 I/O 更少</li>
+    </ul>
+  </section>
+
+  <section id="comparison">
+    <h3>2. 维度对照</h3>
+    <table class="sans">
+      <thead>
+        <tr>
+          <th>维度</th>
+          <th class="col-oltp">OLTP</th>
+          <th class="col-olap">OLAP</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>首要目标</td>
+          <td>正确、快速地执行业务事务</td>
+          <td>从海量数据中提炼洞察</td>
+        </tr>
+        <tr>
+          <td>典型用户</td>
+          <td>前台应用、API、终端用户</td>
+          <td>分析师、BI 工具、数据科学家</td>
+        </tr>
+        <tr>
+          <td>数据时效</td>
+          <td>实时 / 近实时</td>
+          <td>常为批量同步后的快照（小时级、日级）</td>
+        </tr>
+        <tr>
+          <td>数据量</td>
+          <td>当前活跃数据（热数据）</td>
+          <td>长期历史 + 汇总层（冷 / 温数据）</td>
+        </tr>
+        <tr>
+          <td>Schema</td>
+          <td>规范化、多表 JOIN 更新</td>
+          <td>宽表、维度表 + 事实表</td>
+        </tr>
+        <tr>
+          <td>优化方向</td>
+          <td>索引、锁粒度、连接池、写路径</td>
+          <td>分区、列存、向量化执行、物化视图</td>
+        </tr>
+        <tr>
+          <td>代表系统</td>
+          <td>PostgreSQL、MySQL、Oracle（事务库）</td>
+          <td>ClickHouse、Snowflake、Redshift、DuckDB</td>
+        </tr>
+        <tr>
+          <td>失败代价</td>
+          <td>资金损失、业务中断、合规风险</td>
+          <td>决策偏差、报表延迟</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="callout sans">
+      <strong>记忆口诀：</strong>OLTP 关心「这一笔对不对、快不快」；OLAP 关心「过去一段时间整体上发生了什么」。
+    </div>
+  </section>
+
+  <section id="architecture">
+    <h3>3. 典型架构：为何常分开部署</h3>
+    <p>把分析查询直接打到 OLTP 库上，容易导致锁竞争、缓存失效、索引失效——俗称<strong>「分析拖垮业务库」</strong>。成熟做法是把数据从 OLTP <strong>抽取、转换、加载</strong>到专用分析层。</p>
+
+    <div class="diagram sans">
+      <div class="flow">
+        <div class="box oltp-box">OLTP 库<br><small>业务写入</small></div>
+        <span class="arrow">→</span>
+        <div class="box">ETL / ELT<br><small>CDC · 批处理</small></div>
+        <span class="arrow">→</span>
+        <div class="box olap-box">OLAP / 数仓<br><small>分析只读</small></div>
+        <span class="arrow">→</span>
+        <div class="box">BI / 报表<br><small>Dashboard</small></div>
+      </div>
+      <p class="flow-caption">Lambda / Kappa 等现代数据架构在此基础上叠加实时流与分层（ODS → DWD → DWS）</p>
+    </div>
+
+    <h4>HTAP：试图二合一</h4>
+    <p>部分新一代数据库（如 TiDB、SingleStore、Snowflake 的混合工作负载）宣称 <strong>HTAP</strong>（Hybrid Transaction/Analytical Processing）——同一集群同时扛事务与分析。这在中小规模或强实时分析场景有价值，但大规模下「专用 OLTP + 专用 OLAP」仍是主流分工。</p>
+  </section>
+
+  <section id="examples">
+    <h3>4. 同一业务中的两种视角</h3>
+    <p>以电商平台为例：</p>
+
+    <table class="sans">
+      <thead>
+        <tr><th>场景</th><th>类型</th><th>查询示例</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>用户点击「支付」</td>
+          <td class="col-oltp">OLTP</td>
+          <td>扣库存、写订单行、记支付流水——几行数据，必须事务成功或全部回滚</td>
+        </tr>
+        <tr>
+          <td>运营看上月各品类 GMV</td>
+          <td class="col-olap">OLAP</td>
+          <td>扫描百万级订单，按品类 <code>GROUP BY</code> 求和，可能还要同比、环比</td>
+        </tr>
+        <tr>
+          <td>风控实时拦截盗刷</td>
+          <td class="col-oltp">OLTP（+流）</td>
+          <td>单笔交易特征查询 + 规则引擎，延迟 &lt; 100ms</td>
+        </tr>
+        <tr>
+          <td>数据科学训练推荐模型</td>
+          <td class="col-olap">OLAP</td>
+          <td>导出数仓中用户行为宽表，批量离线训练</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section id="pitfalls">
+    <h3>5. 易错点</h3>
+
+    <div class="callout warn sans">
+      <strong>误区 1：</strong>「我们只有一个 PostgreSQL，所以只有 OLTP。」——在 PG 上跑复杂报表仍是分析负载；只是没有专用 OLAP 优化，容易变慢或影响业务。
+    </div>
+
+    <ul>
+      <li><strong>误区 2：OLAP 数据一定比 OLTP 旧。</strong>近实时数仓（CDC + 流处理）可把延迟压到分钟级；但<strong>一致性语义</strong>通常弱于 OLTP 事务。</li>
+      <li><strong>误区 3：列存 = OLAP，行存 = OLTP。</strong>存储格式是重要实现手段，但不是定义本身；也有行存分析库、列存事务库（带局限）。</li>
+      <li><strong>误区 4：数据仓库就是 OLAP。</strong>数仓是<strong>架构角色</strong>；OLAP 是<strong>处理类型</strong>。数仓里的查询大多是 OLAP，但 OLAP 也可发生在 lakehouse、嵌入式 DuckDB 等形态。</li>
+    </ul>
+
+    <h4>选型简表</h4>
+    <ul>
+      <li>需要强事务、频繁单行更新 → <strong>OLTP 库</strong></li>
+      <li>需要跨大量历史数据聚合、BI → <strong>OLAP / 数仓</strong></li>
+      <li>两者都需要 → <strong>分离 + 同步管道</strong>，或评估 HTAP 产品边界</li>
+    </ul>
+  </section>
+
+  <section id="refs">
+    <h3>参考文献</h3>
+    <ol class="refs sans">
+      <li>Stonebraker &amp; Çetintemel — <a href="https://dl.acm.org/doi/10.1145/322659.322672" target="_blank" rel="noopener">"One Size Fits All": An Idea Whose Time Has Come and Gone</a>（OLTP 与 OLAP 分化的经典论述）</li>
+      <li>Amazon Redshift — <a href="https://docs.aws.amazon.com/redshift/latest/dg/c_OLAP.html" target="_blank" rel="noopener">OLAP on AWS</a></li>
+      <li>Oracle — <a href="https://www.oracle.com/database/what-is-oltp/" target="_blank" rel="noopener">What is OLTP?</a></li>
+    </ol>
+  </section>
+
+  <footer class="footnote sans">
+    本页为自包含静态文档，可直接在浏览器中打开阅读。
+  </footer>
+  </main>
+</div>
+
+<script>
+(function () {
+  const links = document.querySelectorAll('nav a');
+  const sections = links.map(a => document.querySelector(a.getAttribute('href'))).filter(Boolean);
+
+  function onScroll() {
+    let current = sections[0];
+    for (const sec of sections) {
+      if (sec.getBoundingClientRect().top <= 80) current = sec;
+    }
+    links.forEach(a => {
+      a.classList.toggle('active', a.getAttribute('href') === '#' + current.id);
+    });
+  }
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+})();
+</script>
+</body>
+</html>

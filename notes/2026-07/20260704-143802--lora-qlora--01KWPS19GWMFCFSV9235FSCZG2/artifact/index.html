@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>本地大语言模型微调方法综述 · 2025–2026</title>
+<script type="application/javascript">
+  MathJax = {
+    tex: {
+      inlineMath: [['$', '$'], ['\\(', '\\)']],
+      displayMath: [['$$', '$$'], ['\\[', '\\]']],
+      processEscapes: true
+    },
+    options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'] }
+  };
+</script>
+<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<style>
+  :root{
+    --ink:#1a1a1a; --muted:#5a5a5a; --faint:#888; --rule:#d8d4cc;
+    --bg:#fbfaf7; --panel:#ffffff; --accent:#1a3d5c; --accent-soft:#e8eef4;
+    --link:#2a4a6a; --code-bg:#f4f1ea;
+    --serif:"Iowan Old Style","Palatino Linotype",Palatino,"Songti SC","Noto Serif SC",Georgia,serif;
+    --sans:"Helvetica Neue",-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font-family:var(--serif); line-height:1.75; font-size:18px;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:820px; margin:0 auto; padding:0 28px;}
+
+  header.masthead{
+    border-bottom:3px double var(--ink); padding:64px 0 26px; margin-bottom:8px;
+  }
+  .kicker{
+    font-family:var(--sans); font-size:12.5px; letter-spacing:.28em;
+    text-transform:uppercase; color:var(--accent); margin-bottom:18px; font-weight:600;
+  }
+  h1{
+    font-size:40px; line-height:1.18; margin:0 0 18px; font-weight:600;
+    letter-spacing:-.01em;
+  }
+  .subtitle{font-size:20px; color:var(--muted); font-style:italic; margin-bottom:22px;}
+  .byline{
+    font-family:var(--sans); font-size:13px; color:var(--faint);
+    display:flex; flex-wrap:wrap; gap:18px; border-top:1px solid var(--rule);
+    padding-top:14px;
+  }
+  .byline b{color:var(--muted); font-weight:600;}
+
+  .abstract{
+    background:var(--accent-soft); border-left:3px solid var(--accent);
+    padding:22px 26px; margin:34px 0; font-size:16.5px; line-height:1.7;
+  }
+  .abstract h2{
+    font-family:var(--sans); font-size:12px; letter-spacing:.2em; text-transform:uppercase;
+    color:var(--accent); margin:0 0 10px; font-weight:700;
+  }
+
+  nav.toc{
+    font-family:var(--sans); font-size:14px; margin:30px 0 44px;
+    border:1px solid var(--rule); padding:20px 26px; background:var(--panel);
+  }
+  nav.toc h2{font-size:12px; letter-spacing:.2em; text-transform:uppercase; color:var(--faint); margin:0 0 14px;}
+  nav.toc ol{margin:0; padding-left:0; list-style:none; counter-reset:toc;}
+  nav.toc li{counter-increment:toc; padding:5px 0; border-bottom:1px dotted var(--rule);}
+  nav.toc li:last-child{border-bottom:none;}
+  nav.toc li::before{content:counter(toc,decimal-leading-zero); color:var(--accent); font-weight:600; margin-right:12px;}
+  nav.toc a{color:var(--ink); text-decoration:none;}
+  nav.toc a:hover{color:var(--accent);}
+
+  section{margin:54px 0; scroll-margin-top:20px;}
+  h2.sec{
+    font-size:15px; font-family:var(--sans); letter-spacing:.16em; text-transform:uppercase;
+    color:var(--accent); font-weight:700; margin:0 0 4px;
+  }
+  h2.sec .num{color:var(--faint); margin-right:12px;}
+  h3.title{font-size:28px; margin:6px 0 20px; font-weight:600; letter-spacing:-.01em; border-bottom:1px solid var(--rule); padding-bottom:14px;}
+  h4{font-size:19px; margin:28px 0 8px; font-weight:600; color:var(--ink);}
+  p{margin:0 0 16px;}
+  .lead{font-size:19px; color:var(--muted);}
+  a.ref{color:var(--link); text-decoration:none; border-bottom:1px solid var(--rule);}
+  a.ref:hover{border-color:var(--accent); color:var(--accent);}
+  strong{font-weight:600;}
+  code{background:var(--code-bg); padding:1px 6px; border-radius:3px; font-size:.86em; font-family:"SF Mono",ui-monospace,Menlo,monospace;}
+  mjx-container[jax="CHTML"]{font-size:1.02em;}
+
+  .tag{
+    display:inline-block; font-family:var(--sans); font-size:11px; letter-spacing:.08em;
+    text-transform:uppercase; background:var(--accent-soft); color:var(--accent);
+    padding:2px 9px; border-radius:2px; margin:0 6px 6px 0; font-weight:600;
+  }
+
+  .callout{
+    border:1px solid var(--rule); border-top:3px solid var(--accent);
+    background:var(--panel); padding:20px 24px; margin:24px 0;
+  }
+  .callout .label{font-family:var(--sans); font-size:11px; letter-spacing:.18em; text-transform:uppercase; color:var(--accent); font-weight:700; margin-bottom:8px;}
+
+  .table-wrap{overflow-x:auto; margin:24px 0;}
+  table{border-collapse:collapse; width:100%; font-size:14.5px; font-family:var(--sans);}
+  caption{font-family:var(--sans); font-size:12px; color:var(--faint); text-align:left; margin-bottom:10px; letter-spacing:.04em;}
+  th,td{text-align:left; padding:10px 12px; border-bottom:1px solid var(--rule); vertical-align:top;}
+  thead th{border-bottom:2px solid var(--ink); font-size:12px; letter-spacing:.06em; text-transform:uppercase; color:var(--muted);}
+  tbody tr:hover{background:var(--accent-soft);}
+  td.model{font-weight:600; color:var(--ink); white-space:nowrap;}
+  .num-cell{font-variant-numeric:tabular-nums;}
+
+  .flow{
+    font-family:var(--sans); font-size:14px; background:var(--panel);
+    border:1px solid var(--rule); padding:20px 24px; margin:24px 0; line-height:2;
+  }
+  .flow .step{display:inline-block; background:var(--accent-soft); color:var(--accent);
+    padding:2px 10px; border-radius:2px; font-weight:600; margin:2px 0;}
+  .flow .arrow{color:var(--faint); margin:0 6px;}
+
+  .method-card{
+    border:1px solid var(--rule); padding:18px 22px; margin:16px 0; background:var(--panel);
+  }
+  .method-card h4{margin:0 0 8px; font-size:17px;}
+  .method-card .meta{font-family:var(--sans); font-size:12px; color:var(--faint); margin-bottom:10px;}
+
+  pre{
+    background:var(--code-bg); border:1px solid var(--rule); padding:16px 20px;
+    overflow-x:auto; font-size:13px; line-height:1.55; font-family:"SF Mono",ui-monospace,Menlo,monospace;
+    margin:20px 0;
+  }
+
+  .footnotes{font-size:14px; color:var(--muted); font-family:var(--sans); line-height:1.6;}
+  .footnotes h3{font-family:var(--sans); font-size:13px; letter-spacing:.18em; text-transform:uppercase; color:var(--faint);}
+  .footnotes ol{padding-left:22px;}
+  .footnotes li{margin-bottom:8px;}
+  .footnotes a{color:var(--link); word-break:break-all;}
+
+  footer.colophon{
+    border-top:3px double var(--ink); margin-top:64px; padding:28px 0 48px;
+    font-family:var(--sans); font-size:13px; color:var(--faint); text-align:center;
+  }
+
+  @media(max-width:600px){
+    h1{font-size:30px;}
+    h3.title{font-size:22px;}
+    body{font-size:16px;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="masthead">
+  <div class="kicker">Technical Survey · 2025–2026</div>
+  <h1>本地大语言模型微调方法综述</h1>
+  <p class="subtitle">Parameter-Efficient Fine-Tuning on Consumer Hardware</p>
+  <div class="byline">
+    <span><b>主题</b> LoRA / QLoRA / DoRA / GaLore 与工具链</span>
+    <span><b>硬件</b> 8–24 GB VRAM · Apple Silicon</span>
+    <span><b>日期</b> 2026 年 7 月</span>
+    <span><b>来源</b> Perplexity Deep Research</span>
+  </div>
+</header>
+
+<div class="abstract">
+  <h2>摘要</h2>
+  <p>2023 至 2026 年间，大语言模型（LLM）微调从实验室专属走向个人可及。参数高效微调（PEFT）与 4-bit 量化使 7B–8B 模型可在单张 12–24 GB 消费级 GPU 或 Apple Silicon 统一内存上完成适配；QLoRA 甚至将 65B 模型压入单张 48 GB 显卡。本文系统梳理 LoRA、QLoRA、DoRA、GaLore 四类核心方法，对比 Hugging Face TRL、Axolotl、LLaMA-Factory、Unsloth、LitGPT、MLX 等主流工具链，并给出硬件容量规划、训练目标选择与端到端实践流程。</p>
+</div>
+
+<nav class="toc">
+  <h2>目录</h2>
+  <ol>
+    <li><a href="#s1">背景：为何在本地微调</a></li>
+    <li><a href="#s2">参数高效微调方法</a></li>
+    <li><a href="#s3">全量微调的可行边界</a></li>
+    <li><a href="#s4">工具链与框架生态</a></li>
+    <li><a href="#s5">硬件需求与容量规划</a></li>
+    <li><a href="#s6">训练目标：SFT · DPO · RLHF</a></li>
+    <li><a href="#s7">量化：训练与推理</a></li>
+    <li><a href="#s8">端到端实践流程</a></li>
+    <li><a href="#s9">选型决策树</a></li>
+    <li><a href="#refs">参考文献</a></li>
+  </ol>
+</nav>
+
+<!-- §1 -->
+<section id="s1">
+  <h2 class="sec"><span class="num">§1</span> Background</h2>
+  <h3 class="title">背景：为何在本地微调</h3>
+  <p class="lead">本地 LLM 指完全在用户自有硬件上运行与训练的模型，无需依赖远程 API。</p>
+  <p>推动本地微调的三股力量：<strong>数据隐私</strong>（敏感代码、客户数据不出境）、<strong>长期成本</strong>（高频交互场景下自托管更经济）、<strong>训练自由度</strong>（可实验 DPO、GRPO 等商业 API 不暴露的对齐方法）。</p>
+  <p>与纯推理相比，训练需额外存储梯度与优化器状态，显存需求约为推理的 2–4 倍。但 LoRA 族方法与 4-bit 量化已将 7B 模型的微调门槛降至 8–24 GB VRAM——这正是 RTX 3060/4060/4090 与 M 系列 Mac 的主流配置区间。</p>
+  <div class="callout">
+    <div class="label">何时该微调，何时不该</div>
+  <p>先 exhaust prompt engineering 与 RAG；微调适合<strong>风格/格式固化</strong>、<strong>领域术语内化</strong>、<strong>行为对齐</strong>，而非注入新知识（知识应走 RAG）。高质量数据 500–5,000 条通常足够，远胜海量低质数据。</p>
+  </div>
+</section>
+
+<!-- §2 -->
+<section id="s2">
+  <h2 class="sec"><span class="num">§2</span> PEFT Methods</h2>
+  <h3 class="title">参数高效微调方法</h3>
+
+  <div class="method-card">
+    <h4>LoRA — Low-Rank Adaptation</h4>
+    <div class="meta">Hu et al., 2021 · 奠基性 PEFT 方法</div>
+    <p>冻结预训练权重 \(W_0\)，在选定线性层旁插入低秩矩阵 \(A \in \mathbb{R}^{d \times r}\)、\(B \in \mathbb{R}^{r \times k}\)，使有效权重 \(W = W_0 + \alpha BA\)，其中秩 \(r \ll \min(d,k)\)。仅 \(A, B\) 参与梯度更新，可训练参数量降低 3–4 个数量级，显存占用约降至全量微调的 1/3，下游任务性能与全量微调相当。</p>
+    <p><span class="tag">默认 r=16</span><span class="tag">α=16</span><span class="tag">lr≈2e-4</span></p>
+  </div>
+
+  <div class="method-card">
+    <h4>QLoRA — Quantized LoRA</h4>
+    <div class="meta">Dettmers et al., 2023 · arXiv:2305.14314</div>
+    <p>将基座权重量化至 4-bit NF4（NormalFloat，针对正态分布权重信息论最优），配合<strong>双重量化</strong>（量化常数再次量化）与<strong>分页优化器</strong>（Paged Optimizers）管理反向传播时的显存峰值。LoRA 适配器仍以 16-bit 训练，梯度经 4-bit 权重反传至适配器。论文在 48 GB 单卡上微调 65B 模型，性能匹配 16-bit 全量微调。</p>
+    <p><span class="tag">8 GB 可训 7B</span><span class="tag">bitsandbytes</span><span class="tag">NF4</span></p>
+  </div>
+
+  <div class="method-card">
+    <h4>DoRA — Weight-Decomposed LoRA</h4>
+    <div class="meta">Liu et al., 2024 · arXiv:2402.09353</div>
+    <p>将权重分解为<strong>幅度</strong> \(m=\|w\|\) 与<strong>方向</strong> \(d=w/\|w\|\)，冻结幅度、对方向施加 LoRA 更新。在 LLaMA、LLaVA 等架构上稳定优于标准 LoRA，且推理时无额外开销（可折叠回单一权重矩阵）。Hugging Face PEFT 中设 <code>use_dora=True</code> 即可启用。</p>
+    <p><span class="tag">2026 推荐默认</span><span class="tag">QLoRA+DoRA</span></p>
+  </div>
+
+  <div class="method-card">
+    <h4>GaLore — Gradient Low-Rank Projection</h4>
+    <div class="meta">Zhao et al., 2024 · arXiv:2403.03507</div>
+    <p>与 LoRA 冻结权重不同，GaLore 对<strong>梯度</strong>做低秩投影，允许<strong>全参数更新</strong>同时压缩优化器状态显存（最高 65.5%）。首次在单张 RTX 4090（24 GB）上完成 7B 模型预训练，无需模型并行或 CPU offload。适合追求全量微调表达力、又有 24 GB 显存的用户。</p>
+    <p><span class="tag">全参训练</span><span class="tag">24 GB 门槛</span></p>
+  </div>
+
+  <h4>方法对比</h4>
+  <div class="table-wrap">
+    <table>
+      <caption>表 1 · 主流 PEFT 方法特性对比</caption>
+      <thead>
+        <tr><th>方法</th><th>更新对象</th><th>基座精度</th><th>7B 显存</th><th>推理开销</th></tr>
+      </thead>
+      <tbody>
+        <tr><td class="model">LoRA</td><td>低秩适配器</td><td>16-bit</td><td class="num-cell">16–24 GB</td><td>无（可合并）</td></tr>
+        <tr><td class="model">QLoRA</td><td>低秩适配器</td><td>4-bit NF4</td><td class="num-cell">8–16 GB</td><td>无（可合并）</td></tr>
+        <tr><td class="model">DoRA</td><td>方向分量</td><td>同 LoRA/QLoRA</td><td class="num-cell">同 LoRA</td><td>无</td></tr>
+        <tr><td class="model">GaLore</td><td>全部权重</td><td>16/8-bit</td><td class="num-cell">~24 GB</td><td>无</td></tr>
+        <tr><td class="model">Full FT</td><td>全部权重</td><td>16-bit</td><td class="num-cell">40+ GB</td><td>无</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- §3 -->
+<section id="s3">
+  <h2 class="sec"><span class="num">§3</span> Full Fine-Tuning</h2>
+  <h3 class="title">全量微调的可行边界</h3>
+  <p>全量微调需为每个参数存储梯度与优化器状态，7B 模型在 bf16 下通常需 40 GB 以上显存。借助 GaLore + 8-bit 优化器 + 梯度检查点，7B 全参训练可压入 24 GB；13B 全参在单卡上仍不现实，需多卡 FSDP 或云端。</p>
+  <p>实践建议：任务与预训练分布接近时，LoRA/QLoRA 通常已足够；仅在高度专业化场景（如极小基座模型的领域代码生成）才考虑全参，并警惕灾难性遗忘。</p>
+  <div class="callout">
+    <div class="label">蒸馏替代路径</div>
+    <p>对 70B 等大模型，本地用户更常见的策略是将其作为<strong>教师模型</strong>，通过 TRL 的 MiniLLMTrainer / GKDTrainer 将行为蒸馏到 7B 学生模型，而非直接微调 70B。</p>
+  </div>
+</section>
+
+<!-- §4 -->
+<section id="s4">
+  <h2 class="sec"><span class="num">§4</span> Toolchain</h2>
+  <h3 class="title">工具链与框架生态</h3>
+
+  <div class="table-wrap">
+    <table>
+      <caption>表 2 · 主流本地微调框架选型</caption>
+      <thead>
+        <tr><th>框架</th><th>定位</th><th>优势</th><th>局限</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="model">Unsloth</td>
+          <td>单卡极速 PEFT</td>
+          <td>自定义 Triton 内核，训练快 2–4×，显存省 60–74%；Colab/本地友好</td>
+          <td>开源版仅单 GPU；多卡需 Pro</td>
+        </tr>
+        <tr>
+          <td class="model">LLaMA-Factory</td>
+          <td>统一高效微调平台</td>
+          <td>WebUI + CLI；支持 100+ 模型、SFT/DPO/PPO/ORPO、GaLore/DoRA；可调用 Unsloth 后端</td>
+          <td>配置项多，初学者需熟悉界面</td>
+        </tr>
+        <tr>
+          <td class="model">Axolotl</td>
+          <td>YAML 驱动流水线</td>
+          <td>FSDP+QLoRA、多卡分布式、完整 RLHF 管线；配置可复现</td>
+          <td>多卡场景更合适；单卡上手略慢</td>
+        </tr>
+        <tr>
+          <td class="model">Hugging Face TRL</td>
+          <td>对齐训练目标库</td>
+          <td>SFTTrainer、DPOTrainer、GRPOTrainer、RewardTrainer；与 PEFT/bitsandbytes 深度集成</td>
+          <td>偏底层，需自行组装数据管线</td>
+        </tr>
+        <tr>
+          <td class="model">LitGPT</td>
+          <td>高性能 LLM 实现</td>
+          <td>Lightning AI 维护；内置 LoRA/QLoRA 教程与 merge 工具</td>
+          <td>模型格式需转换</td>
+        </tr>
+        <tr>
+          <td class="model">MLX / MLX-LoRA</td>
+          <td>Apple Silicon 专用</td>
+          <td>Metal 加速 + 统一内存；M 系列 Mac 上 LoRA 微调 Mistral 7B 等</td>
+          <td>无 CUDA；QLoRA 文档较少</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p>底层依赖：<strong>bitsandbytes</strong>（4/8-bit 量化与优化器）、<strong>PEFT</strong>（LoRA/DoRA 抽象）、<strong>llama.cpp / Ollama</strong>（GGUF 量化推理部署）。</p>
+</section>
+
+<!-- §5 -->
+<section id="s5">
+  <h2 class="sec"><span class="num">§5</span> Hardware</h2>
+  <h3 class="title">硬件需求与容量规划</h3>
+
+  <div class="table-wrap">
+    <table>
+      <caption>表 3 · 模型规模 × 模式 × 硬件对照（经验值，需 smoke test 验证）</caption>
+      <thead>
+        <tr><th>场景</th><th>精度/方法</th><th>典型硬件</th><th>备注</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>7B 推理</td><td>Q4 量化</td><td class="num-cell">8 GB</td><td>约 4–5 GB 权重；CPU 2–8 tok/s</td></tr>
+        <tr><td>7B LoRA 微调</td><td>16-bit + LoRA</td><td class="num-cell">16–24 GB</td><td>24 GB 较舒适</td></tr>
+        <tr><td>7B QLoRA 微调</td><td>4-bit NF4 + LoRA</td><td class="num-cell">8–16 GB</td><td>RTX 3060/4060 可尝试</td></tr>
+        <tr><td>7B 全参微调</td><td>GaLore 8-bit</td><td class="num-cell">24 GB</td><td>RTX 4090 可行</td></tr>
+        <tr><td>13B 推理</td><td>Q4 量化</td><td class="num-cell">16 GB</td><td>推理舒适；微调需 24 GB+</td></tr>
+        <tr><td>13B QLoRA</td><td>4-bit + LoRA</td><td class="num-cell">24–48 GB</td><td>或 32–64 GB 统一内存 Mac</td></tr>
+        <tr><td>70B QLoRA</td><td>FSDP + 4-bit</td><td class="num-cell">2×24 GB</td><td>LLaMA-Factory 已验证</td></tr>
+        <tr><td>70B 推理</td><td>8–16 bit</td><td class="num-cell">40+ GB</td><td>多卡张量并行</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="callout">
+    <div class="label">显存估算公式（粗算）</div>
+    <p>训练显存 ≈ 模型参数量 × 精度字节 × 系数。QLoRA 下系数约 1.3–1.5×（含适配器优化器）；全参 bf16 约 4×（权重+梯度+优化器）。务必用小规模 smoke test 实测峰值显存，勿仅凭表格采购硬件。</p>
+  </div>
+</section>
+
+<!-- §6 -->
+<section id="s6">
+  <h2 class="sec"><span class="num">§6</span> Objectives</h2>
+  <h3 class="title">训练目标：SFT · DPO · RLHF</h3>
+
+  <h4>监督微调（SFT）</h4>
+  <p>最常用起点：instruction–response 对，teacher-forcing 训练。数据格式推荐 ChatML 或 Alpaca JSONL，划分验证集，监控 train/val loss。典型超参：r=16, α=16, target_modules="all-linear", DoRA=True, lr=2e-4, 2–3 epochs。</p>
+
+  <h4>直接偏好优化（DPO）</h4>
+  <p>离线偏好数据（同一 prompt 下优选/劣选回复），无需显式奖励模型与在线采样。TRL 的 DPOTrainer 与 LLaMA-Factory 均已支持，适合在 SFT 基础上做行为对齐（减少幻觉、统一语气）。</p>
+
+  <h4>RLHF / GRPO</h4>
+  <p>需奖励模型 + 在线策略优化（PPO、GRPO 等），计算密集。本地单卡可在 3B–7B + LoRA 上做小规模实验；大规模 RLHF 通常云端完成后蒸馏到本地模型。LLaMA-Factory 集成 EasyR1 支持 GRPO 多模态训练。</p>
+
+  <div class="flow">
+    <span class="step">SFT（任务适配）</span>
+    <span class="arrow">→</span>
+    <span class="step">DPO（偏好对齐）</span>
+    <span class="arrow">→</span>
+    <span class="step">[可选] GRPO/RLHF</span>
+    <span class="arrow">→</span>
+    <span class="step">评估（任务指标 + MMLU）</span>
+  </div>
+</section>
+
+<!-- §7 -->
+<section id="s7">
+  <h2 class="sec"><span class="num">§7</span> Quantization</h2>
+  <h3 class="title">量化：训练与推理</h3>
+  <p><strong>训练时</strong>：QLoRA 用 NF4 存基座权重，适配器 16-bit；bitsandbytes 还提供 8-bit 优化器（block-wise 量化，近 32-bit 性能）。显存充裕时优先 16-bit LoRA，避免量化引入的细微行为偏移。</p>
+  <p><strong>推理时</strong>：Q4_K_M 等 GGUF 格式通过 llama.cpp 或 Ollama 部署，7B 模型约 4–5 GB。微调后合并适配器 → 转 GGUF → <code>ollama create</code> 导入，完成本地闭环。</p>
+  <p>LLaMA-Factory 额外支持 AWQ、GPTQ、HQQ、AQLM 等多种量化后端，覆盖 2–8 bit 推理与 QLoRA 训练。</p>
+</section>
+
+<!-- §8 -->
+<section id="s8">
+  <h2 class="sec"><span class="num">§8</span> Workflow</h2>
+  <h3 class="title">端到端实践流程（7B QLoRA 范例）</h3>
+
+  <div class="flow">
+    <span class="step">1. 评估需求</span><span class="arrow">→</span>
+    <span class="step">2. 准备数据</span><span class="arrow">→</span>
+    <span class="step">3. 选基座模型</span><span class="arrow">→</span>
+    <span class="step">4. 配置 QLoRA</span><span class="arrow">→</span>
+    <span class="step">5. 训练监控</span><span class="arrow">→</span>
+    <span class="step">6. 评估</span><span class="arrow">→</span>
+    <span class="step">7. 合并导出</span><span class="arrow">→</span>
+    <span class="step">8. 本地部署</span>
+  </div>
+
+  <h4>Step 2 · 数据准备</h4>
+  <p>500–5,000 条高质量 ChatML 样例，去重、长度过滤，留 10% 验证集。格式示例：</p>
+  <pre>{
+  "messages": [
+    {"role": "system", "content": "你是一个专业的…"},
+    {"role": "user", "content": "…"},
+    {"role": "assistant", "content": "…"}
+  ]
+}</pre>
+
+  <h4>Step 3–4 · 模型与配置（Unsloth 示例）</h4>
+  <pre>from unsloth import FastLanguageModel
+
+model, tokenizer = FastLanguageModel.from_pretrained(
+    model_name="unsloth/Meta-Llama-3.1-8B-bnb-4bit",
+    max_seq_length=4096,
+    load_in_4bit=True,
+)
+model = FastLanguageModel.get_peft_model(
+    model, r=16, lora_alpha=16,
+    target_modules="all-linear",
+    use_dora=True,
+)</pre>
+
+  <h4>Step 5 · 训练监控</h4>
+  <p>关注 val loss 是否上升（过拟合信号）；effective batch size 通过 gradient accumulation 达到 16–128；8 GB 卡 batch=1–2，24 GB 可达 16。</p>
+
+  <h4>Step 7–8 · 合并与部署</h4>
+  <pre>model.save_pretrained_merged("merged_model", tokenizer)
+model.save_pretrained_gguf("gguf_model", tokenizer, quantization_method="q4_k_m")
+# 导入 Ollama 或 llama.cpp 推理</pre>
+
+  <div class="callout">
+    <div class="label">Apple Silicon 路径</div>
+    <p>安装 MLX → 下载 Mistral/Llama 权重 → 使用 MLX-LoRA 示例脚本 → 训练后通过 Ollama 或 llama.cpp 部署。M3 Pro 24 GB 可 LoRA 微调 7B；M3 Max 64–128 GB 可尝试 13B。</p>
+  </div>
+</section>
+
+<!-- §9 -->
+<section id="s9">
+  <h2 class="sec"><span class="num">§9</span> Decision Tree</h2>
+  <h3 class="title">选型决策树</h3>
+
+  <div class="table-wrap">
+    <table>
+      <caption>表 4 · 按场景快速选型</caption>
+      <thead>
+        <tr><th>你的情况</th><th>推荐方案</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>单卡 NVIDIA，追求速度</td><td>Unsloth + QLoRA + DoRA</td></tr>
+        <tr><td>初学者，想要 GUI</td><td>LLaMA-Factory WebUI</td></tr>
+        <tr><td>多卡 / 生产级 RLHF</td><td>Axolotl + FSDP</td></tr>
+        <tr><td>Mac（M 系列）</td><td>MLX-LoRA</td></tr>
+        <tr><td>需要对齐 / DPO</td><td>TRL 或 LLaMA-Factory</td></tr>
+        <tr><td>显存 ≥24 GB，追求全参表达力</td><td>GaLore 全参微调 7B</td></tr>
+        <tr><td>显存 8–12 GB</td><td>QLoRA r=8–16，短序列，3B–7B 模型</td></tr>
+        <tr><td>70B 模型适配</td><td>2×24 GB FSDP+QLoRA，或蒸馏到 7B</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p>两条经验法则：<strong>显存充裕 → 16-bit LoRA/DoRA</strong>（隔离数据质量变量）；<strong>显存紧张 → QLoRA</strong>（NF4 + 分页优化器）。无论哪种，训练前后都做任务指标与 MMLU 等通用基准对比，防止灾难性遗忘。</p>
+</section>
+
+<!-- References -->
+<section id="refs" class="footnotes">
+  <h3>参考文献与资源</h3>
+  <ol>
+    <li>Dettmers, T. et al. <a href="https://arxiv.org/abs/2305.14314">QLoRA: Efficient Finetuning of Quantized LLMs</a>. arXiv:2305.14314, 2023.</li>
+    <li>Liu, S. et al. <a href="https://arxiv.org/abs/2402.09353">DoRA: Weight-Decomposed Low-Rank Adaptation</a>. arXiv:2402.09353, 2024.</li>
+    <li>Zhao, J. et al. <a href="https://arxiv.org/abs/2403.03507">GaLore: Memory-Efficient LLM Training by Gradient Low-Rank Projection</a>. arXiv:2403.03507, 2024.</li>
+    <li>Hu, E. J. et al. LoRA: Low-Rank Adaptation of Large Language Models. ICLR 2022.</li>
+    <li><a href="https://github.com/hiyouga/LlamaFactory">LLaMA-Factory</a> — Unified Efficient Fine-Tuning of 100+ LLMs.</li>
+    <li><a href="https://axolotl.ai">Axolotl</a> — YAML-driven fine-tuning pipelines.</li>
+    <li><a href="https://huggingface.co/docs/trl/en/index">Hugging Face TRL</a> — Transformers Reinforcement Learning.</li>
+    <li><a href="https://unsloth.ai/docs/get-started/fine-tuning-llms-guide">Unsloth Fine-Tuning Guide</a>.</li>
+    <li><a href="https://github.com/lightning-ai/litgpt">LitGPT</a> — Lightning AI high-performance LLM toolkit.</li>
+    <li><a href="https://github.com/bitsandbytes-foundation/bitsandbytes">bitsandbytes</a> — 8/4-bit quantization library.</li>
+    <li><a href="https://effloow.com/articles/llm-fine-tuning-lora-qlora-guide-2026">Effloow: LoRA & QLoRA Guide 2026</a>.</li>
+    <li><a href="https://apeatling.com/2024/01/08/part-3-fine-tuning-your-llm-using-the-mlx-framework/">MLX Fine-Tuning on Apple Silicon</a>.</li>
+    <li><a href="https://www.sitepoint.com/fine-tune-local-llms-2026/">SitePoint: Fine-Tune Local LLMs 2026</a>.</li>
+    <li><a href="https://theaiengineer.substack.com/p/unsloth-vs-axolotl-vs-llama-factory">Unsloth vs Axolotl vs LLaMA-Factory</a>.</li>
+  </ol>
+</section>
+
+<footer class="colophon">
+  本地大语言模型微调方法综述 · 基于 Perplexity Deep Research 整理 · 2026 年 7 月
+</footer>
+
+</div>
+</body>
+</html>

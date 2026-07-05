@@ -1,0 +1,43 @@
+{
+  "schema_version": "1.0",
+  "id": "01KVQXG1R9WCE70SHVFXHS8KZ2",
+  "title": "逆向选择问题及其经典案例",
+  "slug": "unit",
+  "summary": "交易前的信息不对称（隐藏信息）导致劣品驱逐良品、市场萎缩甚至失灵，贯穿旧车/柠檬市场、兰州百合、劳动市场性别歧视、保险市场、月饼事件等案例。",
+  "original_question": "请根据pdf文件中关于逆向选择问题案例的内容，做一份白色简约学术风格的单HTML文件，详细讲解并介绍逆向选择问题及其案例。",
+  "domain": "economics",
+  "tags": [
+    "information-economics",
+    "adverse-selection",
+    "asymmetric-information",
+    "market-failure",
+    "microeconomics"
+  ],
+  "concepts": [
+    "逆向选择",
+    "信息不对称",
+    "隐藏信息/私人信息",
+    "柠檬市场",
+    "劣品驱逐良品",
+    "市场失灵",
+    "Akerlof 旧车市场模型",
+    "统计性歧视",
+    "保险市场逆向选择",
+    "信号与甄别"
+  ],
+  "relations": [
+    {
+      "type": "related",
+      "target": "01KVQX5B47J1JY7PNBHW76WMN4",
+      "note": "分离均衡/信号博弈是消除信息不对称、化解逆向选择的机制"
+    }
+  ],
+  "artifact": {
+    "format": "html",
+    "entry": "artifact/index.html",
+    "self_contained": true
+  },
+  "status": "draft",
+  "created_at": "2026-06-22T14:59:32.745380+00:00",
+  "updated_at": "2026-06-22T14:59:32.745380+00:00"
+}

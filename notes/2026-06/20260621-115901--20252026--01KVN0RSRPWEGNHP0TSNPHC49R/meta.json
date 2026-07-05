@@ -1,0 +1,64 @@
+{
+  "schema_version": "1.0",
+  "id": "01KVN0RSRPWEGNHP0TSNPHC49R",
+  "title": "机器学习最新进展（2025末–2026中）：五条主线",
+  "slug": "20252026",
+  "summary": "2026 年的机器学习由五条相互强化的能力主线塑造：RLVR 推理后训练、智能体与工具调用、代码智能体、开源权重追平前沿、以及多模态向物理 AI 与世界模型延伸。",
+  "original_question": "使用 firecrawl 搜索时下最新的机器学习进展，并构建一个单 HTML 文件，学术风格、简约，进行汇报讲解（要求一定是最新进展）。",
+  "domain": "machine-learning",
+  "tags": [
+    "machine-learning",
+    "llm",
+    "rlvr",
+    "ai-agents",
+    "open-weight-models",
+    "multimodal",
+    "world-models",
+    "frontier-review-2026"
+  ],
+  "concepts": [
+    "可验证奖励强化学习 (RLVR)",
+    "RLHF 与奖励模型瓶颈",
+    "自适应推理 / thinking_level",
+    "AI 智能体与工具调用循环",
+    "模型上下文协议 (MCP)",
+    "代码智能体",
+    "开源权重模型",
+    "稀疏 MoE 与百万级上下文",
+    "稀疏注意力 (DSA/MSA/CSA-HCA/SWA-GA)",
+    "原生多模态模型",
+    "物理 AI / 人形机器人",
+    "世界模型 (Genie 3, Cosmos)"
+  ],
+  "references": [
+    {
+      "title": "ByteByteGo — What's Next in AI: Five Trends to Watch in 2026 (2026-03-04)",
+      "url": "https://blog.bytebytego.com/p/whats-next-in-ai-five-trends-to-watch"
+    },
+    {
+      "title": "BentoML — The Best Open-Source LLMs in 2026",
+      "url": "https://www.bentoml.com/blog/navigating-the-world-of-open-source-large-language-models"
+    },
+    {
+      "title": "Google Research at I/O 2026",
+      "url": "https://research.google/blog/a-new-era-of-innovation-google-research-at-io-2026/"
+    },
+    {
+      "title": "Wikipedia — List of large language models",
+      "url": "https://en.wikipedia.org/wiki/List_of_large_language_models"
+    },
+    {
+      "title": "DeepSeek-R1 (arXiv:2501.12948)",
+      "url": "https://arxiv.org/abs/2501.12948"
+    }
+  ],
+  "artifact": {
+    "format": "html",
+    "entry": "artifact/index.html",
+    "self_contained": true
+  },
+  "status": "draft",
+  "confidence": "moderate",
+  "created_at": "2026-06-21T11:59:01.910627+00:00",
+  "updated_at": "2026-06-21T11:59:01.910627+00:00"
+}

@@ -1,0 +1,22 @@
+# --- Derived layers: rebuildable from notes/, never the source of truth ---
+index/*
+!index/.gitkeep
+graph/*
+!graph/.gitkeep
+
+# Scratch draft directories (ingest source; transient)
+.drafts/
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.pytest_cache/
+.venv/
+venv/
+
+# --- OS ---
+.DS_Store
+.firecrawl/

@@ -1,0 +1,47 @@
+{
+  "schema_version": "1.0",
+  "id": "01KVMYPS3JPHSH8T9VKEVDGC8B",
+  "title": "纳什均衡与囚徒困境",
+  "slug": "unit",
+  "summary": "纳什均衡是博弈论最核心的解概念：给定他人策略，没有参与者能通过单方面改变策略获得更高收益。通过囚徒困境，我们看到个体理性如何导致集体非理性，纳什均衡如何预测自利个体的稳定互动结果。",
+  "original_question": "请制作一份单HTML网页，介绍什么是纳什均衡，并通过囚徒困境详细说明。",
+  "domain": "mathematics / economics",
+  "tags": [
+    "game-theory",
+    "nash-equilibrium",
+    "prisoners-dilemma",
+    "economics",
+    "mathematics"
+  ],
+  "concepts": [
+    "nash equilibrium",
+    "prisoner's dilemma",
+    "dominant strategy",
+    "dominant-strategy equilibrium",
+    "best response",
+    "pure strategy",
+    "mixed strategy",
+    "pareto optimality",
+    "pareto improvement",
+    "coordination game",
+    "repeated game",
+    "evolutionary game theory",
+    "tit-for-tat",
+    "strategy profile",
+    "payoff matrix",
+    "normal-form game",
+    "self-enforcing equilibrium",
+    "folk theorem",
+    "focal point",
+    "externality"
+  ],
+  "artifact": {
+    "format": "html",
+    "entry": "artifact/index.html",
+    "self_contained": true
+  },
+  "status": "draft",
+  "confidence": "solid",
+  "created_at": "2026-06-21T11:22:58.546665+00:00",
+  "updated_at": "2026-06-21T11:22:58.546665+00:00"
+}

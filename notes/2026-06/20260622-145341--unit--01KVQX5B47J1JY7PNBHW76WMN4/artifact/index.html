@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>分离均衡 · Separating Equilibrium</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&family=Latin+Modern+Roman:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono:wght@400&display=swap');
+
+  :root {
+    --bg: #faf9f6;
+    --fg: #1a1a1a;
+    --muted: #6b6b6b;
+    --accent: #8b4513;
+    --accent-light: #d4a574;
+    --border: #e0ddd8;
+    --card-bg: #fff;
+    --highlight: #f5f0e8;
+    --math-bg: #f8f5f0;
+    --green: #2d6a4f;
+    --red: #9b2226;
+    --blue: #264653;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Noto Serif SC', 'Georgia', serif;
+    background: var(--bg);
+    color: var(--fg);
+    line-height: 1.85;
+    font-size: 16px;
+    max-width: 780px;
+    margin: 0 auto;
+    padding: 3rem 2rem 6rem;
+  }
+
+  /* Header */
+  header {
+    text-align: center;
+    margin-bottom: 3.5rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid var(--border);
+  }
+  header h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    margin-bottom: 0.3rem;
+  }
+  header .subtitle {
+    font-size: 1.05rem;
+    color: var(--muted);
+    font-style: italic;
+    letter-spacing: 0.02em;
+  }
+  header .meta {
+    margin-top: 1rem;
+    font-size: 0.82rem;
+    color: var(--muted);
+  }
+
+  /* Sections */
+  section { margin-bottom: 2.8rem; }
+  h2 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--accent);
+    margin-bottom: 1rem;
+    padding-bottom: 0.4rem;
+    border-bottom: 1px solid var(--border);
+    letter-spacing: 0.03em;
+  }
+  h3 {
+    font-size: 1.05rem;
+    font-weight: 600;
+    margin: 1.5rem 0 0.6rem;
+    color: var(--fg);
+  }
+
+  p { margin-bottom: 1rem; text-align: justify; }
+
+  /* Definition box */
+  .definition {
+    background: var(--highlight);
+    border-left: 3px solid var(--accent);
+    padding: 1.2rem 1.5rem;
+    margin: 1.5rem 0;
+    border-radius: 0 4px 4px 0;
+  }
+  .definition .label {
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--accent);
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+  }
+
+  /* Math blocks */
+  .math-block {
+    background: var(--math-bg);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 1rem 1.5rem;
+    margin: 1.2rem 0;
+    overflow-x: auto;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.92rem;
+    line-height: 1.7;
+    text-align: center;
+  }
+  code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.88em;
+    background: var(--math-bg);
+    padding: 0.15em 0.4em;
+    border-radius: 3px;
+  }
+
+  /* Table */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1.2rem 0;
+    font-size: 0.92rem;
+  }
+  th, td {
+    border: 1px solid var(--border);
+    padding: 0.6rem 0.8rem;
+    text-align: center;
+  }
+  th {
+    background: var(--highlight);
+    font-weight: 600;
+    font-size: 0.85rem;
+    letter-spacing: 0.03em;
+  }
+
+  /* Comparison cards */
+  .comparison {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin: 1.5rem 0;
+  }
+  .card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 1.2rem;
+  }
+  .card.separating { border-top: 3px solid var(--green); }
+  .card.pooling { border-top: 3px solid var(--red); }
+  .card .card-title {
+    font-weight: 600;
+    font-size: 0.95rem;
+    margin-bottom: 0.6rem;
+  }
+  .card.separating .card-title { color: var(--green); }
+  .card.pooling .card-title { color: var(--red); }
+  .card ul { padding-left: 1.2rem; font-size: 0.9rem; }
+  .card li { margin-bottom: 0.3rem; }
+
+  /* Timeline / flow */
+  .flow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    margin: 1.5rem 0;
+    font-size: 0.9rem;
+    flex-wrap: wrap;
+  }
+  .flow .step {
+    background: var(--highlight);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 0.5rem 0.9rem;
+    text-align: center;
+    min-width: 100px;
+  }
+  .flow .arrow { color: var(--accent); font-size: 1.2rem; }
+
+  /* Diagram */
+  .diagram-container {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 1.5rem;
+    margin: 1.5rem 0;
+    text-align: center;
+  }
+  .diagram-container svg { max-width: 100%; height: auto; }
+
+  /* Footnote */
+  .footnote {
+    margin-top: 3rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border);
+    font-size: 0.82rem;
+    color: var(--muted);
+    line-height: 1.7;
+  }
+
+  /* Emphasis */
+  em { font-style: italic; color: var(--accent); }
+  strong { font-weight: 600; }
+
+  /* List */
+  ul, ol { padding-left: 1.5rem; margin-bottom: 1rem; }
+  li { margin-bottom: 0.4rem; }
+
+  /* Responsive */
+  @media (max-width: 600px) {
+    body { padding: 2rem 1.2rem 4rem; font-size: 15px; }
+    .comparison { grid-template-columns: 1fr; }
+    header h1 { font-size: 1.6rem; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>分离均衡</h1>
+  <div class="subtitle">Separating Equilibrium in Signaling Games</div>
+  <div class="meta">博弈论 · 不完全信息动态博弈 · 信号博弈</div>
+</header>
+
+<!-- § 1  直觉 -->
+<section>
+  <h2>一、核心直觉</h2>
+  <p>
+    在信号博弈（Signaling Game）中，拥有私人信息的一方（<strong>发送者</strong>）通过采取某种可观察的行动——<strong>信号</strong>——向另一方（<strong>接收者</strong>）传递自己的类型信息。<em>分离均衡</em>是这样一种均衡：不同类型的发送者选择了<strong>不同的信号</strong>，使得接收者在观察到信号之后，能够<em>完全推断出</em>发送者的真实类型。
+  </p>
+  <p>
+    换句话说，在分离均衡中，信号"诚实地"揭示了私人信息。高能力者发出高成本信号，低能力者不愿模仿，于是类型被"分离"出来——这正是"分离均衡"名称的由来。
+  </p>
+</section>
+
+<!-- § 2  形式化框架 -->
+<section>
+  <h2>二、形式化框架</h2>
+
+  <h3>2.1 信号博弈的基本结构</h3>
+  <p>一个标准的信号博弈包含以下要素：</p>
+
+  <div class="flow">
+    <div class="step">自然选择<br>发送者类型 <em>t</em></div>
+    <span class="arrow">→</span>
+    <div class="step">发送者观察 <em>t</em><br>选择信号 <em>m</em></div>
+    <span class="arrow">→</span>
+    <div class="step">接收者观察 <em>m</em><br>（不知 <em>t</em>）</div>
+    <span class="arrow">→</span>
+    <div class="step">接收者选择<br>行动 <em>a</em></div>
+    <span class="arrow">→</span>
+    <div class="step">双方获得<br>收益</div>
+  </div>
+
+  <ul>
+    <li><strong>发送者（Sender）</strong>：拥有私人类型 <code>t ∈ T</code>，选择信号 <code>m ∈ M</code>。</li>
+    <li><strong>接收者（Receiver）</strong>：观察到信号 <code>m</code>（但不知道 <code>t</code>），选择行动 <code>a ∈ A</code>。</li>
+    <li><strong>收益</strong>：双方收益函数分别为 <code>u_S(t, m, a)</code> 和 <code>u_R(t, m, a)</code>。</li>
+  </ul>
+
+  <h3>2.2 分离均衡的正式定义</h3>
+
+  <div class="definition">
+    <div class="label">Definition — 分离均衡（Separating Equilibrium）</div>
+    <p>
+      在信号博弈的贝叶斯纳什均衡（BNE）中，若发送者的策略 <code>m*(t)</code> 满足：对任意两种不同类型 <code>t₁ ≠ t₂</code>，均有 <code>m*(t₁) ≠ m*(t₂)</code>，则该均衡为<em>分离均衡</em>。
+    </p>
+    <p style="margin-top: 0.8rem;">
+      等价地：信号函数 <code>m*(·)</code> 是<strong>单射</strong>（injective）的——每种类型映射到唯一的信号，接收者可根据信号完美反推类型。
+    </p>
+  </div>
+
+  <p>
+    在分离均衡下，接收者的后验信念退化为<strong>退化分布</strong>（degenerate belief）：
+  </p>
+
+  <div class="math-block">
+    P(t = t̂ | m = m*(t̂)) = 1 ， P(t ≠ t̂ | m = m*(t̂)) = 0
+  </div>
+
+  <p>即接收者在看到均衡信号后，对发送者类型不再有不确定性。</p>
+</section>
+
+<!-- § 3  经典例子 -->
+<section>
+  <h2>三、经典案例：Spence 教育信号模型</h2>
+
+  <p>
+    Michael Spence（1973）提出的教育信号模型是分离均衡最经典的例证。其核心洞察是：<em>即使教育本身不提高生产力，只要教育成本与能力负相关，学历仍可作为分离信号</em>。
+  </p>
+
+  <h3>3.1 模型设定</h3>
+  <table>
+    <tr><th>要素</th><th>设定</th></tr>
+    <tr><td>工人类型</td><td>高能力 <em>H</em>（生产力 = 2），低能力 <em>L</em>（生产力 = 1）</td></tr>
+    <tr><td>先验概率</td><td>P(H) = P(L) = 0.5</td></tr>
+    <tr><td>信号</td><td>受教育年限 <em>e</em> ≥ 0</td></tr>
+    <tr><td>教育成本</td><td><em>H</em> 的成本：<code>c_H · e</code>；<em>L</em> 的成本：<code>c_L · e</code>，且 <code>c_L > c_H</code></td></tr>
+    <tr><td>工资</td><td>雇主根据信号支付竞争性工资 <code>w(e)</code></td></tr>
+  </table>
+
+  <p>
+    关键假设是<strong>单交叉条件</strong>（Single-Crossing Property）：低能力者获取同等教育的<em>边际成本</em>高于高能力者。这保证了存在某个教育水平，高能力者愿意获取而低能力者不愿模仿。
+  </p>
+
+  <h3>3.2 分离均衡的构造</h3>
+  <p>
+    设雇主信念为：若 <code>e ≥ e*</code> 则工人为高能力，否则为低能力。相应工资策略：
+  </p>
+  <div class="math-block">
+    w(e) = 2  if e ≥ e*<br>
+    w(e) = 1  if e < e*
+  </div>
+
+  <p>分离均衡要求两个<strong>激励相容约束</strong>（IC）同时满足：</p>
+
+  <div class="definition">
+    <div class="label">激励相容约束</div>
+    <p><strong>IC-H</strong>（高能力者不假装低能力）：</p>
+    <p style="text-align:center; margin: 0.5rem 0;">
+      <code>w(e*) − c_H · e* ≥ w(0) − c_H · 0 = 1</code>
+    </p>
+    <p>即 <code>2 − c_H · e* ≥ 1</code>，解得 <code>e* ≤ 1/c_H</code>。</p>
+
+    <p style="margin-top: 1rem;"><strong>IC-L</strong>（低能力者不模仿高能力）：</p>
+    <p style="text-align:center; margin: 0.5rem 0;">
+      <code>w(0) − c_L · 0 ≥ w(e*) − c_L · e*</code>
+    </p>
+    <p>即 <code>1 ≥ 2 − c_L · e*</code>，解得 <code>e* ≥ 1/c_L</code>。</p>
+  </div>
+
+  <p>因此，分离均衡存在的条件为：</p>
+
+  <div class="math-block">
+    1/c_L  ≤  e*  ≤  1/c_H
+  </div>
+
+  <p>
+    当 <code>c_L > c_H</code> 时，这个区间非空。例如取 <code>c_H = 0.5, c_L = 1</code>，则 <code>e* ∈ [1, 2]</code>。在此区间内，高能力者选择 <code>e = e*</code>（获得工资 2），低能力者选择 <code>e = 0</code>（获得工资 1），类型被完全分离。
+  </p>
+</section>
+
+<!-- § 4  图示 -->
+<section>
+  <h2>四、分离均衡的图示</h2>
+
+  <div class="diagram-container">
+    <svg viewBox="0 0 560 340" xmlns="http://www.w3.org/2000/svg">
+      <!-- Axes -->
+      <line x1="60" y1="280" x2="520" y2="280" stroke="#1a1a1a" stroke-width="1.5"/>
+      <line x1="60" y1="280" x2="60" y2="30" stroke="#1a1a1a" stroke-width="1.5"/>
+      <!-- Axis labels -->
+      <text x="520" y="300" font-size="13" fill="#1a1a1a" font-family="serif">e（教育年限）</text>
+      <text x="10" y="40" font-size="13" fill="#1a1a1a" font-family="serif">净收益</text>
+
+      <!-- Wage function w(e) -->
+      <line x1="60" y1="200" x2="280" y2="200" stroke="#6b6b6b" stroke-width="1" stroke-dasharray="6,3"/>
+      <text x="100" y="195" font-size="11" fill="#6b6b6b" font-family="serif">w = 1</text>
+      <line x1="280" y1="120" x2="500" y2="120" stroke="#6b6b6b" stroke-width="1" stroke-dasharray="6,3"/>
+      <text x="440" y="115" font-size="11" fill="#6b6b6b" font-family="serif">w = 2</text>
+      <line x1="280" y1="200" x2="280" y2="120" stroke="#8b4513" stroke-width="1.5" stroke-dasharray="4,3"/>
+      <text x="270" y="305" font-size="12" fill="#8b4513" font-family="serif" font-weight="600">e*</text>
+
+      <!-- H type net payoff: w(e) - c_H * e  -->
+      <!-- for e < e*: net = 1 - 0.5*e, starts at (60,200), at e=e* (x=280): 1 - 0.5*e* -->
+      <!-- for e >= e*: net = 2 - 0.5*e -->
+      <!-- H chooses e=e*: net = 2 - 0.5*e* -->
+      <!-- Let e* = 1.5 (in our scale: 60 + 1.5*146.67 ≈ 280) -->
+
+      <!-- H's net benefit curve for e < e* -->
+      <path d="M 60,200 Q 170,210 280,230" stroke="#2d6a4f" stroke-width="2" fill="none"/>
+      <!-- H's net benefit curve for e >= e* -->
+      <path d="M 280,145 Q 390,175 500,205" stroke="#2d6a4f" stroke-width="2" fill="none"/>
+
+      <!-- L's net benefit curve for e < e* -->
+      <path d="M 60,200 Q 170,225 280,250" stroke="#9b2226" stroke-width="2" fill="none"/>
+      <!-- L's net benefit curve for e >= e* -->
+      <path d="M 280,165 Q 390,215 500,260" stroke="#9b2226" stroke-width="2" fill="none" stroke-dasharray="5,4"/>
+
+      <!-- Equilibrium points -->
+      <circle cx="280" cy="145" r="5" fill="#2d6a4f"/>
+      <text x="290" y="140" font-size="11" fill="#2d6a4f" font-family="serif" font-weight="600">H 选 e*</text>
+
+      <circle cx="60" cy="200" r="5" fill="#9b2226"/>
+      <text x="70" y="215" font-size="11" fill="#9b2226" font-family="serif" font-weight="600">L 选 e=0</text>
+
+      <!-- Legend -->
+      <line x1="370" y1="30" x2="400" y2="30" stroke="#2d6a4f" stroke-width="2"/>
+      <text x="405" y="34" font-size="11" fill="#2d6a4f" font-family="serif">高能力 H</text>
+      <line x1="370" y1="50" x2="400" y2="50" stroke="#9b2226" stroke-width="2"/>
+      <text x="405" y="54" font-size="11" fill="#9b2226" font-family="serif">低能力 L</text>
+    </svg>
+  </div>
+
+  <p>
+    图中绿色曲线为高能力者的净收益轨迹，红色曲线为低能力者的净收益轨迹。关键在于：由于 <code>c_L > c_H</code>，低能力者的曲线下降更快，使得在 <code>e*</code> 处，高能力者获得正的净收益（愿意获取教育），而低能力者若模仿将遭受损失（选择不获取）。两条曲线的"分叉"正是单交叉条件的几何体现。
+  </p>
+</section>
+
+<!-- § 5  分离 vs 混同 -->
+<section>
+  <h2>五、分离均衡与混同均衡的对比</h2>
+
+  <div class="comparison">
+    <div class="card separating">
+      <div class="card-title">分离均衡 Separating</div>
+      <ul>
+        <li>不同类型选不同信号</li>
+        <li>接收者<strong>完全</strong>推断类型</li>
+        <li>后验信念 = 退化分布（概率 1）</li>
+        <li>信号承载<strong>完全信息</strong></li>
+        <li>需要单交叉条件支撑</li>
+        <li>信息不对称被<em>消除</em></li>
+      </ul>
+    </div>
+    <div class="card pooling">
+      <div class="card-title">混同均衡 Pooling</div>
+      <ul>
+        <li>所有类型选同一信号</li>
+        <li>接收者<strong>无法</strong>更新信念</li>
+        <li>后验信念 = 先验信念</li>
+        <li>信号承载<strong>零信息</strong></li>
+        <li>总是存在（无人偏离）</li>
+        <li>信息不对称被<em>保留</em></li>
+      </ul>
+    </div>
+  </div>
+
+  <p>
+    还存在<strong>半分离均衡</strong>（Semi-Separating / Hybrid Equilibrium）：某些类型随机化信号选择，使得接收者只能<em>部分</em>推断类型。它位于上述两种极端之间，后验信念为非退化但非先验的中间分布。
+  </p>
+</section>
+
+<!-- § 6  均衡精炼 -->
+<section>
+  <h2>六、均衡精炼：哪个分离均衡？</h2>
+
+  <p>
+    信号博弈通常存在<em>大量</em>均衡（包括许多分离均衡）。例如在 Spence 模型中，任何 <code>e* ∈ [1/c_L, 1/c_H]</code> 都支撑一个分离均衡。经济学家发展了多种<strong>均衡精炼</strong>（Equilibrium Refinement）概念来缩小预测范围：
+  </p>
+
+  <ul>
+    <li><strong>直观标准</strong>（Intuitive Criterion, Cho & Kreps 1987）：若某偏离信号只可能被某个类型获益而另一个类型不可能获益，接收者应推断发送者为获益类型。这通常选出<em>最小信号成本</em>的分离均衡（<code>e* = 1/c_L</code>），即 Riley outcome。</li>
+    <li><strong>万能均衡</strong>（Universal Divinity）：更强的精炼，限制接收者在非均衡路径上的信念。</li>
+    <li><strong>D1 标准</strong>：比直观标准更强，要求接收者信念满足序贯理性的严格条件。</li>
+  </ul>
+
+  <p>
+    精炼的直觉是：<em>并非所有"数学上成立"的均衡都同样合理</em>。一个依赖"不合理"非均衡路径信念的均衡，在精炼下会被剔除。
+  </p>
+</section>
+
+<!-- § 7  应用领域 -->
+<section>
+  <h2>七、应用领域</h2>
+
+  <p>分离均衡的思想远超劳动经济学，广泛渗透于多个领域：</p>
+
+  <table>
+    <tr><th>领域</th><th>信号</th><th>分离机制</th></tr>
+    <tr>
+      <td>公司金融</td>
+      <td>股利政策 / 资本结构</td>
+      <td>好公司通过高分红/高杠杆信号质量，差公司无法承受相应成本</td>
+    </tr>
+    <tr>
+      <td>产业组织</td>
+      <td>限价（Limit Pricing）</td>
+      <td>低成本在位者定低价驱逐高成本进入者，高成本在位者无法模仿</td>
+    </tr>
+    <tr>
+      <td>生物学</td>
+      <td>动物信号（如孔雀尾羽）</td>
+      <td>Zahavi 的累赘原理：只有高质量个体能负担昂贵信号</td>
+    </tr>
+    <tr>
+      <td>政治学</td>
+      <td>竞选承诺 / 政策立场</td>
+      <td>真正的改革者通过承担政治成本（如得罪利益集团）与空谈者分离</td>
+    </tr>
+    <tr>
+      <td>机制设计</td>
+      <td>菜单合约</td>
+      <td>委托人设计合约菜单，使不同类型代理人自选择不同合约——本质是委托人诱导分离均衡</td>
+    </tr>
+  </table>
+</section>
+
+<!-- § 8  关键要点 -->
+<section>
+  <h2>八、关键要点</h2>
+
+  <div class="definition">
+    <div class="label">核心要点</div>
+    <ul style="padding-left: 1.2rem;">
+      <li>分离均衡是信号博弈中不同类型发送者选择不同信号的贝叶斯纳什均衡。</li>
+      <li>其核心支撑条件是<strong>单交叉性质</strong>（Single-Crossing Property）：不同类型的信号成本曲线至多交叉一次。</li>
+      <li>分离均衡消除了信息不对称——接收者从信号完美推断类型，后验信念退化为确定性。</li>
+      <li>通常存在<em>连续区间</em>的分离均衡；均衡精炼（如直观标准）可进一步选出唯一预测。</li>
+      <li>与混同均衡相对：混同均衡中信号不承载信息，分离均衡中信号承载完全信息。</li>
+    </ul>
+  </div>
+</section>
+
+<!-- § 9  延伸阅读 -->
+<section>
+  <h2>九、延伸阅读</h2>
+  <ul>
+    <li>Spence, M. (1973). <em>Job Market Signaling</em>. Quarterly Journal of Economics, 87(3), 355–374.</li>
+    <li>Cho, I.-K. & Kreps, D. M. (1987). <em>Signaling Games and Stable Equilibria</em>. Quarterly Journal of Economics, 102(2), 179–221.</li>
+    <li>Gibbons, R. (1992). <em>Game Theory for Applied Economists</em>. Chapter 4: Dynamic Games of Incomplete Information.</li>
+    <li>Fudenberg, D. & Tirole, J. (1991). <em>Game Theory</em>. Chapter 8: Signaling Games.</li>
+  </ul>
+</section>
+
+<div class="footnote">
+  <p>本文聚焦于双类型（binary type）信号博弈中的纯策略分离均衡。多类型情形下，完全分离（full separation）要求信号空间维度不低于类型空间维度；部分分离（partial separation）则形成更丰富的均衡结构。半分离均衡（mixed-strategy separating）涉及类型间的随机化行为，可参阅 Fudenberg & Tirole (1991) 第 8 章的详细讨论。</p>
+</div>
+
+</body>
+</html>

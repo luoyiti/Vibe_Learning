@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>知识手账</title>
+<style>
+  :root {
+    --paper: #f7f3ea;
+    --card: #fffdf7;
+    --ink: #3d3a34;
+    --ink-soft: #7a7468;
+    --line: #e8e0d0;
+    --accent: #c25e4c;       /* 朱红 */
+    --accent-soft: #f3e2dd;
+    --blue: #33556b;         /* 黛蓝 */
+    --green: #4a6b52;
+    --amber: #b07d2a;
+    --gray: #8a857c;
+    --serif: "Source Han Serif SC", "Noto Serif SC", "Songti SC", "SimSun", Georgia, serif;
+    --sans: -apple-system, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Segoe UI", sans-serif;
+    --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--paper);
+    background-image: radial-gradient(rgba(61,58,52,.035) 1px, transparent 1px);
+    background-size: 22px 22px;
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 14px;
+    line-height: 1.65;
+  }
+  a { color: var(--blue); }
+
+  /* ---- header ---- */
+  header {
+    position: sticky; top: 0; z-index: 20;
+    background: rgba(247,243,234,.92); backdrop-filter: blur(6px);
+    border-bottom: 1px solid var(--line);
+    padding: 14px 28px;
+    display: flex; align-items: center; gap: 18px; flex-wrap: wrap;
+  }
+  header h1 {
+    font-family: var(--serif); font-size: 22px; font-weight: 700;
+    letter-spacing: .06em; white-space: nowrap;
+  }
+  header h1::after {
+    content: attr(data-count);
+    font-family: var(--sans); font-size: 12px; font-weight: 400;
+    color: var(--ink-soft); margin-left: 10px; letter-spacing: 0;
+  }
+  #search {
+    flex: 1; min-width: 220px; max-width: 460px;
+    padding: 8px 14px; font-size: 14px; color: var(--ink);
+    background: var(--card); border: 1px solid var(--line); border-radius: 20px;
+    outline: none; font-family: var(--sans);
+  }
+  #search:focus { border-color: var(--accent); }
+  #fts-hint { font-size: 12px; color: var(--ink-soft); }
+  .sort-toggle { display: flex; border: 1px solid var(--line); border-radius: 16px; overflow: hidden; }
+  .sort-toggle button {
+    border: 0; background: var(--card); color: var(--ink-soft);
+    padding: 6px 14px; font-size: 13px; cursor: pointer; font-family: var(--sans);
+  }
+  .sort-toggle button.active { background: var(--accent); color: #fff; }
+
+  /* ---- layout ---- */
+  #layout { display: flex; align-items: flex-start; gap: 24px; padding: 24px 28px; }
+  aside {
+    width: 232px; flex: 0 0 232px; position: sticky; top: 78px;
+    max-height: calc(100vh - 100px); overflow-y: auto; padding-right: 4px;
+  }
+  main { flex: 1; min-width: 0; }
+
+  /* ---- facets ---- */
+  .facet { margin-bottom: 22px; }
+  .facet h3 {
+    font-family: var(--serif); font-size: 13px; font-weight: 700;
+    color: var(--ink-soft); letter-spacing: .12em; margin-bottom: 8px;
+    border-bottom: 1px dashed var(--line); padding-bottom: 4px;
+  }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip {
+    border: 1px solid var(--line); background: var(--card); color: var(--ink);
+    border-radius: 14px; padding: 2px 10px; font-size: 12px; cursor: pointer;
+    font-family: var(--sans); transition: all .12s;
+  }
+  .chip small { color: var(--ink-soft); margin-left: 4px; }
+  .chip:hover { border-color: var(--accent); }
+  .chip.on { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .chip.on small { color: rgba(255,255,255,.75); }
+  .chip.more { border-style: dashed; color: var(--ink-soft); }
+  .facet input[type="date"] {
+    width: 100%; margin-bottom: 6px; padding: 5px 8px; font-size: 12px;
+    border: 1px solid var(--line); border-radius: 8px; background: var(--card);
+    color: var(--ink); font-family: var(--sans);
+  }
+  #clear-filters {
+    width: 100%; padding: 7px; border: 1px dashed var(--accent); color: var(--accent);
+    background: transparent; border-radius: 10px; cursor: pointer; font-size: 13px;
+    font-family: var(--sans);
+  }
+  #clear-filters:hover { background: var(--accent-soft); }
+
+  /* ---- cards ---- */
+  #grid {
+    display: grid; gap: 18px;
+    grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+  }
+  .card {
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 16px 18px 12px; cursor: pointer; position: relative;
+    box-shadow: 0 1px 2px rgba(61,58,52,.05);
+    transition: transform .15s, box-shadow .15s;
+    display: flex; flex-direction: column; gap: 8px;
+  }
+  .card:hover { transform: translateY(-3px); box-shadow: 0 6px 18px rgba(61,58,52,.12); }
+  .card::before {
+    content: ""; position: absolute; left: 0; top: 12px; bottom: 12px;
+    width: 3px; border-radius: 2px; background: var(--line);
+  }
+  .card.stable::before { background: var(--green); }
+  .card.draft::before { background: var(--gray); }
+  .card.needs_review::before { background: var(--amber); }
+  .card h2 {
+    font-family: var(--serif); font-size: 16.5px; font-weight: 700; line-height: 1.45;
+    display: flex; gap: 8px; align-items: baseline;
+  }
+  .card h2 .glyph { flex: 0 0 auto; font-size: 14px; }
+  .card .summary {
+    color: var(--ink-soft); font-size: 13px;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+  }
+  .badges { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+  .badge-domain {
+    background: var(--blue); color: #fff; border-radius: 4px;
+    font-size: 11px; padding: 1px 7px;
+  }
+  .tag {
+    background: var(--accent-soft); color: var(--accent); border-radius: 4px;
+    font-size: 11px; padding: 1px 7px;
+  }
+  .card footer {
+    margin-top: auto; padding-top: 8px; border-top: 1px dashed var(--line);
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 11.5px; color: var(--ink-soft);
+  }
+  .status-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-right: 4px; vertical-align: 1px; }
+  .dot-stable { background: var(--green); } .dot-draft { background: var(--gray); } .dot-needs_review { background: var(--amber); }
+
+  /* ---- empty / error ---- */
+  #notice {
+    grid-column: 1 / -1; text-align: center; color: var(--ink-soft);
+    padding: 70px 20px; font-family: var(--serif); font-size: 16px;
+  }
+  #notice code { font-family: var(--mono); background: var(--card); border: 1px solid var(--line); border-radius: 4px; padding: 1px 6px; }
+
+  /* ---- modal ---- */
+  #overlay {
+    position: fixed; inset: 0; background: rgba(61,58,52,.42); z-index: 50;
+    display: none; align-items: flex-start; justify-content: center; overflow-y: auto;
+    padding: 5vh 16px;
+  }
+  #overlay.show { display: flex; }
+  #modal {
+    background: var(--card); border: 1px solid var(--line); border-radius: 14px;
+    width: 100%; max-width: 760px; padding: 30px 36px 26px;
+    box-shadow: 0 18px 50px rgba(61,58,52,.28);
+  }
+  #modal .top { display: flex; justify-content: space-between; gap: 12px; margin-bottom: 4px; }
+  #modal h2 { font-family: var(--serif); font-size: 23px; line-height: 1.4; }
+  #modal .meta-line { font-size: 12px; color: var(--ink-soft); margin-bottom: 14px; }
+  #modal .close, #modal .back {
+    border: 0; background: transparent; font-size: 20px; cursor: pointer;
+    color: var(--ink-soft); line-height: 1; padding: 4px;
+  }
+  #modal .close:hover, #modal .back:hover { color: var(--accent); }
+  .q-block {
+    font-family: var(--serif); background: var(--paper);
+    border-left: 3px solid var(--accent); border-radius: 0 8px 8px 0;
+    padding: 10px 14px; margin: 12px 0; color: var(--ink);
+  }
+  .q-block .q-label { font-size: 11px; color: var(--accent); letter-spacing: .1em; display: block; margin-bottom: 2px; }
+  .sec { margin: 16px 0; }
+  .sec > h4 {
+    font-family: var(--serif); font-size: 13px; color: var(--ink-soft);
+    letter-spacing: .12em; margin-bottom: 8px;
+    border-bottom: 1px dashed var(--line); padding-bottom: 3px;
+  }
+  .rel-row {
+    display: flex; gap: 8px; align-items: baseline; padding: 4px 0; font-size: 13.5px;
+  }
+  .rel-type {
+    flex: 0 0 auto; font-size: 11px; border: 1px solid var(--blue); color: var(--blue);
+    border-radius: 4px; padding: 0 6px;
+  }
+  .rel-link { cursor: pointer; color: var(--blue); text-decoration: underline dotted; background: none; border: 0; font: inherit; text-align: left; }
+  .rel-plain { color: var(--ink-soft); font-family: var(--mono); font-size: 12px; }
+  .rel-note { color: var(--ink-soft); font-size: 12px; }
+  .actions { display: flex; gap: 10px; flex-wrap: wrap; margin: 18px 0 6px; }
+  .btn {
+    display: inline-block; padding: 8px 18px; border-radius: 20px; font-size: 13.5px;
+    text-decoration: none; cursor: pointer; border: 1px solid transparent; font-family: var(--sans);
+  }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover { filter: brightness(1.08); }
+  .btn-ghost { border-color: var(--blue); color: var(--blue); background: transparent; }
+  .btn-ghost:hover { background: rgba(51,85,107,.08); }
+  .src-label { font-size: 12px; color: var(--ink-soft); align-self: center; }
+  #note-preview {
+    background: var(--paper); border: 1px solid var(--line); border-radius: 10px;
+    padding: 16px 20px; font-size: 13.5px; max-height: 420px; overflow-y: auto;
+  }
+  #note-preview h1, #note-preview h2, #note-preview h3, #note-preview h4 {
+    font-family: var(--serif); margin: 12px 0 6px; line-height: 1.4;
+  }
+  #note-preview h1 { font-size: 19px; } #note-preview h2 { font-size: 17px; } #note-preview h3 { font-size: 15px; }
+  #note-preview p { margin: 7px 0; }
+  #note-preview ul, #note-preview ol { margin: 7px 0 7px 22px; }
+  #note-preview blockquote { border-left: 3px solid var(--line); padding-left: 12px; color: var(--ink-soft); margin: 8px 0; }
+  #note-preview code { font-family: var(--mono); font-size: 12px; background: rgba(61,58,52,.07); border-radius: 3px; padding: 1px 4px; }
+  #note-preview pre { background: #322f2a; color: #efe9dc; border-radius: 8px; padding: 12px 14px; overflow-x: auto; margin: 10px 0; }
+  #note-preview pre code { background: none; color: inherit; padding: 0; }
+  #note-preview hr { border: 0; border-top: 1px dashed var(--line); margin: 12px 0; }
+
+  @media (max-width: 760px) {
+    #layout { flex-direction: column; }
+    aside { width: 100%; flex: none; position: static; max-height: none; }
+    #modal { padding: 22px 20px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1 data-count="">知识手账</h1>
+  <input id="search" type="search" placeholder="全文搜索 note.md …" autocomplete="off">
+  <span id="fts-hint" hidden>（当前为子串匹配）</span>
+  <div class="sort-toggle">
+    <button id="sort-recent" class="active">最近更新</button>
+    <button id="sort-stale">最久未温习</button>
+  </div>
+</header>
+
+<div id="layout">
+  <aside>
+    <div class="facet"><h3>状 态</h3><div class="chips" id="f-status"></div></div>
+    <div class="facet"><h3>领 域</h3><div class="chips" id="f-domain"></div></div>
+    <div class="facet"><h3>标 签</h3><div class="chips" id="f-tags"></div></div>
+    <div class="facet"><h3>概 念</h3><div class="chips" id="f-concepts"></div></div>
+    <div class="facet"><h3>时 间</h3>
+      <input type="date" id="f-since" title="创建时间起">
+      <input type="date" id="f-until" title="创建时间止">
+    </div>
+    <button id="clear-filters">清除筛选</button>
+  </aside>
+  <main><div id="grid"></div></main>
+</div>
+
+<div id="overlay"><div id="modal" role="dialog" aria-modal="true"></div></div>
+
+<script>
+"use strict";
+
+/* ---------- state ---------- */
+const state = {
+  facets: null,
+  units: [],            // current (filtered) result set
+  byId: new Map(),      // id -> record, from one unfiltered load (relation navigation)
+  filters: { text: "", status: null, domain: null, tags: [], concepts: [], since: "", until: "" },
+  sort: "recent",
+  expand: { tags: false, concepts: false },
+  modalStack: [],       // ids, for back navigation between related units
+};
+
+const STATUS_ZH = { draft: "草稿", stable: "稳定", needs_review: "待复核" };
+const CONF_ZH = { shaky: "存疑", moderate: "一般", solid: "扎实" };
+const REL_ZH = { prerequisite: "前置", extends: "延伸", related: "相关",
+                 contrasts: "对比", applies: "应用", part_of: "属于" };
+const GLYPH = { markdown: "📝", html: "🌐", react: "🌐", notebook: "📓",
+                svg: "🖼", image: "🖼", none: "▫" };
+
+/* ---------- helpers ---------- */
+const $ = (sel) => document.querySelector(sel);
+function esc(s) {
+  return String(s ?? "").replace(/[&<>"']/g,
+    (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+}
+function fileUrl(rec, rel) { return "/files/" + encodeURI(rec.path + "/" + rel); }
+function relTime(iso) {
+  const then = new Date(iso), diff = (Date.now() - then.getTime()) / 1000;
+  if (!isFinite(diff)) return iso;
+  if (diff < 3600) return Math.max(1, Math.round(diff / 60)) + " 分钟前";
+  if (diff < 86400) return Math.round(diff / 3600) + " 小时前";
+  if (diff < 86400 * 30) return Math.round(diff / 86400) + " 天前";
+  if (diff < 86400 * 365) return Math.round(diff / 86400 / 30) + " 个月前";
+  return then.getFullYear() + " 年 " + (then.getMonth() + 1) + " 月";
+}
+async function getJSON(url) {
+  const resp = await fetch(url);
+  let body = null;
+  try { body = await resp.json(); } catch (e) { /* non-JSON error page */ }
+  if (!resp.ok) { const err = new Error((body && body.error) || resp.statusText); err.status = resp.status; throw err; }
+  return body;
+}
+
+/* ---------- tiny markdown renderer (escape-first, whitelist output) ---------- */
+function inlineMd(s) {
+  return s
+    .replace(/`([^`]+)`/g, (_, c) => "<code>" + c + "</code>")
+    .replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>")
+    .replace(/(^|[^*])\*([^*\n]+)\*/g, "$1<em>$2</em>")
+    .replace(/\[([^\]]+)\]\((https?:[^)\s]+)\)/g,
+      '<a href="$2" target="_blank" rel="noopener">$1</a>');
+}
+function renderMd(md) {
+  const out = [];
+  const lines = md.replace(/\r\n?/g, "\n").split("\n");
+  let i = 0, list = null, para = [];
+  const flushPara = () => { if (para.length) { out.push("<p>" + inlineMd(para.join(" ")) + "</p>"); para = []; } };
+  const flushList = () => { if (list) { out.push("</" + list + ">"); list = null; } };
+  while (i < lines.length) {
+    const raw = lines[i];
+    if (/^```/.test(raw)) {                         // fenced code block
+      flushPara(); flushList();
+      const buf = []; i++;
+      while (i < lines.length && !/^```/.test(lines[i])) buf.push(esc(lines[i++]));
+      i++; out.push("<pre><code>" + buf.join("\n") + "</code></pre>"); continue;
+    }
+    const line = esc(raw);
+    let m;
+    if ((m = line.match(/^(#{1,4})\s+(.*)$/))) {
+      flushPara(); flushList();
+      const h = m[1].length; out.push("<h" + h + ">" + inlineMd(m[2]) + "</h" + h + ">");
+    } else if (/^\s*([-*_])\s*\1\s*\1[\s\-*_]*$/.test(line)) {
+      flushPara(); flushList(); out.push("<hr>");
+    } else if ((m = line.match(/^&gt;\s?(.*)$/))) {
+      flushPara(); flushList(); out.push("<blockquote>" + inlineMd(m[1]) + "</blockquote>");
+    } else if ((m = line.match(/^\s*[-*+]\s+(.*)$/))) {
+      flushPara(); if (list !== "ul") { flushList(); out.push("<ul>"); list = "ul"; }
+      out.push("<li>" + inlineMd(m[1]) + "</li>");
+    } else if ((m = line.match(/^\s*\d+[.)]\s+(.*)$/))) {
+      flushPara(); if (list !== "ol") { flushList(); out.push("<ol>"); list = "ol"; }
+      out.push("<li>" + inlineMd(m[1]) + "</li>");
+    } else if (line.trim() === "") {
+      flushPara(); flushList();
+    } else {
+      flushList(); para.push(inlineMd(line));
+    }
+    i++;
+  }
+  flushPara(); flushList();
+  return out.join("\n");
+}
+
+/* ---------- data fetching ---------- */
+function unitsQueryString() {
+  const p = new URLSearchParams();
+  const f = state.filters;
+  if (f.text.trim()) p.set("text", f.text.trim());
+  if (f.status) p.set("status", f.status);
+  if (f.domain) p.set("domain", f.domain);
+  f.tags.forEach((t) => p.append("tag", t));
+  f.concepts.forEach((c) => p.append("concept", c));
+  if (f.since) p.set("since", f.since + "T00:00:00+00:00");
+  if (f.until) p.set("until", f.until + "T23:59:59+00:00");
+  p.set("sort", state.sort);
+  const s = p.toString();
+  return s ? "?" + s : "";
+}
+async function refresh() {
+  try {
+    state.units = await getJSON("/api/units" + unitsQueryString());
+    renderGrid();
+  } catch (e) { showNotice(e); }
+}
+
+/* ---------- rendering ---------- */
+function showNotice(err) {
+  const grid = $("#grid");
+  if (err && err.status === 503) {
+    grid.innerHTML = '<div id="notice">还没有索引 — 先运行 <code>ks reindex</code>，然后刷新本页。</div>';
+  } else {
+    grid.innerHTML = '<div id="notice">加载失败：' + esc(err && err.message) + "</div>";
+  }
+}
+function renderGrid() {
+  const grid = $("#grid");
+  if (!state.units.length) {
+    grid.innerHTML = '<div id="notice">没有匹配的单元，换个筛选试试。</div>';
+    return;
+  }
+  grid.innerHTML = state.units.map((u, idx) => {
+    const tags = u.tags.map((t) => '<span class="tag">' + esc(t) + "</span>").join("");
+    const domain = u.domain ? '<span class="badge-domain">' + esc(u.domain) + "</span>" : "";
+    const src = u.source && (u.source.channel || u.source.model)
+      ? esc([u.source.channel, u.source.model].filter(Boolean).join(" · ")) : "";
+    return (
+      '<article class="card ' + esc(u.status) + '" data-idx="' + idx + '">' +
+        "<h2><span class=\"glyph\">" + (GLYPH[u.artifact.format] || "▫") + "</span>" + esc(u.title) + "</h2>" +
+        '<div class="summary">' + esc(u.summary) + "</div>" +
+        '<div class="badges">' + domain + tags + "</div>" +
+        "<footer>" +
+          '<span><span class="status-dot dot-' + esc(u.status) + '"></span>' + (STATUS_ZH[u.status] || esc(u.status)) +
+          (u.confidence ? " · " + (CONF_ZH[u.confidence] || esc(u.confidence)) : "") + "</span>" +
+          '<span title="创建 ' + esc(u.created_at) + '\n更新 ' + esc(u.updated_at) + '">' + relTime(u.updated_at) + "</span>" +
+        "</footer>" +
+        (src ? '<footer style="border:0;padding-top:0">' + src + "</footer>" : "") +
+      "</article>"
+    );
+  }).join("");
+}
+
+function renderFacetChips(el, items, kind, selected, multi) {
+  const LIMIT = 15;
+  const expanded = state.expand[kind];
+  const shown = expanded ? items : items.slice(0, LIMIT);
+  el.innerHTML = shown.map((it) => {
+    const on = multi ? selected.includes(it.name) : selected === it.name;
+    return '<button class="chip' + (on ? " on" : "") + '" data-kind="' + kind +
+           '" data-name="' + esc(it.name) + '">' + esc(it.name) + "<small>" + it.count + "</small></button>";
+  }).join("");
+  if (items.length > LIMIT) {
+    el.innerHTML += '<button class="chip more" data-expand="' + kind + '">' +
+      (expanded ? "收起" : "展开全部 " + items.length) + "</button>";
+  }
+}
+function renderSidebar() {
+  const fc = state.facets, f = state.filters;
+  renderFacetChips($("#f-status"), fc.statuses.map((s) => ({ name: s.name, count: s.count })), "status", f.status, false);
+  $("#f-status").querySelectorAll(".chip").forEach((ch) => {   // localise status names
+    const name = ch.dataset.name;
+    if (STATUS_ZH[name]) ch.firstChild.textContent = STATUS_ZH[name];
+  });
+  renderFacetChips($("#f-domain"), fc.domains, "domain", f.domain, false);
+  renderFacetChips($("#f-tags"), fc.tags, "tags", f.tags, true);
+  renderFacetChips($("#f-concepts"), fc.concepts, "concepts", f.concepts, true);
+  $("h1").dataset.count = "已沉淀 " + fc.total + " 个单元";
+  $("#fts-hint").hidden = fc.fts !== false;
+}
+
+/* ---------- detail modal ---------- */
+async function openModal(id, push) {
+  const u = state.byId.get(id);
+  if (!u) return;
+  if (push !== false) state.modalStack.push(id);
+  const modal = $("#modal");
+
+  const relRows = u.relations.map((r) => {
+    const target = state.byId.get(r.target);
+    const label = '<span class="rel-type">' + (REL_ZH[r.type] || esc(r.type)) + "</span>";
+    const link = target
+      ? '<button class="rel-link" data-goto="' + esc(r.target) + '">' + esc(target.title) + "</button>"
+      : '<span class="rel-plain">' + esc(r.target) + "</span>";
+    const note = r.note ? '<span class="rel-note">— ' + esc(r.note) + "</span>" : "";
+    return '<div class="rel-row">' + label + link + note + "</div>";
+  }).join("");
+
+  const refRows = (u.references || []).map((r) =>
+    '<div class="rel-row">↗ <a href="' + esc(r.url) + '" target="_blank" rel="noopener">' +
+    esc(r.title || r.url) + "</a></div>").join("");
+
+  const conceptChips = u.concepts.map((c) => '<span class="tag">' + esc(c) + "</span>").join(" ");
+
+  modal.innerHTML =
+    '<div class="top"><h2>' + esc(u.title) + "</h2><div>" +
+      (state.modalStack.length > 1 ? '<button class="back" title="返回上一个">←</button>' : "") +
+      '<button class="close" title="关闭">✕</button></div></div>' +
+    '<div class="meta-line">' +
+      (STATUS_ZH[u.status] || esc(u.status)) +
+      (u.confidence ? " · 置信度 " + (CONF_ZH[u.confidence] || esc(u.confidence)) : "") +
+      (u.domain ? " · " + esc(u.domain) : "") +
+      " · 创建 " + esc(u.created_at.slice(0, 10)) + " · 更新 " + esc(u.updated_at.slice(0, 10)) +
+    "</div>" +
+    (u.original_question
+      ? '<div class="q-block"><span class="q-label">当时的疑问</span>' + esc(u.original_question) + "</div>" : "") +
+    "<p>" + esc(u.summary) + "</p>" +
+    '<div class="actions" id="modal-actions"></div>' +
+    (conceptChips ? '<div class="sec"><h4>概 念</h4><div class="chips">' + conceptChips + "</div></div>" : "") +
+    (relRows ? '<div class="sec"><h4>关 联</h4>' + relRows + "</div>" : "") +
+    (refRows ? '<div class="sec"><h4>参 考</h4>' + refRows + "</div>" : "") +
+    '<div class="sec"><h4>笔 记 预 览</h4><div id="note-preview">加载中…</div></div>';
+
+  /* actions: artifact + transcript */
+  const actions = $("#modal-actions");
+  if (u.artifact.format !== "none" && u.artifact.entry) {
+    actions.innerHTML += '<a class="btn btn-primary" target="_blank" rel="noopener" href="' +
+      fileUrl(u, u.artifact.entry) + '">打开产物 ' + (GLYPH[u.artifact.format] || "") + "</a>";
+  }
+  const t = u.source && u.source.transcript;
+  if (t) {
+    if (/^https?:\/\//.test(t)) {
+      actions.innerHTML += '<a class="btn btn-ghost" target="_blank" rel="noopener" href="' +
+        esc(t) + '">查看原始对话</a>';
+    } else {
+      try {
+        const head = await fetch(fileUrl(u, t), { method: "HEAD" });
+        if (head.ok) {
+          actions.innerHTML += '<a class="btn btn-ghost" target="_blank" rel="noopener" href="' +
+            fileUrl(u, t) + '">查看原始对话</a>';
+        } else {
+          actions.innerHTML += '<span class="src-label">来源标识: ' + esc(t) + "</span>";
+        }
+      } catch (e) {
+        actions.innerHTML += '<span class="src-label">来源标识: ' + esc(t) + "</span>";
+      }
+    }
+  }
+
+  $("#overlay").classList.add("show");
+
+  /* lazy note.md preview */
+  try {
+    const resp = await fetch(fileUrl(u, "note.md"));
+    const preview = $("#note-preview");
+    if (preview) preview.innerHTML = resp.ok ? renderMd(await resp.text()) : "（无法加载 note.md）";
+  } catch (e) { /* modal may have closed */ }
+}
+function closeModal() { state.modalStack = []; $("#overlay").classList.remove("show"); }
+
+/* ---------- events ---------- */
+$("#grid").addEventListener("click", (ev) => {
+  const card = ev.target.closest(".card");
+  if (card) openModal(state.units[Number(card.dataset.idx)].id);
+});
+$("#modal").addEventListener("click", (ev) => {
+  const goto = ev.target.closest("[data-goto]");
+  if (goto) return openModal(goto.dataset.goto);
+  if (ev.target.closest(".close")) return closeModal();
+  if (ev.target.closest(".back")) {
+    state.modalStack.pop();
+    const prev = state.modalStack[state.modalStack.length - 1];
+    if (prev) openModal(prev, false); else closeModal();
+  }
+});
+$("#overlay").addEventListener("click", (ev) => { if (ev.target.id === "overlay") closeModal(); });
+document.addEventListener("keydown", (ev) => { if (ev.key === "Escape") closeModal(); });
+
+document.querySelector("aside").addEventListener("click", (ev) => {
+  const chip = ev.target.closest(".chip");
+  if (!chip) return;
+  if (chip.dataset.expand) {
+    state.expand[chip.dataset.expand] = !state.expand[chip.dataset.expand];
+    renderSidebar(); return;
+  }
+  const { kind, name } = chip.dataset, f = state.filters;
+  if (kind === "status") f.status = f.status === name ? null : name;
+  else if (kind === "domain") f.domain = f.domain === name ? null : name;
+  else {
+    const arr = f[kind];
+    const at = arr.indexOf(name);
+    if (at >= 0) arr.splice(at, 1); else arr.push(name);
+  }
+  renderSidebar(); refresh();
+});
+["f-since", "f-until"].forEach((id) => {
+  document.getElementById(id).addEventListener("change", (ev) => {
+    state.filters[id === "f-since" ? "since" : "until"] = ev.target.value;
+    refresh();
+  });
+});
+$("#clear-filters").addEventListener("click", () => {
+  state.filters = { text: "", status: null, domain: null, tags: [], concepts: [], since: "", until: "" };
+  $("#search").value = ""; $("#f-since").value = ""; $("#f-until").value = "";
+  renderSidebar(); refresh();
+});
+let debounce = null;
+$("#search").addEventListener("input", (ev) => {
+  clearTimeout(debounce);
+  debounce = setTimeout(() => { state.filters.text = ev.target.value; refresh(); }, 250);
+});
+[["sort-recent", "recent"], ["sort-stale", "stale"]].forEach(([id, key]) => {
+  document.getElementById(id).addEventListener("click", () => {
+    state.sort = key;
+    $("#sort-recent").classList.toggle("active", key === "recent");
+    $("#sort-stale").classList.toggle("active", key === "stale");
+    refresh();
+  });
+});
+
+/* ---------- boot ---------- */
+(async function boot() {
+  try {
+    const [fc, all] = await Promise.all([getJSON("/api/facets"), getJSON("/api/units")]);
+    state.facets = fc;
+    state.byId = new Map(all.map((u) => [u.id, u]));
+    state.units = all;
+    renderSidebar();
+    renderGrid();
+  } catch (e) { showNotice(e); }
+})();
+</script>
+</body>
+</html>

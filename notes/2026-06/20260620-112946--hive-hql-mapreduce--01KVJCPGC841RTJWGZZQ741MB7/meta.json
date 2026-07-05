@@ -1,0 +1,60 @@
+{
+  "schema_version": "1.0",
+  "id": "01KVJCPGC841RTJWGZZQ741MB7",
+  "title": "Hive 执行流程：从 HQL 到 MapReduce",
+  "slug": "hive-hql-mapreduce",
+  "summary": "Hive 查询经 Driver 编译优化、Meta Store 取元数据、YARN 调度 MapReduce，在 HDFS 上分布式执行后返回结果——七步走完一条 HQL 的完整生命周期。",
+  "original_question": "结合架构图详细介绍 Hive 的执行流程，构建简约白色学术风格的 React 交互网页",
+  "domain": "big-data",
+  "tags": [
+    "hive",
+    "hadoop",
+    "mapreduce",
+    "hdfs",
+    "yarn",
+    "metastore",
+    "hql",
+    "big-data"
+  ],
+  "concepts": [
+    "Hive",
+    "Driver",
+    "Meta Store",
+    "HQL",
+    "MapReduce",
+    "HDFS",
+    "YARN",
+    "Resource Manager",
+    "Node Manager",
+    "Thrift Server",
+    "HiveServer2",
+    "执行计划",
+    "编译优化"
+  ],
+  "relations": [
+    {
+      "type": "extends",
+      "target": "01KVJBE2N08Q3Q40P7S0HFGAYM",
+      "note": "在 HBase vs Hive 对比基础上，深入 Hive 内部执行流程"
+    }
+  ],
+  "references": [
+    {
+      "title": "Apache Hive official documentation",
+      "url": "https://hive.apache.org/"
+    },
+    {
+      "title": "Apache Hadoop",
+      "url": "https://hadoop.apache.org/"
+    }
+  ],
+  "artifact": {
+    "format": "html",
+    "entry": "artifact/index.html",
+    "self_contained": true
+  },
+  "status": "draft",
+  "confidence": "solid",
+  "created_at": "2026-06-20T11:29:46.376133+00:00",
+  "updated_at": "2026-06-20T11:29:46.376133+00:00"
+}

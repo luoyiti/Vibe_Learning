@@ -1,0 +1,19 @@
+# Controlled tag vocabulary (seed) — one tag per line, lowercase-hyphenated.
+#
+# This file is a SOFT vocabulary aid, not a hard constraint. The only
+# load-bearing wall is schema/unit.schema.json, which enforces the tag *shape*
+# (^[a-z0-9-]+$). Tools may surface a hint when an ingested tag is absent here,
+# but they never reject on that basis. Curate this list as your domains grow.
+#
+# Lines starting with '#' and blank lines are ignored.
+
+databases
+concurrency
+isolation-levels
+python
+algorithms
+data-structures
+systems
+networking
+distributed-systems
+security

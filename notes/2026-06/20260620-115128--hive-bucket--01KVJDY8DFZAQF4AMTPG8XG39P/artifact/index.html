@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hive 桶（Bucket）机制详解</title>
+<script src="https://cdn.jsdelivr.net/npm/react@18/umd/react.production.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/htm@3.1.1/dist/htm.umd.min.js"></script>
+<style>
+  :root {
+    --bg: #ffffff;
+    --text: #1a1a1a;
+    --text-secondary: #555;
+    --border: #e0e0e0;
+    --accent: #2c3e50;
+    --code-bg: #f7f8fa;
+    --highlight: #e8f0fe;
+    --tag-bg: #edf2f7;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: "Helvetica Neue", "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.75;
+    font-size: 16px;
+    -webkit-font-smoothing: antialiased;
+  }
+  .container {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 64px 32px 80px;
+  }
+  .header {
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 40px;
+    margin-bottom: 48px;
+  }
+  .header h1 {
+    font-size: 2.2rem;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    color: var(--accent);
+    margin-bottom: 8px;
+  }
+  .header .subtitle {
+    font-size: 1rem;
+    color: var(--text-secondary);
+    font-weight: 400;
+  }
+  .meta-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 16px;
+  }
+  .meta-tag {
+    background: var(--tag-bg);
+    color: #4a5568;
+    padding: 4px 12px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    letter-spacing: 0.02em;
+  }
+  section {
+    margin-bottom: 48px;
+  }
+  section h2 {
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: var(--accent);
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+    letter-spacing: -0.01em;
+  }
+  section h3 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #3a4a5a;
+    margin: 24px 0 12px;
+  }
+  section p {
+    margin-bottom: 14px;
+    color: #333;
+  }
+  .highlight-box {
+    background: var(--highlight);
+    border-left: 3px solid #5a7da8;
+    padding: 16px 20px;
+    margin: 20px 0;
+    border-radius: 0 6px 6px 0;
+    font-size: 0.95rem;
+    color: #2c3e50;
+  }
+  .highlight-box strong {
+    color: #1a365d;
+  }
+  .code-block {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 20px 24px;
+    margin: 16px 0;
+    overflow-x: auto;
+    font-size: 0.88rem;
+    line-height: 1.7;
+  }
+  .code-block code {
+    font-family: "SF Mono", "Fira Code", "Consolas", monospace;
+    color: #2d3748;
+    white-space: pre;
+    tab-size: 2;
+  }
+  .code-block .keyword { color: #553098; }
+  .code-block .string { color: #2b6b3a; }
+  .code-block .comment { color: #8899aa; }
+  .code-block .num { color: #2360a0; }
+
+  .mechanism-diagram {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin: 28px 0;
+    align-items: stretch;
+  }
+  .mechanism-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    flex: 1;
+    min-width: 120px;
+  }
+  .mechanism-arrow {
+    display: flex;
+    align-items: center;
+    font-size: 1.4rem;
+    color: #a0aec0;
+    padding: 0 4px;
+  }
+  .mechanism-box {
+    width: 80px;
+    height: 80px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 0.8rem;
+    margin-bottom: 8px;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .mechanism-box.input { background: #eef2f7; border: 1px solid #cbd5e0; color: #4a5568; }
+  .mechanism-box.hash { background: #e8f0fe; border: 1px solid #a0c4e8; color: #2b5a8c; }
+  .mechanism-box.bucket { background: #f0f4e8; border: 1px solid #b0c898; color: #4a6b30; }
+  .buckets-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin: 20px 0;
+  }
+  .bucket-cell {
+    background: #f7f9f3;
+    border: 1px solid #d0dcc0;
+    border-radius: 6px;
+    padding: 12px;
+    font-size: 0.82rem;
+    text-align: center;
+  }
+  .bucket-cell .id { font-family: monospace; color: #6b8e3a; font-weight: 600; }
+  .bucket-cell .label { font-size: 0.7rem; color: #88a070; margin-top: 4px; }
+
+  .comparison-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+    font-size: 0.92rem;
+  }
+  .comparison-table th {
+    background: #f7f8fa;
+    border-bottom: 2px solid var(--border);
+    padding: 12px 16px;
+    text-align: left;
+    font-weight: 600;
+    color: var(--accent);
+  }
+  .comparison-table td {
+    border-bottom: 1px solid var(--border);
+    padding: 12px 16px;
+    color: #444;
+  }
+  .comparison-table tr:last-child td { border-bottom: none; }
+
+  .usecase-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+    margin: 20px 0;
+  }
+  .usecase-card {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 24px;
+    background: #fafbfc;
+  }
+  .usecase-card h4 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--accent);
+    margin-bottom: 8px;
+  }
+  .usecase-card p {
+    font-size: 0.9rem;
+    color: #555;
+    line-height: 1.65;
+  }
+  .usecase-card .index {
+    font-size: 0.75rem;
+    color: #a0aec0;
+    font-weight: 500;
+    margin-bottom: 4px;
+  }
+
+  .formula {
+    background: #fafcfd;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    padding: 16px 20px;
+    margin: 20px 0;
+    text-align: center;
+    font-family: "SF Mono", "Fira Code", "Consolas", monospace;
+    font-size: 0.92rem;
+    color: #2d5a8c;
+    letter-spacing: 0.02em;
+  }
+
+  .pitfall-list {
+    list-style: none;
+    padding: 0;
+  }
+  .pitfall-list li {
+    padding: 10px 0 10px 28px;
+    position: relative;
+    font-size: 0.93rem;
+    color: #444;
+    border-bottom: 1px solid #f0f0f0;
+  }
+  .pitfall-list li::before {
+    content: "!";
+    position: absolute;
+    left: 0;
+    color: #c5a03a;
+    font-weight: 700;
+    font-size: 1rem;
+  }
+  .pitfall-list li:last-child { border-bottom: none; }
+
+  .footer {
+    margin-top: 56px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+    color: #aaa;
+    font-size: 0.8rem;
+    text-align: center;
+  }
+
+  @media (max-width: 640px) {
+    .container { padding: 32px 20px 48px; }
+    .header h1 { font-size: 1.6rem; }
+    .usecase-grid { grid-template-columns: 1fr; }
+    .mechanism-diagram { flex-direction: column; align-items: center; }
+    .mechanism-arrow { transform: rotate(90deg); }
+    .buckets-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+(function () {
+  var h = React.createElement;
+  var html = htm.bind(h);
+
+  function highlightSQL(code) {
+    return code
+      .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+      .replace(/(--[^\n]*)/g, '<span class="comment">$1</span>')
+      .replace(/\b(CREATE|TABLE|CLUSTERED|BY|INTO|BUCKETS|SORTED|STORED|AS|SELECT|FROM|WHERE|INSERT|OVERWRITE|JOIN|ON|SET|TABLESAMPLE|OUT|OF|AND|OR|NOT|LOAD|DATA|LOCAL|INPATH|IN|PERCENT)\b/g,
+        '<span class="keyword">$1</span>')
+      .replace(/('(?:[^'\\]|\\.)*')/g, '<span class="string">$1</span>')
+      .replace(/\b(\d+)\b/g, '<span class="num">$1</span>');
+  }
+
+  function CodeBlock(props) {
+    return html`<div class="code-block"><code dangerouslySetInnerHTML=${{__html: highlightSQL(props.code)}} /></div>`;
+  }
+
+  function HighlightBox(props) {
+    return html`<div class="highlight-box">${props.children}</div>`;
+  }
+
+  function App() {
+    return html`
+      <div class="container">
+        <header class="header">
+          <h1>Hive 桶（Bucket）机制原理与作用</h1>
+          <p class="subtitle">深入理解哈希分桶在大规模数据组织中的核心角色</p>
+          <div class="meta-tags">
+            <span class="meta-tag">Hive</span>
+            <span class="meta-tag">Bucketing</span>
+            <span class="meta-tag">Big Data</span>
+            <span class="meta-tag">Data Warehouse</span>
+          </div>
+        </header>
+
+        <section id="intro">
+          <h2>什么是桶（Bucket）</h2>
+          <p>
+            桶是 Hive 中一种<strong>数据组织与分布机制</strong>。它将表中的数据按照某个列的哈希值
+            均匀分配到固定数量的文件中（桶文件），每个桶就是一个独立的物理文件。与分区
+            不同，桶不创建目录层级，而是在分区（或表）目录下生成多个编号文件。
+          </p>
+          <${HighlightBox}>
+            <strong>一句话：</strong>桶 = 按 <code>hash(col) % N</code> 将数据均匀散列到 N 个文件中。
+            本质是一种<strong>基于哈希的数据分片策略</strong>。
+          <//>
+        </section>
+
+        <section id="mechanism">
+          <h2>核心机制</h2>
+
+          <h3>数据写入过程</h3>
+          <p>当向桶表写入数据时，Hive 对每一行执行以下流程：</p>
+
+          <div class="mechanism-diagram">
+            <div class="mechanism-step">
+              <div class="mechanism-box input">
+                <span>Row</span>
+                <span style=${{fontSize: "0.7rem"}}>user_id=1023</span>
+              </div>
+              <span style=${{fontSize: "0.8rem", color: "#888"}}>原始行</span>
+            </div>
+            <div class="mechanism-arrow">→</div>
+            <div class="mechanism-step">
+              <div class="mechanism-box hash">
+                <span>hash()</span>
+                <span style=${{fontSize: "0.7rem"}}>h = 831</span>
+              </div>
+              <span style=${{fontSize: "0.8rem", color: "#888"}}>计算哈希</span>
+            </div>
+            <div class="mechanism-arrow">→</div>
+            <div class="mechanism-step">
+              <div class="mechanism-box hash" style=${{background: "#f0f4e8", border: "1px solid #b0c898", color: "#4a6b30"}}>
+                <span>mod N</span>
+                <span style=${{fontSize: "0.7rem"}}>831 % 4 = 3</span>
+              </div>
+              <span style=${{fontSize: "0.8rem", color: "#888"}}>取模得桶号</span>
+            </div>
+            <div class="mechanism-arrow">→</div>
+            <div class="mechanism-step">
+              <div class="mechanism-box bucket">
+                <span>Bucket</span>
+                <span style=${{fontSize: "0.75rem"}}>#3</span>
+              </div>
+              <span style=${{fontSize: "0.8rem", color: "#888"}}>落入对应文件</span>
+            </div>
+          </div>
+
+          <div class="formula">
+            bucket_number = hash(bucket_column) % num_buckets
+          </div>
+
+          <p>每个桶对应一个 Reducer：在 MapReduce 执行中，Reducer 的数量等于桶的数量，每个 Reducer 负责写出一个桶文件。</p>
+
+          <h3>桶内数据分布示例（user_id 分 4 桶）</h3>
+          <div class="buckets-grid">
+            ${[0,1,2,3].map(function(b) {
+              return html`<div class="bucket-cell" key=${b}>
+                <div class="id">Bucket #${b}</div>
+                <div class="label">00000${b}_0</div>
+                <div style=${{fontSize: "0.75rem", marginTop: "6px", color: "#777"}}>hash % 4 = ${b}</div>
+              </div>`;
+            })}
+          </div>
+          <p style=${{fontSize: "0.85rem", color: "#777"}}>
+            相同 user_id 的数据必然落入同一个桶，保证了数据局部性，这是后续高效 Join 的基础。
+          </p>
+        </section>
+
+        <section id="compare">
+          <h2>桶（Bucket）vs 分区（Partition）</h2>
+          <table class="comparison-table">
+            <thead>
+              <tr>
+                <th>维度</th>
+                <th>桶（Bucket）</th>
+                <th>分区（Partition）</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td>物理层级</td><td>文件级别（每个桶一个文件）</td><td>目录级别（每个分区一个目录）</td></tr>
+              <tr><td>分片方式</td><td>hash(col) % N 取模</td><td>按列值创建子目录</td></tr>
+              <tr><td>适合列类型</td><td>高基数列（user_id, order_id）</td><td>低基数列（date, country, category）</td></tr>
+              <tr><td>分片数量</td><td>固定（建表时指定且不可动态增加）</td><td>可按值动态增加</td></tr>
+              <tr><td>剪枝效果</td><td>不提供分区剪枝</td><td>提供分区剪枝（跳过不相关分区）</td></tr>
+              <tr><td>Join 优化</td><td>支持 Map-side Join / SMB Join</td><td>一般不直接用于 Join 优化</td></tr>
+              <tr><td>数据倾斜</td><td>哈希分布较均匀，倾斜风险低</td><td>大分区可能数据量远超小分区</td></tr>
+              <tr><td>典型组合</td><td colspan="2">分区 + 桶：<code>PARTITIONED BY (dt) CLUSTERED BY (uid) INTO 64 BUCKETS</code></td></tr>
+            </tbody>
+          </table>
+          <${HighlightBox}>
+            <strong>实践原则：</strong>日期/地域等低基数维度用分区，用户 ID/订单 ID 等高基数维度用桶。
+            两者不是二选一，而是<strong>互补关系</strong>——最常见的高性能表结构就是"分区 + 桶"的组合。
+          <//>
+        </section>
+
+        <section id="usecase">
+          <h2>使用场景</h2>
+          <div class="usecase-grid">
+            <div class="usecase-card">
+              <div class="index">01</div>
+              <h4>高效采样 (TABLESAMPLE)</h4>
+              <p>
+                利用桶机制可快速抽取数据子集，用于开发测试或近似分析。
+                <code>TABLESAMPLE(BUCKET 1 OUT OF 64 ON user_id)</code>
+                即从每 64 个桶中取 1 个，采样约 1/64 的数据，直接读对应桶文件，无需全表扫描。
+              </p>
+            </div>
+            <div class="usecase-card">
+              <div class="index">02</div>
+              <h4>Map-side Join</h4>
+              <p>
+                两张表按相同的 Join Key 分桶且桶数相同（或倍数关系），Hive 可在 Map 阶段直接
+                按桶进行 Join——因为相同 key 的数据必然在同一桶文件中，无需 Shuffle。
+                极大减少网络传输和排序开销。
+              </p>
+            </div>
+            <div class="usecase-card">
+              <div class="index">03</div>
+              <h4>Sort-Merge Bucket (SMB) Join</h4>
+              <p>
+                在 Map-side Join 基础上进一步要求每桶内数据已按 Join Key 排序。
+                Mapper 对两个表对应桶文件做归并，<strong>全程无 Shuffle、无 Sort</strong>，
+                是目前 Hive 中最快的 Join 方式。需 <code>CLUSTERED BY ... SORTED BY ... INTO ... BUCKETS</code>。
+              </p>
+            </div>
+            <div class="usecase-card">
+              <div class="index">04</div>
+              <h4>数据组织与存储优化</h4>
+              <p>
+                合理分桶可以控制单个文件大小（桶数 = 文件数），避免小文件过多或单个文件过大。
+                对于频繁按某字段过滤的大表，桶提供了比随机分布更优的数据局部性，
+                ORC/Parquet 列存的谓词下推也可受益。
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <section id="practice">
+          <h2>创建与使用</h2>
+
+          <h3>创建桶表</h3>
+          <${CodeBlock} code=${"CREATE TABLE user_behavior (\n  user_id    BIGINT,\n  item_id    BIGINT,\n  action     STRING,\n  ts         BIGINT\n)\nCLUSTERED BY (user_id) INTO 64 BUCKETS\nSTORED AS ORC;"} />
+
+          <h3>创建排序桶表（支持 SMB Join）</h3>
+          <${CodeBlock} code=${"CREATE TABLE user_behavior_sorted (\n  user_id    BIGINT,\n  item_id    BIGINT,\n  action     STRING,\n  ts         BIGINT\n)\nCLUSTERED BY (user_id) SORTED BY (user_id) INTO 64 BUCKETS\nSTORED AS ORC;"} />
+
+          <h3>写入数据</h3>
+          <${CodeBlock} code=${"-- 向桶表插入数据前必须开启强制分桶\nSET hive.enforce.bucketing = true;\n\nINSERT OVERWRITE TABLE user_behavior\nSELECT user_id, item_id, action, ts\nFROM raw_events;"} />
+
+          <h3>桶表采样</h3>
+          <${CodeBlock} code=${"-- 采样第 1 个桶的数据（约总量的 1/64）\nSELECT * FROM user_behavior\nTABLESAMPLE(BUCKET 1 OUT OF 64 ON user_id);\n\n-- 按比例采样 (约 10%)\nSELECT * FROM user_behavior\nTABLESAMPLE(10 PERCENT);"} />
+
+          <h3>注意事项</h3>
+          <ul class="pitfall-list">
+            <li><strong>桶数不可变：</strong>桶数在建表时确定，无法 ALTER 动态增减。需重建表来改变桶数。</li>
+            <li><strong>必须开启 enforce.bucketing：</strong>写入桶表前务必 <code>SET hive.enforce.bucketing=true</code>，否则 Reducer 数可能不等于桶数，数据分布错乱。</li>
+            <li><strong>不可绕过桶逻辑写入：</strong>不可用 <code>LOAD DATA</code> 或直接 HDFS put 文件，必须通过 INSERT 语句让 Hive 自动计算哈希分桶。</li>
+            <li><strong>桶数建议取 2 的幂：</strong>方便 Map-side Join 时桶配对更灵活，如 32、64、128、256。</li>
+            <li><strong>SMB Join 要求严格：</strong>两表必须按相同列分桶、相同桶数、桶内按相同列排序，缺一不可。</li>
+            <li><strong>与分区配合：</strong>同一分区内的各桶文件并行处理；不同分区独立分桶，可在 JOIN 时进一步利用分区剪枝。</li>
+          </ul>
+        </section>
+
+        <footer class="footer">
+          Hive Bucketing Mechanism · Academic Reference · ${new Date().getFullYear()}
+        </footer>
+      </div>
+    `;
+  }
+
+  ReactDOM.createRoot(document.getElementById("root")).render(html`<${App} />`);
+})();
+</script>
+</body>
+</html>

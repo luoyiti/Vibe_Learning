@@ -1,0 +1,772 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>逻辑回归 · 交互式讲解</title>
+<!-- 本地内联依赖：无需联网，双击 file:// 即可打开 -->
+<script src="vendor/react.production.min.js"></script>
+<script src="vendor/react-dom.production.min.js"></script>
+<script src="vendor/babel.min.js"></script>
+<style>
+  :root{
+    --bg:#0f1117; --panel:#171a23; --panel2:#1e222e; --ink:#e6e8ee; --muted:#9aa3b2;
+    --accent:#5b8cff; --accent2:#21d4a4; --warn:#ff7a59; --line:#2a2f3d;
+    --c0:#ff7a59; --c1:#5b8cff;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"PingFang SC","Microsoft YaHei",sans-serif;
+    line-height:1.65;-webkit-font-smoothing:antialiased}
+  a{color:var(--accent)}
+  .app{display:flex;min-height:100vh}
+  nav{position:sticky;top:0;align-self:flex-start;height:100vh;width:230px;flex:0 0 230px;
+    background:var(--panel);border-right:1px solid var(--line);padding:22px 14px;overflow:auto}
+  nav h1{font-size:16px;margin:0 0 4px;letter-spacing:.5px}
+  nav .sub{color:var(--muted);font-size:12px;margin-bottom:18px}
+  nav a{display:block;color:var(--muted);text-decoration:none;padding:8px 12px;border-radius:8px;
+    font-size:14px;margin-bottom:2px;cursor:pointer;transition:.15s}
+  nav a:hover{background:var(--panel2);color:var(--ink)}
+  nav a.active{background:linear-gradient(90deg,rgba(91,140,255,.18),transparent);color:var(--ink);
+    border-left:3px solid var(--accent);padding-left:9px}
+  main{flex:1;max-width:980px;margin:0 auto;padding:40px 36px 120px}
+  section{margin-bottom:64px;scroll-margin-top:24px}
+  h2{font-size:26px;margin:0 0 6px;display:flex;align-items:center;gap:10px}
+  h2 .num{font-size:13px;color:var(--accent);background:rgba(91,140,255,.14);
+    padding:3px 9px;border-radius:20px;font-weight:600}
+  h3{font-size:17px;margin:26px 0 8px;color:var(--ink)}
+  p,li{color:#cfd4de}
+  .lead{color:var(--muted);font-size:15px;margin-top:0}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:20px 22px;margin:16px 0}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+  @media(max-width:820px){.grid2,.grid3{grid-template-columns:1fr}main{padding:24px 16px}
+    nav{display:none}}
+  .formula{background:var(--panel2);border:1px solid var(--line);border-radius:10px;
+    padding:14px 18px;margin:12px 0;font-family:"SF Mono",Menlo,Consolas,monospace;
+    font-size:15px;color:#e9ecf3;overflow-x:auto}
+  .formula .big{font-size:19px}
+  code{background:var(--panel2);padding:2px 6px;border-radius:5px;font-size:13px;
+    font-family:"SF Mono",Menlo,Consolas,monospace;color:#ffd9a8}
+  .pill{display:inline-block;font-size:12px;padding:2px 9px;border-radius:20px;
+    background:var(--panel2);color:var(--muted);margin-right:6px}
+  button{background:var(--accent);color:#fff;border:none;padding:8px 16px;border-radius:8px;
+    font-size:14px;cursor:pointer;font-weight:600;transition:.15s}
+  button:hover{filter:brightness(1.1)}
+  button.ghost{background:var(--panel2);color:var(--ink);border:1px solid var(--line)}
+  button:disabled{opacity:.4;cursor:not-allowed}
+  .ctl{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:12px 0}
+  .slider{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--muted);min-width:180px}
+  input[type=range]{accent-color:var(--accent);width:100%}
+  .stat{display:flex;flex-direction:column;gap:2px;background:var(--panel2);
+    border:1px solid var(--line);border-radius:10px;padding:10px 14px}
+  .stat b{font-size:22px;color:var(--ink)}
+  .stat span{font-size:12px;color:var(--muted)}
+  table{border-collapse:collapse;width:100%;font-size:13px;margin:8px 0}
+  th,td{border:1px solid var(--line);padding:8px 10px;text-align:center}
+  th{background:var(--panel2);color:var(--muted);font-weight:600}
+  .legend{display:flex;gap:16px;font-size:13px;color:var(--muted);margin:8px 0;flex-wrap:wrap}
+  .dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;vertical-align:middle}
+  .note{border-left:3px solid var(--accent2);background:rgba(33,212,164,.07);
+    padding:10px 16px;border-radius:0 8px 8px 0;margin:14px 0;font-size:14px}
+  .warn{border-left:3px solid var(--warn);background:rgba(255,122,89,.08)}
+  canvas{display:block;background:var(--panel2);border-radius:10px;border:1px solid var(--line);max-width:100%}
+  .kbd{font-size:12px;color:var(--muted)}
+  .tl{position:relative;padding-left:22px}
+  .tl::before{content:"";position:absolute;left:6px;top:4px;bottom:4px;width:2px;background:var(--line)}
+  .tl .ev{position:relative;margin-bottom:14px}
+  .tl .ev::before{content:"";position:absolute;left:-20px;top:6px;width:9px;height:9px;
+    border-radius:50%;background:var(--accent)}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel" data-presets="react">
+/* @jsxRuntime classic */
+/* 强制 classic JSX runtime：编译为 React.createElement，避免 @babel/standalone 默认的
+   automatic runtime 产生 `import "react/jsx-runtime"`（在非 module 脚本里会直接报错白屏）。 */
+const {useState,useEffect,useRef,useMemo} = React;
+
+/* ---------- 数学工具 ---------- */
+const sigmoid = z => 1/(1+Math.exp(-z));
+const dot = (a,b)=>a.reduce((s,v,i)=>s+v*b[i],0);
+
+/* 在固定 2D 数据上跑批量梯度下降的逻辑回归 */
+function makeBlobs(){
+  // 两团高斯，确定性（无随机依赖），可线性分开但有重叠
+  const pts=[];
+  const seedPts=[
+    // class 0 偏左下
+    [1.8,2.2],[2.4,1.6],[1.5,1.9],[2.9,2.6],[2.1,3.1],[1.2,2.7],[3.0,1.9],[2.6,3.3],
+    [1.7,1.3],[2.3,2.9],[3.3,2.4],[1.9,3.4],[2.7,2.0],[1.4,2.4],[2.2,1.4],[3.1,3.0],
+    // class 1 偏右上
+    [5.4,5.1],[6.0,4.6],[5.1,5.7],[6.3,5.3],[5.8,6.2],[4.9,5.4],[6.5,5.0],[5.6,4.4],
+    [6.1,5.9],[5.0,4.8],[6.6,6.1],[5.3,4.2],[6.2,4.9],[4.7,5.0],[5.9,5.6],[6.4,4.5],
+    // 一些重叠的难点
+    [3.8,4.0],[4.2,3.6],[3.6,4.4],[4.4,4.2]
+  ];
+  seedPts.forEach((p,i)=>{
+    const y = i<16?0:(i<32?1:(i%2));
+    pts.push({x1:p[0],x2:p[1],y});
+  });
+  return pts;
+}
+
+function trainStep(data,w,lr){
+  const n=data.length;
+  const grad=[0,0,0];
+  let loss=0;
+  data.forEach(d=>{
+    const x=[1,d.x1,d.x2];
+    const p=sigmoid(dot(w,x));
+    const err=p-d.y;
+    grad[0]+=err*x[0]; grad[1]+=err*x[1]; grad[2]+=err*x[2];
+    const eps=1e-9;
+    loss+= -(d.y*Math.log(p+eps)+(1-d.y)*Math.log(1-p+eps));
+  });
+  const nw=w.map((wi,i)=>wi-lr*grad[i]/n);
+  return {w:nw,loss:loss/n};
+}
+
+/* ---------- 通用画布 hook ---------- */
+function useCanvas(draw,deps){
+  const ref=useRef(null);
+  useEffect(()=>{
+    const c=ref.current; if(!c)return;
+    const dpr=window.devicePixelRatio||1;
+    const w=c.clientWidth, h=c.clientHeight;
+    c.width=w*dpr; c.height=h*dpr;
+    const ctx=c.getContext('2d');
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    ctx.clearRect(0,0,w,h);
+    draw(ctx,w,h);
+  },deps);
+  return ref;
+}
+
+/* ============ 1. Sigmoid 交互 ============ */
+function SigmoidDemo(){
+  const [z,setZ]=useState(0);
+  const ref=useCanvas((ctx,w,h)=>{
+    const pad=30;
+    const X=zz=>pad+(zz+6)/12*(w-2*pad);
+    const Y=pp=>h-pad-pp*(h-2*pad);
+    // grid
+    ctx.strokeStyle="#2a2f3d";ctx.lineWidth=1;
+    [0,.5,1].forEach(p=>{ctx.beginPath();ctx.moveTo(pad,Y(p));ctx.lineTo(w-pad,Y(p));ctx.stroke();});
+    ctx.beginPath();ctx.moveTo(X(0),pad-6);ctx.lineTo(X(0),h-pad);ctx.stroke();
+    // curve
+    ctx.strokeStyle="#5b8cff";ctx.lineWidth=2.5;ctx.beginPath();
+    for(let i=0;i<=200;i++){const zz=-6+12*i/200;const x=X(zz),y=Y(sigmoid(zz));i?ctx.lineTo(x,y):ctx.moveTo(x,y);}
+    ctx.stroke();
+    // point
+    const px=X(z),py=Y(sigmoid(z));
+    ctx.fillStyle="#21d4a4";ctx.beginPath();ctx.arc(px,py,6,0,7);ctx.fill();
+    ctx.strokeStyle="rgba(33,212,164,.4)";ctx.setLineDash([4,4]);
+    ctx.beginPath();ctx.moveTo(px,py);ctx.lineTo(px,h-pad);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(px,py);ctx.lineTo(pad,py);ctx.stroke();ctx.setLineDash([]);
+    ctx.fillStyle="#9aa3b2";ctx.font="12px monospace";
+    ctx.fillText("z",w-pad-8,Y(0)+16);ctx.fillText("σ=1",pad+4,Y(1)+4);ctx.fillText("0.5",pad+4,Y(.5)+4);
+  },[z]);
+  return (
+    <div className="card">
+      <div className="grid2" style={{alignItems:'center'}}>
+        <canvas ref={ref} style={{width:'100%',height:240}}/>
+        <div>
+          <div className="formula big">σ(z) = 1 / (1 + e<sup>-z</sup>)</div>
+          <div className="slider">
+            <span>z = w·x + b = <b style={{color:'#21d4a4'}}>{z.toFixed(2)}</b></span>
+            <input type="range" min="-6" max="6" step="0.1" value={z}
+              onChange={e=>setZ(+e.target.value)}/>
+          </div>
+          <div className="stat" style={{marginTop:10}}>
+            <b style={{color:'#21d4a4'}}>{sigmoid(z).toFixed(3)}</b>
+            <span>预测为正类的概率 P(y=1 | x)</span>
+          </div>
+          <p style={{fontSize:13,color:'var(--muted)',marginBottom:0}}>
+            Sigmoid 把任意实数 <code>z ∈ (-∞,+∞)</code> 压缩到 <code>(0,1)</code>，
+            于是线性打分 <code>z</code> 就变成了一个合法的概率。z=0 时恰好是 0.5 的决策分界。
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ============ 3. 训练过程可视化 ============ */
+function TrainingDemo(){
+  const data=useMemo(makeBlobs,[]);
+  const [w,setW]=useState([0,0,0]);
+  const [epoch,setEpoch]=useState(0);
+  const [lr,setLr]=useState(0.3);
+  const [playing,setPlaying]=useState(false);
+  const [hist,setHist]=useState([]);
+  const wRef=useRef(w);wRef.current=w;
+
+  const step=()=>{
+    const r=trainStep(data,wRef.current,lr);
+    setW(r.w);setEpoch(e=>e+1);
+    setHist(h=>[...h.slice(-199),r.loss]);
+  };
+  useEffect(()=>{
+    if(!playing)return;
+    const id=setInterval(()=>{step();},60);
+    return ()=>clearInterval(id);
+  },[playing,lr]);
+  const reset=()=>{setW([0,0,0]);setEpoch(0);setHist([]);setPlaying(false);};
+
+  // 准确率
+  const acc=useMemo(()=>{
+    let ok=0;data.forEach(d=>{const p=sigmoid(dot(w,[1,d.x1,d.x2]));if((p>=.5?1:0)===d.y)ok++;});
+    return ok/data.length;
+  },[w,data]);
+
+  const scatter=useCanvas((ctx,W,H)=>{
+    const pad=28,minv=0.5,maxv=7;
+    const X=v=>pad+(v-minv)/(maxv-minv)*(W-2*pad);
+    const Y=v=>H-pad-(v-minv)/(maxv-minv)*(H-2*pad);
+    // 概率背景（粗网格热力）
+    const step=14;
+    for(let px=pad;px<W-pad;px+=step)for(let py=pad;py<H-pad;py+=step){
+      const x1=minv+(px-pad)/(W-2*pad)*(maxv-minv);
+      const x2=minv+(H-pad-py)/(H-2*pad)*(maxv-minv);
+      const p=sigmoid(dot(w,[1,x1,x2]));
+      ctx.fillStyle=`rgba(${91+ (255-91)*(1-p)|0},${140+(122-140)*(1-p)|0},${255+(89-255)*(1-p)|0},0.16)`;
+      ctx.fillRect(px,py,step,step);
+    }
+    // 决策边界 w0+w1 x1+w2 x2=0 -> x2=-(w0+w1 x1)/w2
+    if(Math.abs(w[2])>1e-4){
+      ctx.strokeStyle="#fff";ctx.lineWidth=2;ctx.setLineDash([6,4]);ctx.beginPath();
+      let started=false;
+      for(let x1=minv;x1<=maxv;x1+=0.1){
+        const x2=-(w[0]+w[1]*x1)/w[2];
+        if(x2<minv||x2>maxv)continue;
+        const x=X(x1),y=Y(x2);started?ctx.lineTo(x,y):ctx.moveTo(x,y);started=true;
+      }
+      ctx.stroke();ctx.setLineDash([]);
+    }
+    // 点
+    data.forEach(d=>{
+      ctx.fillStyle=d.y?'#5b8cff':'#ff7a59';
+      ctx.strokeStyle="rgba(0,0,0,.35)";ctx.lineWidth=1;
+      ctx.beginPath();ctx.arc(X(d.x1),Y(d.x2),5,0,7);ctx.fill();ctx.stroke();
+    });
+  },[w,data]);
+
+  const lossC=useCanvas((ctx,W,H)=>{
+    const pad=24;
+    if(hist.length<2){ctx.fillStyle="#9aa3b2";ctx.font="12px sans-serif";
+      ctx.fillText("点击 ▶ 开始训练，观察损失下降",pad,H/2);return;}
+    const mx=Math.max(...hist),mn=Math.min(...hist,0);
+    const X=i=>pad+i/(hist.length-1)*(W-2*pad);
+    const Y=v=>H-pad-(v-mn)/((mx-mn)||1)*(H-2*pad);
+    ctx.strokeStyle="#21d4a4";ctx.lineWidth=2;ctx.beginPath();
+    hist.forEach((v,i)=>{i?ctx.lineTo(X(i),Y(v)):ctx.moveTo(X(i),Y(v));});ctx.stroke();
+    ctx.fillStyle="#9aa3b2";ctx.font="11px monospace";
+    ctx.fillText("loss "+hist[hist.length-1].toFixed(3),pad,pad-4);
+  },[hist]);
+
+  return (
+    <div className="card">
+      <div className="ctl">
+        <button onClick={()=>setPlaying(p=>!p)}>{playing?'⏸ 暂停':'▶ 训练'}</button>
+        <button className="ghost" onClick={()=>{setPlaying(false);step();}}>⏭ 单步</button>
+        <button className="ghost" onClick={reset}>↺ 重置</button>
+        <div className="slider">
+          <span>学习率 η = {lr.toFixed(2)}</span>
+          <input type="range" min="0.02" max="1.5" step="0.02" value={lr}
+            onChange={e=>setLr(+e.target.value)}/>
+        </div>
+      </div>
+      <div className="legend">
+        <span><i className="dot" style={{background:'#ff7a59'}}></i>类别 0</span>
+        <span><i className="dot" style={{background:'#5b8cff'}}></i>类别 1</span>
+        <span>⚪ 虚线 = 决策边界 (P=0.5)</span>
+        <span>背景色 = 预测概率场</span>
+      </div>
+      <div className="grid2">
+        <canvas ref={scatter} style={{width:'100%',height:260}}/>
+        <canvas ref={lossC} style={{width:'100%',height:260}}/>
+      </div>
+      <div className="grid3" style={{marginTop:12}}>
+        <div className="stat"><b>{epoch}</b><span>迭代轮次 (epoch)</span></div>
+        <div className="stat"><b>{(acc*100).toFixed(1)}%</b><span>训练准确率</span></div>
+        <div className="stat"><b style={{fontSize:14}}>[{w.map(x=>x.toFixed(2)).join(', ')}]</b>
+          <span>权重 [b, w₁, w₂]</span></div>
+      </div>
+      <div className="note">
+        每一步都在做同一件事：算出当前每点的预测概率，与真实标签的差 <code>(p − y)</code>
+        就是梯度方向，按学习率 η 把权重往降低损失的方向推一点点。把 η 调到 1.5 看看震荡，
+        调到 0.02 看看"学得很慢"。
+      </div>
+    </div>
+  );
+}
+
+/* ============ 4. 真实数据实战：考试时长 → 是否通过 ============ */
+// 经典教学数据集（Hours studied vs Pass），1D 逻辑回归
+const EXAM=[
+  [0.5,0],[0.75,0],[1.0,0],[1.25,0],[1.5,0],[1.75,0],[1.75,1],[2.0,0],[2.25,1],[2.5,0],
+  [2.75,1],[3.0,0],[3.25,1],[3.5,0],[4.0,1],[4.25,1],[4.5,1],[4.75,1],[5.0,1],[5.5,1]
+];
+function fit1D(data,iters=4000,lr=0.1){
+  let w=0,b=0;const n=data.length;
+  for(let t=0;t<iters;t++){
+    let gw=0,gb=0;
+    data.forEach(([x,y])=>{const p=sigmoid(w*x+b);gw+=(p-y)*x;gb+=(p-y);});
+    w-=lr*gw/n;b-=lr*gb/n;
+  }
+  return {w,b};
+}
+function ExamDemo(){
+  const {w,b}=useMemo(()=>fit1D(EXAM),[]);
+  const [hours,setHours]=useState(2.7);
+  const prob=sigmoid(w*hours+b);
+  const boundary=-b/w; // P=0.5 处
+  const ref=useCanvas((ctx,W,H)=>{
+    const pad=34,xmax=6;
+    const X=v=>pad+v/xmax*(W-2*pad);
+    const Y=p=>H-pad-p*(H-2*pad);
+    ctx.strokeStyle="#2a2f3d";[0,.5,1].forEach(p=>{ctx.beginPath();ctx.moveTo(pad,Y(p));ctx.lineTo(W-pad,Y(p));ctx.stroke();});
+    // sigmoid 拟合曲线
+    ctx.strokeStyle="#5b8cff";ctx.lineWidth=2.5;ctx.beginPath();
+    for(let i=0;i<=200;i++){const x=xmax*i/200;const px=X(x),py=Y(sigmoid(w*x+b));i?ctx.lineTo(px,py):ctx.moveTo(px,py);}
+    ctx.stroke();
+    // 边界线
+    ctx.strokeStyle="rgba(255,122,89,.7)";ctx.setLineDash([5,4]);ctx.beginPath();
+    ctx.moveTo(X(boundary),pad);ctx.lineTo(X(boundary),H-pad);ctx.stroke();ctx.setLineDash([]);
+    // 数据点
+    EXAM.forEach(([x,y])=>{ctx.fillStyle=y?'#5b8cff':'#ff7a59';
+      ctx.beginPath();ctx.arc(X(x),Y(y),5,0,7);ctx.fill();});
+    // 当前查询点
+    ctx.fillStyle="#21d4a4";ctx.beginPath();ctx.arc(X(hours),Y(prob),7,0,7);ctx.fill();
+    ctx.strokeStyle="rgba(33,212,164,.4)";ctx.setLineDash([3,3]);
+    ctx.beginPath();ctx.moveTo(X(hours),Y(prob));ctx.lineTo(X(hours),H-pad);ctx.stroke();ctx.setLineDash([]);
+    ctx.fillStyle="#9aa3b2";ctx.font="11px monospace";
+    ctx.fillText("学习时长(小时)",W-pad-80,H-pad+18);
+    ctx.fillText("通过=1",pad-26,Y(1)+4);ctx.fillText("挂科=0",pad-26,Y(0)+4);
+  },[hours]);
+  return (
+    <div className="card">
+      <p className="lead" style={{marginTop:0}}>
+        经典教学数据集：20 名学生的<b>复习时长</b>与<b>是否通过考试</b>。
+        我们用浏览器现场跑 4000 轮梯度下降拟合出一条 S 曲线 —— 它给出"学 x 小时能过的概率"。
+      </p>
+      <canvas ref={ref} style={{width:'100%',height:260}}/>
+      <div className="ctl">
+        <div className="slider" style={{flex:1}}>
+          <span>查询：复习 <b style={{color:'#21d4a4'}}>{hours.toFixed(1)} 小时</b></span>
+          <input type="range" min="0" max="6" step="0.1" value={hours} onChange={e=>setHours(+e.target.value)}/>
+        </div>
+      </div>
+      <div className="grid3">
+        <div className="stat"><b style={{color:'#21d4a4'}}>{(prob*100).toFixed(1)}%</b><span>预测通过概率</span></div>
+        <div className="stat"><b>{boundary.toFixed(2)}h</b><span>50% 临界时长 (−b/w)</span></div>
+        <div className="stat"><b style={{fontSize:15}}>w={w.toFixed(2)}, b={b.toFixed(2)}</b><span>拟合参数</span></div>
+      </div>
+      <div className="note">
+        拟合得到 <code>w≈{w.toFixed(2)}</code>：每多复习 1 小时，<b>对数几率（log-odds）</b>增加约 {w.toFixed(2)}，
+        即几率（odds）变为原来的 <code>e<sup>{w.toFixed(2)}</sup>≈{Math.exp(w).toFixed(2)}</code> 倍 —— 这就是下面"可解释性"要讲的。
+      </div>
+    </div>
+  );
+}
+
+/* ============ 5. 评估：阈值 / 混淆矩阵 / ROC ============ */
+function EvalDemo(){
+  const {w,b}=useMemo(()=>fit1D(EXAM),[]);
+  const scored=useMemo(()=>EXAM.map(([x,y])=>({p:sigmoid(w*x+b),y})),[w,b]);
+  const [thr,setThr]=useState(0.5);
+  const cm=useMemo(()=>{
+    let tp=0,fp=0,tn=0,fn=0;
+    scored.forEach(({p,y})=>{const pred=p>=thr?1:0;
+      if(pred&&y)tp++;else if(pred&&!y)fp++;else if(!pred&&!y)tn++;else fn++;});
+    return {tp,fp,tn,fn};
+  },[scored,thr]);
+  const {tp,fp,tn,fn}=cm;
+  const acc=(tp+tn)/(tp+fp+tn+fn);
+  const prec=tp+fp?tp/(tp+fp):0;
+  const rec=tp+fn?tp/(tp+fn):0;
+  const f1=prec+rec?2*prec*rec/(prec+rec):0;
+  // ROC
+  const roc=useMemo(()=>{
+    const pts=[];
+    for(let t=1.001;t>=-0.001;t-=0.02){
+      let TP=0,FP=0,P=0,N=0;
+      scored.forEach(({p,y})=>{if(y)P++;else N++;const pred=p>=t?1:0;if(pred&&y)TP++;if(pred&&!y)FP++;});
+      pts.push([N?FP/N:0,P?TP/P:0]);
+    }
+    return pts;
+  },[scored]);
+  const auc=useMemo(()=>{
+    let a=0;for(let i=1;i<roc.length;i++){const[x0,y0]=roc[i-1],[x1,y1]=roc[i];a+=(x1-x0)*(y0+y1)/2;}
+    return a;
+  },[roc]);
+  const rocRef=useCanvas((ctx,W,H)=>{
+    const pad=30;const X=v=>pad+v*(W-2*pad);const Y=v=>H-pad-v*(H-2*pad);
+    ctx.strokeStyle="#2a2f3d";ctx.beginPath();ctx.moveTo(X(0),Y(0));ctx.lineTo(X(1),Y(1));ctx.stroke();
+    ctx.strokeStyle="#21d4a4";ctx.lineWidth=2.5;ctx.beginPath();
+    roc.forEach(([x,y],i)=>{i?ctx.lineTo(X(x),Y(y)):ctx.moveTo(X(x),Y(y));});ctx.stroke();
+    // 当前阈值点
+    let TP=0,FP=0,P=0,N=0;
+    scored.forEach(({p,y})=>{if(y)P++;else N++;const pred=p>=thr?1:0;if(pred&&y)TP++;if(pred&&!y)FP++;});
+    ctx.fillStyle="#ff7a59";ctx.beginPath();ctx.arc(X(N?FP/N:0),Y(P?TP/P:0),6,0,7);ctx.fill();
+    ctx.fillStyle="#9aa3b2";ctx.font="11px monospace";
+    ctx.fillText("FPR →",W-pad-44,H-pad+16);ctx.save();ctx.translate(pad-16,pad+34);ctx.rotate(-Math.PI/2);ctx.fillText("TPR →",0,0);ctx.restore();
+  },[roc,thr,scored]);
+  const Cell=({n,c,lab})=>(<td style={{background:c,color:'#fff',fontWeight:600}}>{n}<br/><span style={{fontSize:11,opacity:.8}}>{lab}</span></td>);
+  return (
+    <div className="card">
+      <div className="slider" style={{maxWidth:340}}>
+        <span>决策阈值 = <b style={{color:'#21d4a4'}}>{thr.toFixed(2)}</b>（P ≥ 阈值 → 判为正类）</span>
+        <input type="range" min="0" max="1" step="0.01" value={thr} onChange={e=>setThr(+e.target.value)}/>
+      </div>
+      <div className="grid2" style={{marginTop:8}}>
+        <div>
+          <h3 style={{marginTop:0}}>混淆矩阵</h3>
+          <table>
+            <thead><tr><th></th><th>真实=1</th><th>真实=0</th></tr></thead>
+            <tbody>
+              <tr><th>预测=1</th><Cell n={tp} c="rgba(33,212,164,.45)" lab="TP"/><Cell n={fp} c="rgba(255,122,89,.4)" lab="FP"/></tr>
+              <tr><th>预测=0</th><Cell n={fn} c="rgba(255,122,89,.4)" lab="FN"/><Cell n={tn} c="rgba(33,212,164,.45)" lab="TN"/></tr>
+            </tbody>
+          </table>
+          <div className="grid2" style={{gap:8}}>
+            <div className="stat"><b>{(acc*100).toFixed(0)}%</b><span>准确率 Accuracy</span></div>
+            <div className="stat"><b>{(prec*100).toFixed(0)}%</b><span>精确率 Precision</span></div>
+            <div className="stat"><b>{(rec*100).toFixed(0)}%</b><span>召回率 Recall</span></div>
+            <div className="stat"><b>{f1.toFixed(2)}</b><span>F1 分数</span></div>
+          </div>
+        </div>
+        <div>
+          <h3 style={{marginTop:0}}>ROC 曲线 · AUC = {auc.toFixed(3)}</h3>
+          <canvas ref={rocRef} style={{width:'100%',height:230}}/>
+          <p style={{fontSize:13,color:'var(--muted)',marginBottom:0}}>
+            ROC 扫过所有阈值，画出"真正例率 vs 假正例率"。AUC 越接近 1 越好，
+            0.5 是随机猜（对角线）。它<b>与阈值无关</b>，衡量排序能力。
+          </p>
+        </div>
+      </div>
+      <div className="note warn">
+        调阈值看权衡：阈值↑ → 更谨慎报正类 → 精确率↑、召回率↓。
+        医疗筛查宁可错杀（高召回），垃圾邮件宁可放过（高精确）。<b>准确率在类别不平衡时会骗人</b>，要看 P/R/F1/AUC。
+      </div>
+    </div>
+  );
+}
+
+/* ============ 6. 可解释性：系数 → 几率比 ============ */
+function InterpretDemo(){
+  const feats=[
+    {name:'肿瘤大小 (cm)',w:0.9},
+    {name:'年龄 (每10岁)',w:0.4},
+    {name:'规律运动',w:-0.7},
+    {name:'家族史',w:1.1},
+  ];
+  return (
+    <div className="card">
+      <p className="lead" style={{marginTop:0}}>逻辑回归最大的卖点：<b>系数可以直接读懂</b>。某医疗模型（示意）：</p>
+      <table>
+        <thead><tr><th>特征</th><th>系数 w</th><th>几率比 e^w</th><th>含义</th></tr></thead>
+        <tbody>
+          {feats.map(f=>(<tr key={f.name}>
+            <td style={{textAlign:'left'}}>{f.name}</td>
+            <td style={{color:f.w>0?'#5b8cff':'#21d4a4'}}>{f.w>0?'+':''}{f.w.toFixed(2)}</td>
+            <td><b>{Math.exp(f.w).toFixed(2)}×</b></td>
+            <td style={{textAlign:'left',fontSize:13,color:'var(--muted)'}}>
+              该特征+1单位，患病<b>几率</b>变为 {Math.exp(f.w).toFixed(2)} 倍
+              {f.w<0?'（即下降，是保护因素）':''}
+            </td>
+          </tr>))}
+        </tbody>
+      </table>
+      <div className="note">
+        关键链条：<code>系数 w</code> 作用在<b>对数几率</b>上 → 取指数 <code>e<sup>w</sup></code> 得到<b>几率比 (odds ratio)</b>。
+        正系数=危险因素，负系数=保护因素，0=无关。这种透明度是它在<b>医疗、金融风控、信用评分</b>仍是首选的原因 —— 监管要求"能解释为什么拒绝"。
+      </div>
+    </div>
+  );
+}
+
+/* ============ 3. 正则化路径 ============ */
+// 确定性 PRNG（不依赖 Math.random，保证每次打开数据一致）
+function makeRng(seed){let s=seed>>>0;return ()=>{s=(s*1664525+1013904223)>>>0;return s/4294967296;};}
+function gauss(rng){let u=0,v=0;while(u===0)u=rng();while(v===0)v=rng();
+  return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);}
+// 造一份 5 特征数据：特征1/2 强、特征3 弱、特征4/5 纯噪声
+const REG_FNAME=['特征1 (强,+)','特征2 (强,−)','特征3 (弱,+)','特征4 (噪声)','特征5 (噪声)'];
+const REG_FCOL=['#5b8cff','#ff7a59','#21d4a4','#c08bff','#ffd166'];
+const REG_DATA=(()=>{
+  const rng=makeRng(7);const trueW=[0.3,2.4,-1.9,0.7,0,0];const N=120,D=5;const rows=[];
+  for(let i=0;i<N;i++){const x=[1];for(let d=0;d<D;d++)x.push(gauss(rng));
+    rows.push({x,y:rng()<sigmoid(dot(trueW,x))?1:0});}
+  return {rows,D};
+})();
+// 带正则的逻辑回归；l1=true 用近端软阈值（产生稀疏），否则 L2
+function fitReg(rows,D,lambda,l1,iters=350,lr=0.35){
+  let w=new Array(D+1).fill(0);const n=rows.length;
+  for(let t=0;t<iters;t++){
+    const g=new Array(D+1).fill(0);
+    rows.forEach(({x,y})=>{const e=sigmoid(dot(w,x))-y;for(let j=0;j<=D;j++)g[j]+=e*x[j];});
+    for(let j=0;j<=D;j++){
+      w[j]-=lr*g[j]/n;                           // 先走数据梯度一步（偏置也走）
+      if(j>0){                                   // 再对系数做近端收缩（数值稳定，任意 λ 不发散）
+        if(l1){const th=lr*lambda;               // L1：软阈值 → 小系数压到恰好 0（稀疏）
+          w[j]=Math.sign(w[j])*Math.max(Math.abs(w[j])-th,0);}
+        else{w[j]=w[j]/(1+lr*lambda);}           // L2：等比收缩 → 变小但永不为 0
+      }
+    }
+  }
+  return w;
+}
+const REG_LAMBDAS=Array.from({length:44},(_,i)=>Math.pow(10,-2.5+(i/43)*(Math.log10(20)+2.5)));
+function RegPathDemo(){
+  const [l1,setL1]=useState(false);
+  const [sel,setSel]=useState(20);
+  const paths=useMemo(()=>REG_LAMBDAS.map(lam=>fitReg(REG_DATA.rows,REG_DATA.D,lam,l1)),[l1]);
+  const curW=paths[sel];
+  const nnz=curW.slice(1).filter(v=>Math.abs(v)>1e-3).length;
+  const ref=useCanvas((ctx,W,H)=>{
+    const pad=34;const D=REG_DATA.D;
+    const ym=3.0;
+    const X=i=>pad+i/(REG_LAMBDAS.length-1)*(W-2*pad);
+    const Y=v=>H/2-(v/ym)*(H/2-pad);
+    ctx.strokeStyle="#2a2f3d";ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(pad,Y(0));ctx.lineTo(W-pad,Y(0));ctx.stroke();
+    // 选中 λ 竖线
+    ctx.strokeStyle="rgba(255,255,255,.25)";ctx.setLineDash([4,4]);
+    ctx.beginPath();ctx.moveTo(X(sel),pad-8);ctx.lineTo(X(sel),H-pad+8);ctx.stroke();ctx.setLineDash([]);
+    // 每个特征一条系数轨迹
+    for(let d=1;d<=D;d++){
+      ctx.strokeStyle=REG_FCOL[d-1];ctx.lineWidth=2.2;ctx.beginPath();
+      paths.forEach((w,i)=>{const x=X(i),y=Y(w[d]);i?ctx.lineTo(x,y):ctx.moveTo(x,y);});
+      ctx.stroke();
+      // 选中点
+      ctx.fillStyle=REG_FCOL[d-1];ctx.beginPath();ctx.arc(X(sel),Y(paths[sel][d]),4,0,7);ctx.fill();
+    }
+    ctx.fillStyle="#9aa3b2";ctx.font="11px monospace";
+    ctx.fillText("系数 w",pad-28,pad+2);ctx.fillText("0",pad-14,Y(0)+4);
+    ctx.fillText("← 弱正则      正则强度 λ      强正则 →",pad,H-pad+22);
+  },[paths,sel]);
+  return (
+    <div className="card">
+      <div className="ctl">
+        <button className={l1?'ghost':''} onClick={()=>setL1(false)}>L2 (Ridge)</button>
+        <button className={l1?'':'ghost'} onClick={()=>setL1(true)}>L1 (Lasso)</button>
+        <div className="slider" style={{flex:1,minWidth:220}}>
+          <span>正则强度 λ = <b style={{color:'#21d4a4'}}>{REG_LAMBDAS[sel].toFixed(3)}</b>
+            （C = 1/λ ≈ {(1/REG_LAMBDAS[sel]).toFixed(2)}）</span>
+          <input type="range" min="0" max={REG_LAMBDAS.length-1} step="1" value={sel}
+            onChange={e=>setSel(+e.target.value)}/>
+        </div>
+      </div>
+      <div className="legend">
+        {REG_FNAME.map((n,i)=>(<span key={n}><i className="dot" style={{background:REG_FCOL[i]}}></i>{n}</span>))}
+      </div>
+      <canvas ref={ref} style={{width:'100%',height:280}}/>
+      <div className="grid3" style={{marginTop:12}}>
+        <div className="stat"><b style={{color:l1?'#21d4a4':'#5b8cff'}}>{l1?'L1 Lasso':'L2 Ridge'}</b>
+          <span>当前惩罚</span></div>
+        <div className="stat"><b>{nnz} / {REG_DATA.D}</b><span>非零系数（稀疏度）</span></div>
+        <div className="stat"><b style={{fontSize:13}}>[{curW.slice(1).map(v=>v.toFixed(2)).join(', ')}]</b>
+          <span>当前系数 [w₁..w₅]</span></div>
+      </div>
+      <div className="note">
+        把 λ 从左（弱）拖到右（强），所有系数被一起<b>收缩</b>向 0；噪声特征(4、5)最先被压扁。
+        切到 <b>L1</b>：注意噪声系数会变成<b>恰好 0</b>（线条贴住中轴）——这就是 Lasso 的
+        <b>自动特征选择</b>；而 <b>L2</b> 只让它们变小、永不为 0。这条"系数随 λ 变化的曲线"就叫
+        <b>正则化路径 (regularization path)</b>，<code>glmnet</code> 能一次性把整条路径算出来。
+      </div>
+    </div>
+  );
+}
+
+/* ============ 页面骨架 ============ */
+const SECTIONS=[
+  {id:'intro',label:'引子 · 一句话'},
+  {id:'math',label:'1 · 数学推理'},
+  {id:'train',label:'2 · 如何训练'},
+  {id:'regpath',label:'3 · 正则化路径'},
+  {id:'process',label:'4 · 训练过程'},
+  {id:'real',label:'5 · 真实数据实战'},
+  {id:'eval',label:'6 · 评估方式'},
+  {id:'interpret',label:'7 · 可解释性'},
+  {id:'frontier',label:'8 · 最新发展'},
+];
+function App(){
+  const [active,setActive]=useState('intro');
+  useEffect(()=>{
+    const obs=new IntersectionObserver(es=>{
+      es.forEach(e=>{if(e.isIntersecting)setActive(e.target.id);});
+    },{rootMargin:'-30% 0px -60% 0px'});
+    SECTIONS.forEach(s=>{const el=document.getElementById(s.id);if(el)obs.observe(el);});
+    return ()=>obs.disconnect();
+  },[]);
+  const go=id=>document.getElementById(id).scrollIntoView({behavior:'smooth'});
+  return (
+  <div className="app">
+    <nav>
+      <h1>逻辑回归 Logistic Regression</h1>
+      <div className="sub">交互式讲解 · 从公式到实战</div>
+      {SECTIONS.map(s=>(
+        <a key={s.id} className={active===s.id?'active':''} onClick={()=>go(s.id)}>{s.label}</a>
+      ))}
+    </nav>
+    <main>
+      <section id="intro">
+        <h2>逻辑回归</h2>
+        <p className="lead">
+          名字里有"回归"，干的却是<b>分类</b>的活。一句话：它在线性回归外面套一个 Sigmoid，
+          把"打分"变成"概率"，再用最大似然学出最能解释数据的那条边界。
+        </p>
+        <div className="grid3">
+          <div className="stat"><b>判别式</b><span>直接建模 P(y|x)，不管 x 怎么生成</span></div>
+          <div className="stat"><b>线性边界</b><span>决策面是直线/超平面</span></div>
+          <div className="stat"><b>凸优化</b><span>损失全局唯一最优，必收敛</span></div>
+        </div>
+        <SigmoidDemo/>
+      </section>
+
+      <section id="math">
+        <h2><span className="num">数学</span>从线性打分到概率与损失</h2>
+        <h3>① 模型：线性打分 + Sigmoid</h3>
+        <div className="formula">
+          z = w·x + b　　　P(y=1 | x) = σ(z) = 1 / (1 + e<sup>-z</sup>)
+        </div>
+        <p>等价地，<b>对数几率（log-odds / logit）是 x 的线性函数</b>——这才是"线性"的真正所在：</p>
+        <div className="formula big">log( P(y=1) / P(y=0) ) = w·x + b</div>
+
+        <h3>② 损失：极大似然 → 交叉熵</h3>
+        <p>把每个样本看作一次伯努利试验，似然连乘、取负对数（最大化似然 = 最小化负对数似然），得到<b>二元交叉熵</b>：</p>
+        <div className="formula">
+          L(w) = −(1/n) Σ [ yᵢ·log(pᵢ) + (1−yᵢ)·log(1−pᵢ) ]　,　pᵢ = σ(w·xᵢ+b)
+        </div>
+        <div className="note">
+          为什么不用线性回归的平方误差？因为套上 Sigmoid 后平方误差<b>非凸</b>、到处是局部极小；
+          而交叉熵对 sigmoid 是<b>凸函数</b>，梯度下降保证找到全局最优。
+        </div>
+
+        <h3>③ 梯度：漂亮地化简成"误差 × 特征"</h3>
+        <p>对交叉熵求导，sigmoid 的导数项神奇地约掉，得到极简形式：</p>
+        <div className="formula big">∂L/∂w = (1/n) Σ (pᵢ − yᵢ)·xᵢ</div>
+        <p>梯度方向 = <b>预测概率与真实标签之差</b>，乘以特征。直觉清晰：错得越多、推得越狠。</p>
+      </section>
+
+      <section id="train">
+        <h2><span className="num">训练</span>怎么把参数学出来</h2>
+        <div className="grid2">
+          <div className="card">
+            <h3 style={{marginTop:0}}>梯度下降 / 牛顿法</h3>
+            <p style={{fontSize:14}}>反复执行更新规则，η 是学习率：</p>
+            <div className="formula">w ← w − η · (1/n) Σ (pᵢ − yᵢ) xᵢ</div>
+            <ul style={{fontSize:14}}>
+              <li><b>批量 GD</b>：用全部样本，稳但慢</li>
+              <li><b>SGD / mini-batch</b>：小批量，大数据首选</li>
+              <li><b>牛顿法 / IRLS</b>：用二阶 Hessian，几步收敛，统计软件常用</li>
+              <li><b>拟牛顿 L-BFGS</b>：sklearn 默认求解器</li>
+            </ul>
+          </div>
+          <div className="card">
+            <h3 style={{marginTop:0}}>正则化（必备）</h3>
+            <p style={{fontSize:14}}>给损失加惩罚项防止过拟合、控制系数规模：</p>
+            <div className="formula">L₂(Ridge): +λ‖w‖²　　L₁(Lasso): +λ‖w‖₁</div>
+            <ul style={{fontSize:14}}>
+              <li><b>L2</b>：让系数变小、更平滑</li>
+              <li><b>L1</b>：把不重要系数压到 0 → <b>自动特征选择</b></li>
+              <li><b>Elastic Net</b>：L1+L2 折中</li>
+              <li>sklearn 里用 <code>C = 1/λ</code> 控制强度，C 越小正则越强</li>
+            </ul>
+          </div>
+        </div>
+        <div className="note">实战前提：<b>特征标准化</b>（均值0方差1）能让梯度下降快得多，也让系数可比、让正则公平。</div>
+      </section>
+
+      <section id="regpath">
+        <h2><span className="num">正则</span>正则化路径：看系数如何被收缩</h2>
+        <p className="lead">
+          正则化不是一个开关，而是一条<b>连续的强度轴</b>。下图现场训练 44 个不同 λ 的模型，
+          画出每个系数随正则强度变化的轨迹——这就是"正则化路径"。重点对比 L1 与 L2 的差别。
+        </p>
+        <RegPathDemo/>
+        <div className="grid2">
+          <div className="card">
+            <h3 style={{marginTop:0}}>L2 / Ridge：平滑收缩</h3>
+            <div className="formula">min L(w) + λ‖w‖₂²</div>
+            <p style={{fontSize:14,marginBottom:0}}>
+              惩罚项是<b>圆形</b>等高线，把系数整体往 0 拉但<b>几乎不会精确归零</b>。
+              适合"很多特征都有点用"、且存在共线性时（更稳定）。
+            </p>
+          </div>
+          <div className="card">
+            <h3 style={{marginTop:0}}>L1 / Lasso：稀疏选择</h3>
+            <div className="formula">min L(w) + λ‖w‖₁</div>
+            <p style={{fontSize:14,marginBottom:0}}>
+              惩罚项是<b>菱形</b>，尖角落在坐标轴上，最优解容易"撞角"→ 部分系数<b>恰好为 0</b>。
+              相当于<b>自动特征选择</b>，给出可解释的稀疏模型。
+            </p>
+          </div>
+        </div>
+        <div className="note">
+          怎么选 λ？不是猜——用<b>交叉验证</b>：在路径上对每个 λ 评估验证集表现，挑最优（常用
+          <code>LogisticRegressionCV</code> 或 <code>glmnet</code> 的 <code>lambda.1se</code> 取"够好且更简单"的那个）。
+          强度也常写成 <b>C = 1/λ</b>（sklearn 约定），C 越小正则越强。
+        </div>
+      </section>
+
+      <section id="process">
+        <h2><span className="num">过程</span>看着它学：决策边界在动</h2>
+        <p className="lead">权重从 0 开始，每点几下，看那条白色虚线（边界）如何被数据"推"到正确位置，损失同步下降。</p>
+        <TrainingDemo/>
+      </section>
+
+      <section id="real">
+        <h2><span className="num">实战</span>真实数据：复习时长 → 能否通过</h2>
+        <ExamDemo/>
+      </section>
+
+      <section id="eval">
+        <h2><span className="num">评估</span>阈值、混淆矩阵、ROC/AUC</h2>
+        <p className="lead">模型输出的是概率，要<b>选阈值</b>才能下判断。拖动阈值，观察各指标此消彼长。</p>
+        <EvalDemo/>
+      </section>
+
+      <section id="interpret">
+        <h2><span className="num">解释</span>系数即解释：几率比</h2>
+        <InterpretDemo/>
+      </section>
+
+      <section id="frontier">
+        <h2><span className="num">前沿</span>它今天活在哪里</h2>
+        <div className="grid2">
+          <div className="card">
+            <h3 style={{marginTop:0}}>扩展与变体</h3>
+            <div className="tl">
+              <div className="ev"><b>Softmax / 多项逻辑回归</b><br/><span style={{color:'var(--muted)',fontSize:13}}>多分类推广，正是神经网络最后一层做的事</span></div>
+              <div className="ev"><b>正则化路径 (glmnet)</b><br/><span style={{color:'var(--muted)',fontSize:13}}>L1/L2/Elastic Net 一次算出全谱系数</span></div>
+              <div className="ev"><b>GAM 广义可加模型</b><br/><span style={{color:'var(--muted)',fontSize:13}}>把线性项换成平滑函数，保留可解释性又增非线性</span></div>
+              <div className="ev"><b>概率校准</b><br/><span style={{color:'var(--muted)',fontSize:13}}>Platt scaling 本质就是用逻辑回归给别的模型输出校准概率</span></div>
+            </div>
+          </div>
+          <div className="card">
+            <h3 style={{marginTop:0}}>为什么 2026 年还在用</h3>
+            <ul style={{fontSize:14}}>
+              <li><b>强基线</b>：任何分类任务先跑它，作为深度模型的对照线</li>
+              <li><b>可解释 / 合规</b>：信用评分、医疗、保险等受监管领域刚需"能解释为何拒绝"</li>
+              <li><b>深度学习的积木</b>：每个二分类神经元 = 一个逻辑回归；输出层 softmax = 多项逻辑回归</li>
+              <li><b>causal / 统计推断</b>：作为 GLM 家族成员，做风险因素的统计显著性分析</li>
+              <li><b>大规模在线</b>：CTR 预估等场景配合 FTRL 等在线学习，billions 级特征仍高效</li>
+            </ul>
+          </div>
+        </div>
+        <div className="note">
+          一句收尾：逻辑回归是机器学习的"<b>白盒地基</b>"——简单、凸、可解释、可校准。
+          深度学习没有取代它，反而把它当作最后一层和默认基线。先吃透它，再上复杂模型。
+        </div>
+      </section>
+    </main>
+  </div>);
+}
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>

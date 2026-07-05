@@ -1,0 +1,84 @@
+{
+  "schema_version": "1.0",
+  "id": "01KWPS19GWMFCFSV9235FSCZG2",
+  "title": "本地大语言模型微调方法综述（LoRA / QLoRA / 工具链）",
+  "slug": "lora-qlora",
+  "summary": "2025–2026 年本地 LLM 微调已成熟：QLoRA+DoRA 使 7B 模型可在 8–24 GB 消费级 GPU 或 Apple Silicon 上完成适配；本文梳理 LoRA/QLoRA/DoRA/GaLore 四类方法与 Unsloth、LLaMA-Factory、Axolotl、TRL、MLX 工具链选型及端到端实践流程。",
+  "original_question": "请使用 perplexity 进行网络搜索，找一找目前可以在本地电脑实现的大语言模型微调方法，并制作一份学术风格的网页来介绍它",
+  "domain": "machine-learning",
+  "tags": [
+    "llm",
+    "fine-tuning",
+    "lora",
+    "qlora",
+    "local-ai",
+    "interactive-artifact"
+  ],
+  "concepts": [
+    "LoRA",
+    "QLoRA",
+    "DoRA",
+    "GaLore",
+    "parameter-efficient fine-tuning",
+    "supervised fine-tuning",
+    "DPO",
+    "RLHF",
+    "GRPO",
+    "bitsandbytes",
+    "NF4 quantization",
+    "Unsloth",
+    "LLaMA-Factory",
+    "Axolotl",
+    "Hugging Face TRL",
+    "MLX",
+    "GGUF",
+    "Ollama",
+    "llama.cpp",
+    "consumer GPU",
+    "Apple Silicon",
+    "catastrophic forgetting",
+    "knowledge distillation"
+  ],
+  "relations": [
+    {
+      "type": "related",
+      "target": "01KVN0RSRPWEGNHP0TSNPHC49R",
+      "note": "同属机器学习前沿主题"
+    }
+  ],
+  "references": [
+    {
+      "title": "QLoRA: Efficient Finetuning of Quantized LLMs",
+      "url": "https://arxiv.org/abs/2305.14314"
+    },
+    {
+      "title": "DoRA: Weight-Decomposed Low-Rank Adaptation",
+      "url": "https://arxiv.org/abs/2402.09353"
+    },
+    {
+      "title": "GaLore: Memory-Efficient LLM Training by Gradient Low-Rank Projection",
+      "url": "https://arxiv.org/abs/2403.03507"
+    },
+    {
+      "title": "LLaMA-Factory",
+      "url": "https://github.com/hiyouga/LlamaFactory"
+    },
+    {
+      "title": "Unsloth Fine-Tuning Guide",
+      "url": "https://unsloth.ai/docs/get-started/fine-tuning-llms-guide"
+    },
+    {
+      "title": "Effloow: LoRA & QLoRA Guide 2026",
+      "url": "https://effloow.com/articles/llm-fine-tuning-lora-qlora-guide-2026"
+    }
+  ],
+  "artifact": {
+    "format": "html",
+    "entry": "artifact/index.html",
+    "self_contained": true
+  },
+  "status": "draft",
+  "confidence": "solid",
+  "created_at": "2026-07-04T14:38:02.268753+00:00",
+  "updated_at": "2026-07-04T14:49:12.870090+00:00"
+}

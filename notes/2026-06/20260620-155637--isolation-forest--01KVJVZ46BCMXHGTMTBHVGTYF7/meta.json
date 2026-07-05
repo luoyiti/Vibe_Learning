@@ -1,0 +1,48 @@
+{
+  "schema_version": "1.0",
+  "id": "01KVJVZ46BCMXHGTMTBHVGTYF7",
+  "title": "Isolation Forest（孤立森林）",
+  "slug": "isolation-forest",
+  "summary": "Isolation Forest uses random partitioning to isolate sparse points faster, turning expected path length into an anomaly score.",
+  "original_question": "请帮我构建一个React应用，白色简约风格，介绍孤立森林算法。包括算法的数学原理，训练方式，效果评估，真实数据。要求能够对算法设计可视化组件进行展示，能够体现深度。",
+  "domain": "machine-learning",
+  "tags": [
+    "anomaly-detection",
+    "isolation-forest",
+    "unsupervised-learning",
+    "tree-ensembles",
+    "time-series"
+  ],
+  "concepts": [
+    "isolation forest",
+    "isolation tree",
+    "path length",
+    "subsampling",
+    "anomaly score",
+    "roc curve",
+    "pr curve",
+    "auc",
+    "feature engineering"
+  ],
+  "relations": [
+    {
+      "type": "related",
+      "target": "01KVJ9QQEFZYPQCW86P4JS53V5",
+      "note": "Shares evaluation concepts (ROC/PR/AUC, thresholding) though applied to anomaly detection instead of classification."
+    }
+  ],
+  "references": [
+    {
+      "title": "Numenta Anomaly Benchmark (NAB) — GitHub",
+      "url": "https://github.com/numenta/NAB"
+    }
+  ],
+  "artifact": {
+    "format": "react",
+    "entry": "artifact/index.html",
+    "self_contained": true
+  },
+  "status": "draft",
+  "created_at": "2026-06-20T15:56:37.451746+00:00",
+  "updated_at": "2026-06-21T03:06:00.716828+00:00"
+}

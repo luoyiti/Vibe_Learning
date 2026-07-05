@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>机器学习最新进展汇报 · 2026 年中</title>
+<style>
+  :root{
+    --ink:#1a1a1a; --muted:#5a5a5a; --faint:#888; --rule:#d8d4cc;
+    --bg:#fbfaf7; --panel:#ffffff; --accent:#7a1f2b; --accent-soft:#f0e8e3;
+    --link:#5a2a1a; --code-bg:#f4f1ea;
+    --serif:"Iowan Old Style","Palatino Linotype",Palatino,"Songti SC","Noto Serif SC",Georgia,serif;
+    --sans:"Helvetica Neue",-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font-family:var(--serif); line-height:1.75; font-size:18px;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:820px; margin:0 auto; padding:0 28px;}
+
+  /* ---- Masthead ---- */
+  header.masthead{
+    border-bottom:3px double var(--ink); padding:64px 0 26px; margin-bottom:8px;
+  }
+  .kicker{
+    font-family:var(--sans); font-size:12.5px; letter-spacing:.28em;
+    text-transform:uppercase; color:var(--accent); margin-bottom:18px; font-weight:600;
+  }
+  h1{
+    font-size:42px; line-height:1.18; margin:0 0 18px; font-weight:600;
+    letter-spacing:-.01em;
+  }
+  .subtitle{font-size:20px; color:var(--muted); font-style:italic; margin-bottom:22px;}
+  .byline{
+    font-family:var(--sans); font-size:13px; color:var(--faint);
+    display:flex; flex-wrap:wrap; gap:18px; border-top:1px solid var(--rule);
+    padding-top:14px;
+  }
+  .byline b{color:var(--muted); font-weight:600;}
+
+  /* ---- Abstract ---- */
+  .abstract{
+    background:var(--accent-soft); border-left:3px solid var(--accent);
+    padding:22px 26px; margin:34px 0; font-size:16.5px; line-height:1.7;
+  }
+  .abstract h2{
+    font-family:var(--sans); font-size:12px; letter-spacing:.2em; text-transform:uppercase;
+    color:var(--accent); margin:0 0 10px; font-weight:700;
+  }
+
+  /* ---- TOC ---- */
+  nav.toc{
+    font-family:var(--sans); font-size:14px; margin:30px 0 44px;
+    border:1px solid var(--rule); padding:20px 26px; background:var(--panel);
+  }
+  nav.toc h2{font-size:12px; letter-spacing:.2em; text-transform:uppercase; color:var(--faint); margin:0 0 14px;}
+  nav.toc ol{margin:0; padding-left:0; list-style:none; counter-reset:toc;}
+  nav.toc li{counter-increment:toc; padding:5px 0; border-bottom:1px dotted var(--rule);}
+  nav.toc li:last-child{border-bottom:none;}
+  nav.toc li::before{content:counter(toc,decimal-leading-zero); color:var(--accent); font-weight:600; margin-right:12px;}
+  nav.toc a{color:var(--ink); text-decoration:none;}
+  nav.toc a:hover{color:var(--accent);}
+
+  /* ---- Sections ---- */
+  section{margin:54px 0; scroll-margin-top:20px;}
+  h2.sec{
+    font-size:15px; font-family:var(--sans); letter-spacing:.16em; text-transform:uppercase;
+    color:var(--accent); font-weight:700; margin:0 0 4px;
+  }
+  h2.sec .num{color:var(--faint); margin-right:12px;}
+  h3.title{font-size:28px; margin:6px 0 20px; font-weight:600; letter-spacing:-.01em; border-bottom:1px solid var(--rule); padding-bottom:14px;}
+  h4{font-size:19px; margin:28px 0 8px; font-weight:600; color:var(--ink);}
+  p{margin:0 0 16px;}
+  .lead{font-size:19px; color:var(--muted);}
+  a.ref{color:var(--link); text-decoration:none; border-bottom:1px solid var(--rule);}
+  a.ref:hover{border-color:var(--accent); color:var(--accent);}
+  strong{font-weight:600;}
+  code{background:var(--code-bg); padding:1px 6px; border-radius:3px; font-size:.86em; font-family:"SF Mono",ui-monospace,Menlo,monospace;}
+
+  .tag{
+    display:inline-block; font-family:var(--sans); font-size:11px; letter-spacing:.08em;
+    text-transform:uppercase; background:var(--accent-soft); color:var(--accent);
+    padding:2px 9px; border-radius:2px; margin:0 6px 6px 0; font-weight:600;
+  }
+
+  /* ---- Pull figures / callouts ---- */
+  .callout{
+    border:1px solid var(--rule); border-top:3px solid var(--accent);
+    background:var(--panel); padding:20px 24px; margin:24px 0;
+  }
+  .callout .label{font-family:var(--sans); font-size:11px; letter-spacing:.18em; text-transform:uppercase; color:var(--accent); font-weight:700; margin-bottom:8px;}
+
+  /* ---- Table ---- */
+  .table-wrap{overflow-x:auto; margin:24px 0;}
+  table{border-collapse:collapse; width:100%; font-size:14.5px; font-family:var(--sans);}
+  caption{font-family:var(--sans); font-size:12px; color:var(--faint); text-align:left; margin-bottom:10px; letter-spacing:.04em;}
+  th,td{text-align:left; padding:10px 12px; border-bottom:1px solid var(--rule); vertical-align:top;}
+  thead th{border-bottom:2px solid var(--ink); font-size:12px; letter-spacing:.06em; text-transform:uppercase; color:var(--muted);}
+  tbody tr:hover{background:var(--accent-soft);}
+  td.model{font-weight:600; color:var(--ink); white-space:nowrap;}
+  .num-cell{font-variant-numeric:tabular-nums;}
+
+  /* ---- Timeline ---- */
+  .timeline{list-style:none; margin:24px 0; padding:0; border-left:2px solid var(--rule);}
+  .timeline li{position:relative; padding:0 0 22px 28px;}
+  .timeline li::before{content:""; position:absolute; left:-7px; top:8px; width:11px; height:11px; border-radius:50%; background:var(--accent); border:2px solid var(--bg);}
+  .timeline .date{font-family:var(--sans); font-size:12px; font-weight:700; letter-spacing:.08em; color:var(--accent); text-transform:uppercase;}
+  .timeline .event{display:block; font-size:16px; color:var(--ink);}
+
+  /* ---- Footnotes / refs ---- */
+  .footnotes{font-size:14px; color:var(--muted); font-family:var(--sans); line-height:1.6;}
+  .footnotes h3{font-family:var(--sans); font-size:13px; letter-spacing:.18em; text-transform:uppercase; color:var(--faint);}
+  .footnotes ol{padding-left:22px;}
+  .footnotes li{margin-bottom:8px;}
+  .footnotes a{color:var(--link); word-break:break-all;}
+
+  footer.colophon{
+    border-top:3px double var(--ink); margin-top:60px; padding:26px 0 70px;
+    font-family:var(--sans); font-size:13px; color:var(--faint); line-height:1.7;
+  }
+  .disclaimer{font-style:italic; font-family:var(--serif); color:var(--muted); font-size:14.5px; margin-top:14px;}
+
+  @media (max-width:600px){
+    body{font-size:16.5px;}
+    h1{font-size:32px;}
+    h3.title{font-size:23px;}
+    .wrap{padding:0 18px;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="kicker">前沿技术综述 · Machine Learning Frontier Review</div>
+    <h1>机器学习最新进展：<br>从规模竞赛到推理、智能体与世界模型</h1>
+    <p class="subtitle">2025 年底至 2026 年中六个月间，重塑 AI 研究与工程实践的五条主线</p>
+    <div class="byline">
+      <span><b>编制</b> 知识蒸馏系统 · Firecrawl 实时检索</span>
+      <span><b>截至</b> 2026 年 6 月 21 日</span>
+      <span><b>体裁</b> 单文件学术综述</span>
+    </div>
+  </header>
+
+  <div class="abstract">
+    <h2>摘要 · Abstract</h2>
+    <p style="margin-bottom:0;">2026 年的机器学习不再由"单一突破"定义，而是由数条已经成熟、并开始相互强化的能力共同塑造。原始模型规模的扩张让位于<strong>推理后训练（RLVR）</strong>的效率优化；语言模型正经由<strong>智能体与工具调用</strong>从"生成文本"走向"执行任务"；<strong>开源权重模型</strong>在一年内追平闭源前沿，并将百万级上下文与稀疏注意力变为标配；<strong>多模态</strong>则向<strong>物理 AI 与世界模型</strong>延伸，使生成式系统开始学习物理规律。本文基于近期一手资料，梳理这五条主线及其代表性成果。</p>
+  </div>
+
+  <nav class="toc">
+    <h2>目录 · Contents</h2>
+    <ol>
+      <li><a href="#s1">推理与可验证奖励强化学习（RLVR）</a></li>
+      <li><a href="#s2">智能体与工具调用</a></li>
+      <li><a href="#s3">代码智能体：从补全到工程管理</a></li>
+      <li><a href="#s4">开源权重模型：追平前沿</a></li>
+      <li><a href="#s5">多模态、物理 AI 与世界模型</a></li>
+      <li><a href="#s6">展望：能力的汇聚</a></li>
+    </ol>
+  </nav>
+
+  <!-- 1 -->
+  <section id="s1">
+    <h2 class="sec"><span class="num">01</span>推理范式</h2>
+    <h3 class="title">推理与可验证奖励强化学习（RLVR）</h3>
+    <p class="lead">早期模型（如 GPT-4）逐词直接生成答案，在多步逻辑或高等数学上一旦首答出错便难以挽回。自 OpenAI <code>o1</code> 起，模型学会在作答前"思考"——先生成中间推理步骤，再给出结论，从而以更多计算换取更强的复杂问题求解能力。</p>
+
+    <h4>RLVR：移除人类标注瓶颈</h4>
+    <p>使大规模推理训练成为可能的关键方法，是<strong>可验证奖励强化学习（Reinforcement Learning with Verifiable Rewards, RLVR）</strong>。该思路最早由 AI2 的 Tülu 3 提出，而 <strong>DeepSeek-R1</strong> 将其大规模应用并带入主流视野。</p>
+    <p>传统 RLHF 依赖单独训练一个奖励模型来代理人类偏好，需要昂贵且缓慢的人工标注，且当推理链很长时人类也难以可靠评判。RLVR 则把奖励来源从"预测人类偏好"换成"检查正确性"：在数学、代码等领域，答案可被自动验证——代码能否运行、解是否匹配标准答案。正确即给奖励，<strong>无需独立的奖励模型</strong>。</p>
+
+    <div class="callout">
+      <div class="label">2026 看点：自适应推理</div>
+      <p style="margin-bottom:0;">推理本身已不再是差异化优势——各大实验室普遍在训练中采用推理与 RLVR。竞争焦点转向<strong>效率</strong>：模型应按问题难度动态调整"思考"投入，对一句问候不必耗费大量 token，把深度推理留给真正困难的问题。Gemini 3 即提供 <code>thinking_level</code> 控制并默认采用动态思考，是这一趋势的具体落地。</p>
+    </div>
+  </section>
+
+  <!-- 2 -->
+  <section id="s2">
+    <h2 class="sec"><span class="num">02</span>智能体</h2>
+    <h3 class="title">智能体与工具调用</h3>
+    <p class="lead">智能体（Agent）将 LLM 与工具置于一个循环中：接收目标、拆解步骤、调用工具、根据结果决定下一步，从而把模型从"描述如何做"推进到"实际去做"。</p>
+    <p>典型智能体结构一致——语言模型解析请求并选择下一步；工具连接搜索、日历、文件、API 等外部系统；循环负责执行动作、检查结果，并在失败时重试或改道。</p>
+
+    <h4>智能体为何"近期"才真正可用</h4>
+    <p>三项进展共同促成：其一，<strong>推理能力提升</strong>，模型更善于规划多步任务、追踪中间结果；其二，<strong>工具连接标准化</strong>——Anthropic 的 <strong>模型上下文协议（MCP）</strong>大幅降低接入摩擦，新增一个工具仅需几行代码；其三，<strong>框架成熟</strong>，LangChain、LlamaIndex 等提供了工具调用、多步流程与日志的现成组件。OpenAI 的 ChatGPT agent 与 Anthropic 的 Claude 已是出货中的真实产品。</p>
+
+    <div class="callout">
+      <div class="label">2026 看点：常驻个人智能体与安全</div>
+      <p>智能体擅长短流程，但任务跨越数十步时仍会丢失上下文、错误累积。趋势之一是<strong>常驻智能体（persistent agents）</strong>——长期在线、许多将运行在本地硬件上，从而更易连接用户的文件、应用与系统设置，同时把数据留在用户掌控之中；<strong>OpenClaw</strong> 是这一"个人智能体"转向的早期代表。</p>
+      <p style="margin-bottom:0;">更多访问权限也意味着更高风险，因此 2026 的重点是<strong>可靠性与安全</strong>：在长任务中保持不跑偏、可从错误恢复；抵御提示注入、保护数据，并在未经明确批准时避免不可逆操作。</p>
+    </div>
+  </section>
+
+  <!-- 3 -->
+  <section id="s3">
+    <h2 class="sec"><span class="num">03</span>代码智能</h2>
+    <h3 class="title">代码智能体：从补全到工程管理</h3>
+    <p class="lead">AI 辅助编程始于只能看到光标附近几行的简单自动补全。当实验室把"智能体方法"用于编码后，范式彻底改变。</p>
+    <p>实验室不再依赖通用模型，而是在代码仓库、文档与编程模式上<strong>大规模微调专用 LLM</strong>，并以编码专用工具（<code>read_file</code>、<code>search_codebase</code>、<code>edit_file</code>、<code>run_terminal_command</code>、<code>execute_tests</code>）替代通用工具。由此得到理解项目结构、依赖与调试实践，并知道如何编排工具完成任务的模型。</p>
+    <p>Anthropic 的 <strong>Claude Code</strong> 与 OpenAI 的 <strong>Codex</strong> 等闭源代码智能体推动了这一转变，能读懂整个仓库；开源侧也快速缩小差距——早 2026 发布的 <strong>Qwen3-Coder-Next</strong>（80B 参数）以接近顶级闭源模型的表现，在消费级硬件上本地运行。Replit、Lovable 等服务进一步降低了门槛。</p>
+
+    <div class="callout">
+      <div class="label">2026 看点：三个进步方向</div>
+      <p style="margin-bottom:0;"><strong>① 更深的仓库级理解</strong>——更好地追踪跨文件依赖与架构，可靠处理更大项目；<strong>② 安全感知编码</strong>——将漏洞扫描与自动化测试生成内建进工作流，而非事后步骤；<strong>③ 更快完成</strong>——压缩从请求到可用代码的时延，使智能体适用于更接近实时的开发。</p>
+    </div>
+  </section>
+
+  <!-- 4 -->
+  <section id="s4">
+    <h2 class="sec"><span class="num">04</span>开源生态</h2>
+    <h3 class="title">开源权重模型：一年追平前沿</h3>
+    <p class="lead">LLM 时代之初，最强模型皆为闭源。这一差距的缩小远快于多数人的预期，经历了两个阶段：标志性的"DeepSeek 时刻"，及随后的快速扩张。</p>
+    <p><strong>DeepSeek 时刻：</strong>2025 年 1 月，DeepSeek 开源 R1 的权重、代码与训练方法，其推理模型在关键基准上比肩甚至超越闭源对手，证明前沿级推理并不必然依赖专有 API。其重度依赖 RLVR（而非 RLHF）的训练路线，使推理能力得以在大幅减少人工标注的情况下训练出来。</p>
+    <p><strong>快速扩张：</strong>此后阿里 Qwen、Z.ai 的 GLM、Moonshot 的 Kimi 等纷纷开放完整权重与训练细节。2025 年 8 月，OpenAI 发布 <strong>gpt-oss</strong>（120B 与 20B，Apache 2.0），是其自 GPT-2 以来首批开源权重模型。Mistral、Meta、Allen Institute 也推出有竞争力的版本。技术随报告与配方迅速扩散，如今开源模型在众多标准基准上已逼近顶级闭源模型。</p>
+
+    <div class="table-wrap">
+    <table>
+      <caption>表 1 · 2026 年代表性开源权重模型（据 BentoML《The Best Open-Source LLMs in 2026》）</caption>
+      <thead>
+        <tr><th>模型</th><th>机构</th><th>规模（总 / 激活）</th><th>上下文</th><th>定位与亮点</th></tr>
+      </thead>
+      <tbody>
+        <tr><td class="model">GLM-5.2</td><td>Z.ai</td><td class="num-cell">754B / 40B (MoE)</td><td class="num-cell">1M</td><td>智能体工程与长程推理；DeepSeek 稀疏注意力 + IndexShare，1M 上下文每 token 算力约降 2.9×。MIT 许可。</td></tr>
+        <tr><td class="model">MiniMax-M3</td><td>MiniMax</td><td class="num-cell">428B / 23B (MoE)</td><td class="num-cell">1M</td><td>MiniMax 稀疏注意力（MSA），1M 下算力约为上代 1/20；曾自主复现 ICLR 论文（~12h）。</td></tr>
+        <tr><td class="model">DeepSeek-V4</td><td>DeepSeek</td><td class="num-cell">Pro 1.6T / 49B；Flash 284B / 13B</td><td class="num-cell">1M</td><td>CSA+HCA 混合注意力；三档思考模式（Non-think / High / Max），知识基准领先开源。MIT 许可。</td></tr>
+        <tr><td class="model">MiMo-V2.5-Pro</td><td>小米 Xiaomi</td><td class="num-cell">1.02T / 42B (MoE)</td><td class="num-cell">~1M</td><td>SWA/GA 6:1 混合，KV 缓存近 7× 压缩；多教师在线蒸馏（MOPD）。MIT 许可。</td></tr>
+        <tr><td class="model">Kimi-K2.6</td><td>Moonshot</td><td class="num-cell">~1T / 32B (MoE)</td><td class="num-cell">256K</td><td>长程编码 SOTA；智能体集群可拆分至 300 子智能体 / 4000 步；preserve_thinking 模式。</td></tr>
+        <tr><td class="model">Qwen3.5-397B-A17B</td><td>阿里 Alibaba</td><td class="num-cell">397B / 17B (MoE)</td><td class="num-cell">262K→1M+</td><td>原生多模态推理，200+ 语言；较 Qwen3-Max 解码吞吐提升 8.6–19×。</td></tr>
+        <tr><td class="model">Gemma 4</td><td>Google</td><td class="num-cell">31B 稠密 / E2B–E4B 等</td><td class="num-cell">256K</td><td>统一文/图/音设计，四种尺寸覆盖端侧到大规模；原生函数调用。Apache 2.0。</td></tr>
+      </tbody>
+    </table>
+    </div>
+
+    <div class="callout">
+      <div class="label">2026 看点：从规模转向效率与可部署</div>
+      <p style="margin-bottom:0;"><span class="tag">架构效率</span><span class="tag">智能体就绪</span><span class="tag">易部署</span>稀疏 MoE + 长上下文已成主流，每 token 仅激活一小部分参数；模型从设计之初即面向工具调用与结构化输出；新推理格式、压缩技术与硬件厂商的首发支持，让开源模型成为一等部署目标。</p>
+    </div>
+  </section>
+
+  <!-- 5 -->
+  <section id="s5">
+    <h2 class="sec"><span class="num">05</span>多模态与物理 AI</h2>
+    <h3 class="title">多模态、物理 AI 与世界模型</h3>
+    <p class="lead">早期聊天机器人以文本为中心，图像、音频、视频多由独立系统处理。如今领先模型已<strong>原生多模态</strong>，而生成模型也从演示走向了真实工具。</p>
+    <p>Gemini 3 与 ChatGPT-5 可在单一系统中处理文本与图像；开源侧 Qwen 系视觉-语言模型展现出强跨模态理解。生成方面，OpenAI <strong>Sora 2</strong> 让视频生成达到行业必须正视的水平；Google <strong>Veo 3.1</strong>（2025 年 10 月发布、2026 年 1 月更新）强化音频与对象插入等编辑控制；<strong>Nano Banana Pro</strong>（Gemini 3 Pro Image，2025 年 11 月）提升了文字渲染与可控编辑。</p>
+
+    <h4>物理 AI：机器人的"ChatGPT 时刻"</h4>
+    <p>物理 AI 正从研究走向部署。CES 2026 涌现大量人形机器人演示：Boston Dynamics 发布电动版 Atlas，并宣布与 Google DeepMind 合作集成 Gemini Robotics 模型；Tesla 也表示将扩大 Optimus 产能。这些系统融合视觉-语言理解、强化学习与规划。正如黄仁勋（Jensen Huang）在 CES 2026 前后所言：<em>"机器人的 ChatGPT 时刻已经到来。"</em></p>
+
+    <h4>世界模型：学习物理规律</h4>
+    <p>上述视频生成系统正在学习比"生成逼真像素"更深的东西——构建对物理世界如何运作的基本模型，能够模拟物理、预测结果、对现实进行推理。</p>
+    <ul class="timeline">
+      <li><span class="date">2025 · 11</span><span class="event"><strong>Yann LeCun 离开 Meta</strong>，创立 AMI Labs，融资 5 亿欧元，目标是构建理解物理、而非仅预测文本的 AI 系统。</span></li>
+      <li><span class="date">2025 · DeepMind</span><span class="event"><strong>Genie 3</strong>：首个实时交互式世界模型，可生成持久的 3D 环境。</span></li>
+      <li><span class="date">2026 · NVIDIA</span><span class="event"><strong>Cosmos Predict 2.5</strong>：在 2 亿条精选视频片段上训练，统一 text/image/video-to-world 生成，用于在仿真中训练机器人与自动驾驶。</span></li>
+    </ul>
+    <div class="callout">
+      <div class="label">收束方向</div>
+      <p style="margin-bottom:0;">若模型能可靠模拟环境，它们便成为训练机器人、自动驾驶等"必须在物理世界中运作"系统的基础。<strong>视频生成、机器人学与仿真正汇聚为同一方向</strong>——2026 将检验这种汇聚是加速还是停滞。</p>
+    </div>
+  </section>
+
+  <!-- 6 -->
+  <section id="s6">
+    <h2 class="sec"><span class="num">06</span>展望</h2>
+    <h3 class="title">展望：能力的汇聚</h3>
+    <p class="lead">2026 不会由单一突破定义，而是由如今<strong>同时存在、并相互强化</strong>的能力共同塑造。</p>
+    <p>推理让智能体会规划，智能体让代码工具能管理工程，开源权重把这些能力推向每一处硬件，多模态与世界模型则把它们延伸到物理现实。这些能力正组合出新的工作流——从自主代码重构，到机器人在仿真环境中学习任务。前沿模型层面，2026 年上半年已见 GPT-5.4、Gemini 4、Claude Fable 5、Mistral Small 4、Gemma 4 等密集发布，节奏未减。</p>
+    <p style="margin-bottom:0;">一句话总结这半年的方向：<strong>从"把模型做大"，转向"把能力组装起来、让它们可靠地协同工作"。</strong></p>
+  </section>
+
+  <!-- References -->
+  <section class="footnotes" id="refs">
+    <h3>资料来源 · References</h3>
+    <p>本文内容经 Firecrawl 于 2026-06-21 实时检索与抓取，主要依据下列一手资料：</p>
+    <ol>
+      <li>ByteByteGo Newsletter，《What's Next in AI: Five Trends to Watch in 2026》，2026-03-04 — <a href="https://blog.bytebytego.com/p/whats-next-in-ai-five-trends-to-watch">blog.bytebytego.com</a>（推理/RLVR、智能体、编码、开源权重、多模态/物理 AI/世界模型五条主线及其代表成果）</li>
+      <li>BentoML / Modular，《The Best Open-Source LLMs in 2026》— <a href="https://www.bentoml.com/blog/navigating-the-world-of-open-source-large-language-models">bentoml.com</a>（GLM-5.2、MiniMax-M3、DeepSeek-V4、MiMo-V2.5-Pro、Kimi-K2.6、Qwen3.5、Gemma 4 的架构与规格）</li>
+      <li>Google Research，《A New Era of Discovery: Google Research at I/O 2026》— <a href="https://research.google/blog/a-new-era-of-innovation-google-research-at-io-2026/">research.google</a></li>
+      <li>Wikipedia，《List of large language models》（2026 年发布条目）— <a href="https://en.wikipedia.org/wiki/List_of_large_language_models">en.wikipedia.org</a></li>
+      <li>ICML 2026 Orals / NeurIPS 2026 — <a href="https://icml.cc/virtual/2026/events/oral">icml.cc</a> · <a href="https://neurips.cc/">neurips.cc</a></li>
+      <li>DeepSeek-R1 论文，arXiv:2501.12948 — <a href="https://arxiv.org/abs/2501.12948">arxiv.org</a></li>
+    </ol>
+  </section>
+
+  <footer class="colophon">
+    <div>机器学习最新进展汇报 · 2026 年中 — 单文件学术综述</div>
+    <div>检索与抓取：Firecrawl CLI · 编制：知识蒸馏系统</div>
+    <p class="disclaimer">说明：本汇报为面向技术读者的二手综述，所有事实性陈述（模型规格、发布时间、基准结论等）均来自上列来源；部分模型代号与基准数字反映来源截至 2026 年中的口径，使用前请核对官方一手文档。</p>
+  </footer>
+
+</div>
+</body>
+</html>

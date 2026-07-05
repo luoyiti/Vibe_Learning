@@ -1,0 +1,57 @@
+{
+  "schema_version": "1.0",
+  "id": "01KWPWXRACBG51J2G3DD83P8JM",
+  "title": "Ant Design 入门：企业级 React UI 组件库",
+  "slug": "ant-design-react-ui",
+  "summary": "Ant Design 是蚂蚁集团开源的企业级 UI 设计语言与 React 组件库（v5 用 CSS-in-JS + Design Token）；掌握 ConfigProvider、Layout、Form、Table 四大组件族即可搭建中后台，本页以 antd 自身构建交互式教程。",
+  "original_question": "给我讲一讲 ant design，请使用 ant design构建一个网页来给我进行讲解",
+  "domain": "frontend",
+  "tags": [
+    "ant-design",
+    "react",
+    "ui-components",
+    "design-system",
+    "interactive-artifact"
+  ],
+  "concepts": [
+    "Ant Design",
+    "Design Token",
+    "ConfigProvider",
+    "CSS-in-JS",
+    "React component library",
+    "enterprise UI",
+    "Form validation",
+    "Table",
+    "Layout",
+    "theme customization",
+    "ProComponents",
+    "Ant Design Pro"
+  ],
+  "references": [
+    {
+      "title": "Ant Design 官方文档",
+      "url": "https://ant.design/docs/react/introduce-cn"
+    },
+    {
+      "title": "Ant Design GitHub",
+      "url": "https://github.com/ant-design/ant-design"
+    },
+    {
+      "title": "Theme Editor",
+      "url": "https://ant.design/theme-editor"
+    },
+    {
+      "title": "Ant Design Pro",
+      "url": "https://pro.ant.design"
+    }
+  ],
+  "artifact": {
+    "format": "html",
+    "entry": "artifact/index.html",
+    "self_contained": true
+  },
+  "status": "draft",
+  "confidence": "solid",
+  "created_at": "2026-07-04T15:46:00.652151+00:00",
+  "updated_at": "2026-07-04T15:46:00.652151+00:00"
+}

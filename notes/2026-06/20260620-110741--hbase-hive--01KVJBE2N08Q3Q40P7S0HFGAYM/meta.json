@@ -1,0 +1,56 @@
+{
+  "schema_version": "1.0",
+  "id": "01KVJBE2N08Q3Q40P7S0HFGAYM",
+  "title": "HBase 与 Hive 的区别",
+  "slug": "hbase-hive",
+  "summary": "HBase 是实时 NoSQL 数据库，Hive 是离线数据仓库框架——从数据模型、访问模式、查询性能到应用场景有本质区别。",
+  "original_question": "详细给我讲一讲HBase与Hive的区别，并构建一个学术风格，白色简约配色的网页来说明",
+  "domain": "big-data",
+  "tags": [
+    "hbase",
+    "hive",
+    "hadoop",
+    "nosql",
+    "data-warehouse",
+    "big-data",
+    "distributed-systems"
+  ],
+  "concepts": [
+    "HBase",
+    "Hive",
+    "NoSQL数据库",
+    "数据仓库",
+    "列族存储",
+    "关系型表模型",
+    "MapReduce",
+    "HDFS",
+    "实时查询",
+    "批量分析",
+    "行键设计",
+    "HQL",
+    "数据一致性"
+  ],
+  "references": [
+    {
+      "title": "Apache HBase official documentation",
+      "url": "https://hbase.apache.org/"
+    },
+    {
+      "title": "Apache Hive official documentation",
+      "url": "https://hive.apache.org/"
+    },
+    {
+      "title": "Hadoop ecosystem architecture",
+      "url": "https://hadoop.apache.org/"
+    }
+  ],
+  "artifact": {
+    "format": "html",
+    "entry": "artifact/index.html",
+    "self_contained": true
+  },
+  "status": "draft",
+  "confidence": "solid",
+  "created_at": "2026-06-20T11:07:41.600099+00:00",
+  "updated_at": "2026-06-20T11:07:41.600099+00:00"
+}

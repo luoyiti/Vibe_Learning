@@ -1,0 +1,17 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "lr-artifact",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": ["-m", "http.server", "8731", "--directory", ".drafts/logistic-regression/artifact"],
+      "port": 8731
+    },
+    {
+      "name": "ks-serve",
+      "runtimeExecutable": "env",
+      "runtimeArgs": ["PYTHONPATH=src", "python3", "-m", "ks", "serve", "--port", "8765"],
+      "port": 8765
+    }
+  ]
+}

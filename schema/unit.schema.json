@@ -1,0 +1,45 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "unified-knowledge-unit-meta",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version","id","title","summary","original_question","tags","artifact","status","created_at","updated_at"],
+  "properties": {
+    "schema_version": { "type": "string", "pattern": "^\\d+\\.\\d+$" },
+    "id":    { "type": "string", "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$" },
+    "title": { "type": "string", "minLength": 1, "maxLength": 80 },
+    "slug":  { "type": "string", "pattern": "^[a-z0-9-]+$" },
+    "summary":           { "type": "string", "minLength": 1, "maxLength": 200 },
+    "original_question": { "type": "string", "minLength": 1 },
+    "domain": { "type": "string" },
+    "tags":     { "type": "array", "minItems": 1, "uniqueItems": true,
+                  "items": { "type": "string", "pattern": "^[a-z0-9-]+$" } },
+    "concepts": { "type": "array", "uniqueItems": true,
+                  "items": { "type": "string", "minLength": 1 } },
+    "relations":{ "type": "array", "items": { "$ref": "#/$defs/relation" } },
+    "references":{ "type": "array", "items": {
+        "type": "object", "additionalProperties": false, "required": ["url"],
+        "properties": { "title": { "type": "string" }, "url": { "type": "string", "format": "uri" } } } },
+    "artifact": {
+      "type": "object", "additionalProperties": false, "required": ["format","entry"],
+      "properties": {
+        "format": { "enum": ["markdown","html","notebook","react","svg","image","none"] },
+        "entry": { "type": "string", "minLength": 1 },
+        "self_contained": { "type": "boolean" } } },
+    "source": {
+      "type": "object", "additionalProperties": false,
+      "properties": { "channel": { "type": "string" }, "model": { "type": "string" }, "transcript": { "type": "string" } } },
+    "status": { "enum": ["draft","stable","needs_review"] },
+    "confidence": { "enum": ["shaky","moderate","solid"] },
+    "created_at": { "type": "string", "format": "date-time" },
+    "updated_at": { "type": "string", "format": "date-time" }
+  },
+  "$defs": {
+    "relation": {
+      "type": "object", "additionalProperties": false, "required": ["type","target"],
+      "properties": {
+        "type": { "enum": ["prerequisite","extends","related","contrasts","applies","part_of"] },
+        "target": { "type": "string", "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$" },
+        "note": { "type": "string" } } }
+  }
+}

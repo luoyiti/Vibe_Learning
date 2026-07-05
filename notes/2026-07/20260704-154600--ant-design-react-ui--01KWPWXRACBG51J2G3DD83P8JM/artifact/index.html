@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ant Design 入门讲解 · 交互式教程</title>
+  <meta name="description" content="用 Ant Design 本身搭建的交互式教程：设计语言、核心组件、主题定制与生态一览。" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/antd@5.24.9/dist/reset.css" />
+  <style>
+    html, body, #root { height: 100%; margin: 0; }
+    body { background: #f5f5f5; }
+    .logo-area {
+      height: 64px; display: flex; align-items: center; justify-content: center;
+      color: #fff; font-weight: 700; font-size: 16px; letter-spacing: 0.04em;
+      border-bottom: 1px solid rgba(255,255,255,0.12);
+    }
+    .hero-banner {
+      background: linear-gradient(135deg, #1677ff 0%, #722ed1 100%);
+      border-radius: 8px; padding: 32px 40px; color: #fff; margin-bottom: 24px;
+    }
+    .hero-banner h1 { color: #fff !important; margin-bottom: 8px !important; }
+    .hero-banner .ant-typography { color: rgba(255,255,255,0.85) !important; }
+    .demo-box {
+      background: #fafafa; border: 1px dashed #d9d9d9; border-radius: 8px;
+      padding: 24px; margin: 16px 0;
+    }
+    .code-block {
+      background: #141414; color: #e6e6e6; border-radius: 8px;
+      padding: 16px 20px; font-family: 'SF Mono', Menlo, Consolas, monospace;
+      font-size: 13px; line-height: 1.6; overflow-x: auto; margin: 12px 0;
+    }
+    .code-block .kw { color: #c586c0; }
+    .code-block .str { color: #ce9178; }
+    .code-block .fn { color: #dcdcaa; }
+    .code-block .cm { color: #6a9955; }
+    .principle-icon { font-size: 28px; margin-bottom: 8px; }
+    .site-footer { text-align: center; color: rgba(0,0,0,0.45); padding: 24px 0; }
+    .content-inner { max-width: 960px; }
+    section { scroll-margin-top: 80px; }
+  </style>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/react@18.3.1/umd/react.production.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/react-dom@18.3.1/umd/react-dom.production.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/dayjs@1.11.13/dayjs.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/antd@5.24.9/dist/antd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@ant-design/icons@5.6.1/dist/index.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@babel/standalone@7.26.9/babel.min.js"></script>
+
+<script type="text/babel" data-presets="react">
+const {
+  Layout, Menu, Typography, Card, Row, Col, Button, Space, Tag, Divider,
+  Form, Input, Select, Table, Modal, message, notification, Steps, Alert,
+  ConfigProvider, theme, Statistic, Timeline, Tabs, Badge, Tooltip, App,
+  Switch, Radio, Popconfirm, Empty, Descriptions, Flex
+} = antd;
+
+const {
+  HomeOutlined, AppstoreOutlined, FormOutlined, TableOutlined, BgColorsOutlined,
+  ClusterOutlined, RocketOutlined, CheckCircleOutlined, CodeOutlined,
+  LayoutOutlined, BellOutlined, GithubOutlined, BookOutlined, ThunderboltOutlined,
+  SafetyOutlined, SmileOutlined, RiseOutlined
+} = icons;
+
+const { Header, Sider, Content, Footer } = Layout;
+const { Title, Paragraph, Text, Link } = Typography;
+const { useState } = React;
+
+/* ---------- 演示数据 ---------- */
+const tableData = [
+  { key: '1', name: 'Button', category: '通用', desc: '触发操作' },
+  { key: '2', name: 'Form', category: '数据录入', desc: '表单收集与校验' },
+  { key: '3', name: 'Table', category: '数据展示', desc: '表格展示与排序' },
+  { key: '4', name: 'Modal', category: '反馈', desc: '对话框交互' },
+  { key: '5', name: 'Layout', category: '布局', desc: '页面整体框架' },
+];
+
+const tableColumns = [
+  { title: '组件', dataIndex: 'name', key: 'name', render: (t) => <Tag color="blue">{t}</Tag> },
+  { title: '分类', dataIndex: 'category', key: 'category' },
+  { title: '用途', dataIndex: 'desc', key: 'desc' },
+];
+
+const menuItems = [
+  { key: 'overview', icon: <HomeOutlined />, label: '什么是 Ant Design' },
+  { key: 'principles', icon: <SmileOutlined />, label: '设计理念' },
+  { key: 'quickstart', icon: <RocketOutlined />, label: '快速开始' },
+  { key: 'layout', icon: <LayoutOutlined />, label: '布局系统' },
+  { key: 'form', icon: <FormOutlined />, label: '表单 Form' },
+  { key: 'table', icon: <TableOutlined />, label: '表格 Table' },
+  { key: 'feedback', icon: <BellOutlined />, label: '反馈组件' },
+  { key: 'theme', icon: <BgColorsOutlined />, label: '主题定制' },
+  { key: 'ecosystem', icon: <ClusterOutlined />, label: '生态与对比' },
+];
+
+const principles = [
+  { icon: '🌿', title: '自然', desc: '交互符合直觉，减少认知负担。表单即时校验、Modal 自动聚焦都是体现。' },
+  { icon: '🎯', title: '确定性', desc: '相同语义 = 相同视觉。primary 按钮永远表示主操作，danger 表示破坏性操作。' },
+  { icon: '💡', title: '意义感', desc: '每个元素有明确目的。Typography 层级、Empty 空状态引导用户下一步。' },
+  { icon: '📈', title: '生长性', desc: 'Design Token 让设计系统可扩展，ConfigProvider 一处改、全局生效。' },
+];
+
+/* ---------- 各章节内容 ---------- */
+function SectionOverview() {
+  return (
+    <section id="overview">
+      <div className="hero-banner">
+        <Title level={1}>Ant Design</Title>
+        <Paragraph style={{ fontSize: 16, marginBottom: 0 }}>
+          企业级 UI 设计语言和 React 组件库 · 本页即 antd 实战演示
+        </Paragraph>
+      </div>
+      <Alert
+        message="你正在阅读的页面，本身就是用 Ant Design 构建的"
+        description="侧边栏 Layout、内容 Card、下方 Form/Table 演示——所见即所学。Ant Design（antd）由蚂蚁集团开源，GitHub 80k+ stars，是中后台开发的事实标准之一。"
+        type="info"
+        showIcon
+        style={{ marginBottom: 24 }}
+      />
+      <Row gutter={[16, 16]}>
+        <Col xs={24} sm={8}>
+          <Card><Statistic title="组件数量" value="60+" prefix={<AppstoreOutlined />} /></Card>
+        </Col>
+        <Col xs={24} sm={8}>
+          <Card><Statistic title="当前版本" value="v5" prefix={<ThunderboltOutlined />} suffix={<Text type="secondary" style={{ fontSize: 14 }}>CSS-in-JS</Text>} /></Card>
+        </Col>
+        <Col xs={24} sm={8}>
+          <Card><Statistic title="技术栈" value="React" prefix={<CodeOutlined />} suffix={<Text type="secondary" style={{ fontSize: 14 }}>+ TS</Text>} /></Card>
+        </Col>
+      </Row>
+      <Card title="三层架构" style={{ marginTop: 16 }}>
+        <Steps
+          direction="vertical"
+          current={-1}
+          items={[
+            { title: '设计语言', description: '色彩、间距、字体、交互规范 — 保证视觉一致' },
+            { title: 'React 组件', description: 'Button / Form / Table / Modal … 开箱即用' },
+            { title: 'Design Token', description: '可主题化的设计变量，v5 通过 ConfigProvider 注入' },
+          ]}
+        />
+      </Card>
+    </section>
+  );
+}
+
+function SectionPrinciples() {
+  return (
+    <section id="principles">
+      <Title level={2}>设计理念</Title>
+      <Paragraph type="secondary">antd 的四个设计价值观，指导每一个组件的交互与视觉决策。</Paragraph>
+      <Row gutter={[16, 16]} style={{ marginTop: 16 }}>
+        {principles.map(p => (
+          <Col xs={24} sm={12} key={p.title}>
+            <Card hoverable>
+              <div className="principle-icon">{p.icon}</div>
+              <Title level={4}>{p.title}</Title>
+              <Paragraph type="secondary" style={{ marginBottom: 0 }}>{p.desc}</Paragraph>
+            </Card>
+          </Col>
+        ))}
+      </Row>
+    </section>
+  );
+}
+
+function SectionQuickstart() {
+  return (
+    <section id="quickstart">
+      <Title level={2}>快速开始</Title>
+      <Tabs items={[
+        {
+          key: 'install',
+          label: '安装',
+          children: (
+            <>
+              <div className="code-block">
+                <span className="cm"># 核心库</span><br/>
+                npm install antd<br/><br/>
+                <span className="cm"># 图标（按需引入）</span><br/>
+                npm install @ant-design/icons
+              </div>
+              <Alert message="TypeScript 开箱即用" description="antd 全量导出 TypeScript 类型，IDE 自动补全 props。" type="success" showIcon />
+            </>
+          ),
+        },
+        {
+          key: 'usage',
+          label: '最小示例',
+          children: (
+            <>
+              <div className="code-block">
+                <span className="kw">import</span> {'{ Button, ConfigProvider }'} <span className="kw">from</span> <span className="str">'antd'</span>;<br/>
+                <span className="kw">import</span> zhCN <span className="kw">from</span> <span className="str">'antd/locale/zh_CN'</span>;<br/><br/>
+                <span className="kw">export default function</span> <span className="fn">App</span>() {'{'}<br/>
+                {'  '}<span className="kw">return</span> (<br/>
+                {'    '}&lt;<span className="fn">ConfigProvider</span> locale={'{zhCN}'}&gt;<br/>
+                {'      '}&lt;<span className="fn">Button</span> type=<span className="str">"primary"</span>&gt;提交&lt;/<span className="fn">Button</span>&gt;<br/>
+                {'    '}&lt;/<span className="fn">ConfigProvider</span>&gt;<br/>
+                {'  '});<br/>
+                {'}'}
+              </div>
+              <div className="demo-box">
+                <Space wrap>
+                  <Button type="primary">Primary</Button>
+                  <Button>Default</Button>
+                  <Button type="dashed">Dashed</Button>
+                  <Button type="link">Link</Button>
+                  <Button type="primary" danger>Danger</Button>
+                  <Button type="primary" loading>Loading</Button>
+                </Space>
+              </div>
+              <Descriptions bordered size="small" column={1} style={{ marginTop: 16 }}
+                items={[
+                  { label: 'ConfigProvider', children: '全局配置入口：locale、theme、componentSize' },
+                  { label: 'type 语义', children: 'primary=主操作, default=次要, danger=破坏性' },
+                  { label: 'loading', children: '内置加载态，无需手写 Spinner' },
+                ]}
+              />
+            </>
+          ),
+        },
+      ]} />
+    </section>
+  );
+}
+
+function SectionLayout() {
+  return (
+    <section id="layout">
+      <Title level={2}>布局系统 Layout</Title>
+      <Paragraph type="secondary">
+        中后台页面的骨架：<Text code>Layout</Text> + <Text code>Sider</Text> + <Text code>Header</Text> + <Text code>Content</Text> + <Text code>Footer</Text>。
+        本页左侧导航 + 顶栏 + 内容区就是标准 Layout 模式。
+      </Paragraph>
+      <Card title="嵌套 Layout 示意" style={{ marginTop: 16 }}>
+        <div style={{ border: '1px solid #f0f0f0', borderRadius: 8, overflow: 'hidden' }}>
+          <Layout style={{ minHeight: 200 }}>
+            <Header style={{ background: '#001529', color: '#fff', padding: '0 16px', lineHeight: '48px' }}>
+              Header — 顶栏导航
+            </Header>
+            <Layout>
+              <Sider width={120} style={{ background: '#001529', color: '#fff', padding: 12, fontSize: 12 }}>
+                Sider<br/>侧边栏
+              </Sider>
+              <Content style={{ padding: 16, background: '#fff' }}>
+                Content — 主内容区
+              </Content>
+            </Layout>
+            <Footer style={{ textAlign: 'center', background: '#fafafa', padding: 8, fontSize: 12 }}>
+              Footer
+            </Footer>
+          </Layout>
+        </div>
+      </Card>
+      <Alert style={{ marginTop: 16 }} type="warning" showIcon
+        message="响应式提示"
+        description="Sider 可设 collapsible + breakpoint，窄屏自动折叠为 Drawer 式菜单（配合 Menu 组件）。"
+      />
+    </section>
+  );
+}
+
+function SectionForm() {
+  const [form] = Form.useForm();
+  const [submitted, setSubmitted] = useState(null);
+
+  const onFinish = (values) => {
+    setSubmitted(values);
+    message.success('表单校验通过！');
+  };
+
+  return (
+    <section id="form">
+      <Title level={2}>表单 Form</Title>
+      <Paragraph type="secondary">
+        Form 是中后台的核心：内置校验规则、布局模式（horizontal/vertical/inline）、字段联动。
+      </Paragraph>
+      <Row gutter={24}>
+        <Col xs={24} md={14}>
+          <Card title="实时演示 — 用户注册">
+            <Form form={form} layout="vertical" onFinish={onFinish}
+              initialValues={{ role: 'developer' }}>
+              <Form.Item label="用户名" name="username"
+                rules={[{ required: true, message: '请输入用户名' }, { min: 3, message: '至少 3 个字符' }]}>
+                <Input placeholder="至少 3 个字符" prefix={<SafetyOutlined />} />
+              </Form.Item>
+              <Form.Item label="邮箱" name="email"
+                rules={[{ required: true, type: 'email', message: '请输入有效邮箱' }]}>
+                <Input placeholder="you@example.com" />
+              </Form.Item>
+              <Form.Item label="角色" name="role">
+                <Select options={[
+                  { value: 'developer', label: '开发者' },
+                  { value: 'designer', label: '设计师' },
+                  { value: 'pm', label: '产品经理' },
+                ]} />
+              </Form.Item>
+              <Form.Item label="订阅通知" name="notify" valuePropName="checked">
+                <Switch />
+              </Form.Item>
+              <Form.Item>
+                <Space>
+                  <Button type="primary" htmlType="submit">提交</Button>
+                  <Button onClick={() => { form.resetFields(); setSubmitted(null); }}>重置</Button>
+                </Space>
+              </Form.Item>
+            </Form>
+          </Card>
+        </Col>
+        <Col xs={24} md={10}>
+          <Card title="提交结果">
+            {submitted ? (
+              <Descriptions column={1} size="small"
+                items={Object.entries(submitted).map(([k, v]) => ({
+                  label: k, children: String(v)
+                }))}
+              />
+            ) : (
+              <Empty description="填写左侧表单并提交" />
+            )}
+          </Card>
+          <Alert style={{ marginTop: 16 }} type="info" showIcon
+            message="rules 数组"
+            description="每项支持 required / min / max / pattern / validator 自定义函数。错误信息自动渲染在字段下方。"
+          />
+        </Col>
+      </Row>
+    </section>
+  );
+}
+
+function SectionTable() {
+  const [selected, setSelected] = useState([]);
+
+  return (
+    <section id="table">
+      <Title level={2}>表格 Table</Title>
+      <Paragraph type="secondary">
+        列表页主力：排序、筛选、分页、行选择、固定列、虚拟滚动（大数据）均内置支持。
+      </Paragraph>
+      <Card>
+        <Table
+          dataSource={tableData}
+          columns={tableColumns}
+          rowSelection={{
+            selectedRowKeys: selected,
+            onChange: setSelected,
+          }}
+          pagination={{ pageSize: 5, showSizeChanger: true, showTotal: (t) => `共 ${t} 条` }}
+        />
+        {selected.length > 0 && (
+          <Alert style={{ marginTop: 12 }} type="success" showIcon
+            message={`已选 ${selected.length} 项：${selected.join(', ')}`}
+          />
+        )}
+      </Card>
+      <Alert style={{ marginTop: 16 }} type="warning" showIcon
+        message="易错：rowKey"
+        description="务必为每行提供唯一 rowKey（默认读 key 字段），否则多选和展开会出 bug。"
+      />
+    </section>
+  );
+}
+
+function SectionFeedback() {
+  const { message: msg, notification: notif } = App.useApp();
+  const [modalOpen, setModalOpen] = useState(false);
+
+  return (
+    <section id="feedback">
+      <Title level={2}>反馈组件</Title>
+      <Paragraph type="secondary">操作结果需要即时反馈：轻量用 message，重要用 notification，需确认用 Modal。</Paragraph>
+      <Card title="命令式 API 演示">
+        <Space wrap>
+          <Button onClick={() => msg.success('操作成功！')}>message.success</Button>
+          <Button onClick={() => msg.error('出错了')}>message.error</Button>
+          <Button onClick={() => notif.info({
+            message: '系统通知',
+            description: '你有一条新消息，请查看。',
+            placement: 'topRight',
+          })}>notification</Button>
+          <Button type="primary" onClick={() => setModalOpen(true)}>打开 Modal</Button>
+          <Popconfirm title="确定删除？" description="此操作不可撤销" onConfirm={() => msg.warning('已删除')}>
+            <Button danger>Popconfirm</Button>
+          </Popconfirm>
+        </Space>
+      </Card>
+      <Modal
+        title="Modal 对话框"
+        open={modalOpen}
+        onOk={() => setModalOpen(false)}
+        onCancel={() => setModalOpen(false)}
+        okText="确定"
+        cancelText="取消"
+      >
+        <Paragraph>Modal 自动管理焦点陷阱（focus trap）和 ESC 关闭，符合无障碍标准。</Paragraph>
+        <Paragraph type="secondary">v5 推荐通过 <Text code>App.useApp()</Text> 获取 message/notification/modal 实例，确保主题和 locale 正确继承。</Paragraph>
+      </Modal>
+    </section>
+  );
+}
+
+function SectionTheme({ primaryColor, setPrimaryColor }) {
+  const presets = [
+    { label: '默认蓝', value: '#1677ff' },
+    { label: '极光绿', value: '#52c41a' },
+    { label: '酱紫', value: '#722ed1' },
+    { label: '日暮', value: '#fa541c' },
+  ];
+
+  return (
+    <section id="theme">
+      <Title level={2}>主题定制（v5 Design Token）</Title>
+      <Paragraph type="secondary">
+        v5 废弃 Less 变量，改用 <Text code>ConfigProvider theme</Text> 注入 Design Token。
+        切换下方主色，整个页面即时变化。
+      </Paragraph>
+      <Card title="切换主色 colorPrimary">
+        <Radio.Group value={primaryColor} onChange={e => setPrimaryColor(e.target.value)}>
+          {presets.map(p => (
+            <Radio.Button key={p.value} value={p.value}>
+              <Badge color={p.value} text={p.label} />
+            </Radio.Button>
+          ))}
+        </Radio.Group>
+        <div className="demo-box" style={{ marginTop: 16 }}>
+          <Space>
+            <Button type="primary">Primary Button</Button>
+            <Button type="primary" ghost>Ghost</Button>
+            <Tag color="processing">Tag</Tag>
+            <Link>链接色</Link>
+          </Space>
+        </div>
+        <div className="code-block" style={{ marginTop: 16 }}>
+          {'<ConfigProvider theme={{'}<br/>
+          {'  token: { colorPrimary: \''}{primaryColor}{'\' },'}<br/>
+          {'  components: { Button: { controlHeight: 36 } }'}<br/>
+          {'}}>'}
+        </div>
+      </Card>
+    </section>
+  );
+}
+
+function SectionEcosystem() {
+  return (
+    <section id="ecosystem">
+      <Title level={2}>生态与对比</Title>
+      <Row gutter={[16, 16]}>
+        <Col xs={24} md={12}>
+          <Card title="Ant Design 生态">
+            <Timeline items={[
+              { color: 'blue', children: <><Text strong>antd</Text> — 核心 React 组件库</> },
+              { color: 'green', children: <><Text strong>ProComponents</Text> — ProTable / ProForm 配置化高级组件</> },
+              { color: 'purple', children: <><Text strong>Ant Design Pro</Text> — 中后台脚手架（路由+权限+布局）</> },
+              { color: 'orange', children: <><Text strong>antd-mobile</Text> — 移动端组件库</> },
+              { color: 'gray', children: <><Text strong>@ant-design/charts</Text> — 图表，视觉与 antd 一致</> },
+            ]} />
+          </Card>
+        </Col>
+        <Col xs={24} md={12}>
+          <Card title="与同类库对比">
+            <Table size="small" pagination={false}
+              dataSource={[
+                { key: '1', lib: 'Ant Design', style: '企业后台', fit: '中后台 SaaS' },
+                { key: '2', lib: 'Material UI', style: 'Material', fit: '通用 Web App' },
+                { key: '3', lib: 'shadcn/ui', style: '无预设', fit: '高度定制设计系统' },
+              ]}
+              columns={[
+                { title: '库', dataIndex: 'lib', render: t => <Text strong>{t}</Text> },
+                { title: '风格', dataIndex: 'style' },
+                { title: '适合', dataIndex: 'fit' },
+              ]}
+            />
+          </Card>
+        </Col>
+      </Row>
+      <Card style={{ marginTop: 16 }} title="官方资源">
+        <Space wrap>
+          <Button icon={<BookOutlined />} href="https://ant.design/docs/react/introduce-cn" target="_blank">官方文档</Button>
+          <Button icon={<GithubOutlined />} href="https://github.com/ant-design/ant-design" target="_blank">GitHub</Button>
+          <Button icon={<BgColorsOutlined />} href="https://ant.design/theme-editor" target="_blank">Theme Editor</Button>
+          <Button icon={<AppstoreOutlined />} href="https://pro.ant.design" target="_blank">Ant Design Pro</Button>
+        </Space>
+      </Card>
+    </section>
+  );
+}
+
+/* ---------- 主应用 ---------- */
+function AppRoot() {
+  const [primaryColor, setPrimaryColor] = useState('#1677ff');
+
+  return (
+    <ConfigProvider
+      theme={{
+        token: { colorPrimary: primaryColor, borderRadius: 6 },
+        algorithm: theme.defaultAlgorithm,
+      }}
+    >
+      <App>
+        <TutorialAppInner primaryColor={primaryColor} setPrimaryColor={setPrimaryColor} />
+      </App>
+    </ConfigProvider>
+  );
+}
+
+function TutorialAppInner({ primaryColor, setPrimaryColor }) {
+  const [collapsed, setCollapsed] = useState(false);
+  const [activeKey, setActiveKey] = useState('overview');
+
+  const scrollTo = (key) => {
+    setActiveKey(key);
+    document.getElementById(key)?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  return (
+    <Layout style={{ minHeight: '100vh' }}>
+      <Sider collapsible collapsed={collapsed} onCollapse={setCollapsed}
+        breakpoint="lg" theme="dark" width={240}
+        style={{ position: 'sticky', top: 0, height: '100vh', overflow: 'auto' }}>
+        <div className="logo-area">{collapsed ? 'AD' : 'Ant Design'}</div>
+        <Menu theme="dark" mode="inline" selectedKeys={[activeKey]}
+          items={menuItems} onClick={({ key }) => scrollTo(key)} />
+      </Sider>
+      <Layout>
+        <Header style={{
+          background: '#fff', padding: '0 24px', borderBottom: '1px solid #f0f0f0',
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          position: 'sticky', top: 0, zIndex: 10,
+        }}>
+          <Space>
+            <CheckCircleOutlined style={{ color: primaryColor }} />
+            <Text strong>Ant Design 交互式入门教程</Text>
+            <Tag color="blue">v5</Tag>
+          </Space>
+          <Tooltip title="在「主题定制」章节切换主色">
+            <Badge color={primaryColor} text={<Text type="secondary">主题色 {primaryColor}</Text>} />
+          </Tooltip>
+        </Header>
+        <Content style={{ padding: '24px 32px', background: '#f5f5f5' }}>
+          <div className="content-inner">
+            <SectionOverview />
+            <Divider />
+            <SectionPrinciples />
+            <Divider />
+            <SectionQuickstart />
+            <Divider />
+            <SectionLayout />
+            <Divider />
+            <SectionForm />
+            <Divider />
+            <SectionTable />
+            <Divider />
+            <SectionFeedback />
+            <Divider />
+            <SectionTheme primaryColor={primaryColor} setPrimaryColor={setPrimaryColor} />
+            <Divider />
+            <SectionEcosystem />
+          </div>
+          <Footer className="site-footer">
+            本页使用 React 18 + Ant Design 5 构建 · 组件库即教材
+          </Footer>
+        </Content>
+      </Layout>
+    </Layout>
+  );
+}
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(<AppRoot />);
+</script>
+</body>
+</html>

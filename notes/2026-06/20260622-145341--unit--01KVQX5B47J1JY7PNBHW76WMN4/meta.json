@@ -1,0 +1,64 @@
+{
+  "schema_version": "1.0",
+  "id": "01KVQX5B47J1JY7PNBHW76WMN4",
+  "title": "分离均衡",
+  "slug": "unit",
+  "summary": "分离均衡是信号博弈中不同类型发送者选择不同信号的贝叶斯纳什均衡，使接收者可从信号完全推断私人类型，消除信息不对称。",
+  "original_question": "构建一份简约学术风的HTML文件，详细讲解一下什么是博弈论中的分离均衡",
+  "domain": "economics",
+  "tags": [
+    "game-theory",
+    "economics",
+    "signaling-game",
+    "information-economics"
+  ],
+  "concepts": [
+    "separating equilibrium",
+    "signaling game",
+    "bayesian nash equilibrium",
+    "single-crossing property",
+    "incentive compatibility",
+    "pooling equilibrium",
+    "semi-separating equilibrium",
+    "spence education signaling",
+    "intuitive criterion",
+    "equilibrium refinement",
+    "degenerate belief",
+    "incomplete information game",
+    "sender-receiver model",
+    "riley outcome"
+  ],
+  "relations": [
+    {
+      "type": "prerequisite",
+      "target": "01KVMYPS3JPHSH8T9VKEVDGC8B"
+    }
+  ],
+  "references": [
+    {
+      "title": "Spence, M. (1973). Job Market Signaling. QJE, 87(3), 355-374.",
+      "url": "https://doi.org/10.2307/1882010"
+    },
+    {
+      "title": "Cho, I.-K. & Kreps, D. M. (1987). Signaling Games and Stable Equilibria. QJE, 102(2), 179-221.",
+      "url": "https://doi.org/10.2307/1885060"
+    },
+    {
+      "title": "Gibbons, R. (1992). Game Theory for Applied Economists. Princeton University Press.",
+      "url": "https://press.princeton.edu/books/paperback/9780691003955/game-theory-for-applied-economists"
+    },
+    {
+      "title": "Fudenberg, D. & Tirole, J. (1991). Game Theory. MIT Press.",
+      "url": "https://mitpress.mit.edu/9780262061414/game-theory/"
+    }
+  ],
+  "artifact": {
+    "format": "html",
+    "entry": "artifact/index.html",
+    "self_contained": true
+  },
+  "status": "draft",
+  "confidence": "solid",
+  "created_at": "2026-06-22T14:53:41.895853+00:00",
+  "updated_at": "2026-06-22T14:53:41.895853+00:00"
+}

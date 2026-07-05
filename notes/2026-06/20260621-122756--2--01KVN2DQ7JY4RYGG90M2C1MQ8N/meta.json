@@ -1,0 +1,50 @@
+{
+  "schema_version": "1.0",
+  "id": "01KVN2DQ7JY4RYGG90M2C1MQ8N",
+  "title": "计算机网络第2章：物理层核心知识",
+  "slug": "2",
+  "summary": "物理层传输介质、奈奎斯特/香农极限、数字调制与多路复用，以及电话网、蜂窝网与有线电视三大接入系统。",
+  "original_question": "阅读第2章物理层 full.md，构建简约学术风格单HTML网页介绍核心知识点，并在HTML中构建简单思维导图",
+  "domain": "computer-networking",
+  "tags": [
+    "networking",
+    "physical-layer",
+    "transmission-media",
+    "modulation",
+    "multiplexing"
+  ],
+  "concepts": [
+    "physical layer",
+    "guided transmission media",
+    "wireless transmission",
+    "Nyquist theorem",
+    "Shannon capacity",
+    "digital modulation",
+    "baseband transmission",
+    "passband transmission",
+    "frequency division multiplexing",
+    "time division multiplexing",
+    "code division multiple access",
+    "wavelength division multiplexing",
+    "PSTN",
+    "ADSL",
+    "cellular network",
+    "cable television",
+    "electromagnetic spectrum"
+  ],
+  "relations": [
+    {
+      "type": "prerequisite",
+      "target": "01KVMG457M9FNDBZC4HJSEF2DA"
+    }
+  ],
+  "artifact": {
+    "format": "html",
+    "entry": "artifact/index.html",
+    "self_contained": true
+  },
+  "status": "stable",
+  "confidence": "solid",
+  "created_at": "2026-06-21T12:27:56.018364+00:00",
+  "updated_at": "2026-06-21T12:27:56.018364+00:00"
+}
