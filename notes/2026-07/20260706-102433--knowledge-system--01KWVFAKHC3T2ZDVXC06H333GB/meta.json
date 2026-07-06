@@ -1,0 +1,33 @@
+{
+  "schema_version": "1.0",
+  "id": "01KWVFAKHC3T2ZDVXC06H333GB",
+  "title": "knowledge-system 仓库是做什么的",
+  "slug": "knowledge-system",
+  "summary": "个人知识沉淀系统：用四个 Agent 契约 + ks CLI 把 AI 对话中的学习产出变成可检索、可复盘、可独立打开的知识单元。",
+  "original_question": "请阅读这个仓库，给我讲一讲它是干什么的",
+  "domain": "meta",
+  "tags": [
+    "knowledge-system",
+    "architecture",
+    "agent-contracts",
+    "cli"
+  ],
+  "concepts": [
+    "knowledge distillation",
+    "knowledge unit",
+    "single writer",
+    "file as source of truth",
+    "agent contracts",
+    "ks CLI",
+    "meta.json schema"
+  ],
+  "artifact": {
+    "format": "markdown",
+    "entry": "note.md",
+    "self_contained": true
+  },
+  "status": "draft",
+  "confidence": "solid",
+  "created_at": "2026-07-06T10:24:33.836204+00:00",
+  "updated_at": "2026-07-06T10:24:33.836204+00:00"
+}
