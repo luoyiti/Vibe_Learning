@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Electron：用 Web 技术构建跨平台桌面应用</title>
+  <meta name="description" content="一篇学术风格的导论：Electron 的定义、架构、进程模型、IPC 机制，以及其工程权衡。" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Literata:ital,opsz,wght@0,7..72,400;0,7..72,600;0,7..72,700;1,7..72,400&family=Sora:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --ink: #1a2332;
+      --ink-soft: #3d4a5c;
+      --muted: #6b7a8d;
+      --paper: #e8eef4;
+      --paper-2: #f4f7fa;
+      --line: #c5d0dc;
+      --accent: #0d6e6e;
+      --accent-deep: #085555;
+      --accent-soft: rgba(13, 110, 110, 0.12);
+      --warn: #8a4b1a;
+      --max: 42rem;
+      --ease: cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+
+    html {
+      scroll-behavior: smooth;
+      color-scheme: light;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Literata", "Iowan Old Style", "Palatino Linotype", Georgia, serif;
+      font-size: 1.0625rem;
+      line-height: 1.75;
+      color: var(--ink);
+      background:
+        radial-gradient(ellipse 90% 60% at 10% -10%, rgba(13, 110, 110, 0.14), transparent 55%),
+        radial-gradient(ellipse 70% 50% at 100% 0%, rgba(26, 35, 50, 0.08), transparent 50%),
+        linear-gradient(180deg, #dce6ef 0%, var(--paper) 28%, var(--paper-2) 100%);
+      background-attachment: fixed;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Atmospheric grid behind hero */
+    .hero {
+      position: relative;
+      min-height: 100dvh;
+      display: grid;
+      align-content: end;
+      padding: clamp(2rem, 6vw, 4.5rem) clamp(1.25rem, 5vw, 3rem) clamp(3rem, 8vw, 5.5rem);
+      overflow: hidden;
+      isolation: isolate;
+    }
+
+    .hero::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: -2;
+      background:
+        linear-gradient(160deg, #0f2430 0%, #163a42 42%, #1a4d4d 100%);
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: -1;
+      opacity: 0.45;
+      background-image:
+        linear-gradient(rgba(232, 238, 244, 0.06) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(232, 238, 244, 0.06) 1px, transparent 1px);
+      background-size: 48px 48px;
+      mask-image: radial-gradient(ellipse 80% 70% at 70% 40%, #000 20%, transparent 75%);
+      animation: grid-drift 28s linear infinite;
+    }
+
+    @keyframes grid-drift {
+      from { background-position: 0 0, 0 0; }
+      to { background-position: 48px 24px, 48px 24px; }
+    }
+
+    .hero-orbit {
+      position: absolute;
+      width: min(62vw, 520px);
+      aspect-ratio: 1;
+      right: -8%;
+      top: 8%;
+      border-radius: 50%;
+      border: 1px solid rgba(232, 238, 244, 0.18);
+      pointer-events: none;
+      z-index: -1;
+      animation: orbit-pulse 6s var(--ease) infinite;
+    }
+
+    .hero-orbit::before,
+    .hero-orbit::after {
+      content: "";
+      position: absolute;
+      inset: 12%;
+      border-radius: 50%;
+      border: 1px solid rgba(232, 238, 244, 0.12);
+    }
+
+    .hero-orbit::after { inset: 28%; border-color: rgba(13, 110, 110, 0.35); }
+
+    @keyframes orbit-pulse {
+      0%, 100% { transform: scale(1); opacity: 0.9; }
+      50% { transform: scale(1.04); opacity: 1; }
+    }
+
+    .hero-inner {
+      max-width: 44rem;
+      color: #eef4f7;
+    }
+
+    .brand {
+      font-family: "Sora", system-ui, sans-serif;
+      font-weight: 700;
+      font-size: clamp(3.2rem, 11vw, 5.75rem);
+      letter-spacing: -0.04em;
+      line-height: 0.95;
+      margin: 0 0 1.1rem;
+      text-wrap: balance;
+      opacity: 0;
+      transform: translateY(1.1rem);
+      animation: rise 0.9s var(--ease) 0.1s forwards;
+    }
+
+    .hero h1 {
+      font-family: "Sora", system-ui, sans-serif;
+      font-weight: 500;
+      font-size: clamp(1.15rem, 2.6vw, 1.45rem);
+      letter-spacing: -0.01em;
+      line-height: 1.35;
+      margin: 0 0 0.85rem;
+      color: #d5e6e6;
+      max-width: 28rem;
+      text-wrap: balance;
+      opacity: 0;
+      transform: translateY(1.1rem);
+      animation: rise 0.9s var(--ease) 0.25s forwards;
+    }
+
+    .hero-lead {
+      margin: 0 0 1.75rem;
+      font-size: 1.05rem;
+      color: rgba(238, 244, 247, 0.78);
+      max-width: 32rem;
+      text-wrap: pretty;
+      opacity: 0;
+      transform: translateY(1.1rem);
+      animation: rise 0.9s var(--ease) 0.4s forwards;
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem 1rem;
+      opacity: 0;
+      transform: translateY(1.1rem);
+      animation: rise 0.9s var(--ease) 0.55s forwards;
+    }
+
+    .hero-actions a {
+      font-family: "Sora", system-ui, sans-serif;
+      font-size: 0.875rem;
+      font-weight: 600;
+      text-decoration: none;
+      padding: 0.7rem 1.15rem;
+      border: 1px solid rgba(238, 244, 247, 0.35);
+      color: #eef4f7;
+      transition: background 0.25s var(--ease), border-color 0.25s var(--ease), color 0.25s var(--ease);
+    }
+
+    .hero-actions a.primary {
+      background: #e8f3f2;
+      color: var(--accent-deep);
+      border-color: #e8f3f2;
+    }
+
+    .hero-actions a:hover {
+      background: rgba(232, 243, 242, 0.14);
+      border-color: rgba(238, 244, 247, 0.7);
+    }
+
+    .hero-actions a.primary:hover {
+      background: #fff;
+      color: var(--accent-deep);
+    }
+
+    @keyframes rise {
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Layout */
+    .shell {
+      max-width: 72rem;
+      margin: 0 auto;
+      padding: 0 clamp(1.25rem, 4vw, 2.5rem) 4rem;
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 2.5rem;
+    }
+
+    @media (min-width: 960px) {
+      .shell {
+        grid-template-columns: 13.5rem minmax(0, var(--max)) 1fr;
+        gap: 2.5rem 3rem;
+        align-items: start;
+      }
+    }
+
+    nav.toc {
+      font-family: "Sora", system-ui, sans-serif;
+      font-size: 0.78rem;
+      position: sticky;
+      top: 1.25rem;
+      padding-top: 0.5rem;
+    }
+
+    nav.toc .toc-label {
+      display: block;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--muted);
+      font-weight: 600;
+      margin-bottom: 0.85rem;
+    }
+
+    nav.toc ol {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      border-left: 1px solid var(--line);
+    }
+
+    nav.toc a {
+      display: block;
+      padding: 0.35rem 0 0.35rem 0.9rem;
+      color: var(--ink-soft);
+      text-decoration: none;
+      border-left: 2px solid transparent;
+      margin-left: -1px;
+      transition: color 0.2s, border-color 0.2s;
+    }
+
+    nav.toc a:hover,
+    nav.toc a[aria-current="true"] {
+      color: var(--accent-deep);
+      border-left-color: var(--accent);
+    }
+
+    @media (max-width: 959px) {
+      nav.toc {
+        position: static;
+        overflow-x: auto;
+        padding-bottom: 0.5rem;
+      }
+      nav.toc ol {
+        display: flex;
+        gap: 0.25rem;
+        border: none;
+        width: max-content;
+      }
+      nav.toc a {
+        border: 1px solid var(--line);
+        border-radius: 0;
+        padding: 0.4rem 0.7rem;
+        margin: 0;
+        white-space: nowrap;
+        background: rgba(255, 255, 255, 0.45);
+      }
+      nav.toc a[aria-current="true"] {
+        border-color: var(--accent);
+        background: var(--accent-soft);
+      }
+    }
+
+    article {
+      min-width: 0;
+    }
+
+    .meta-bar {
+      font-family: "Sora", system-ui, sans-serif;
+      font-size: 0.75rem;
+      color: var(--muted);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem 1.25rem;
+      margin: 0 0 2rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .abstract {
+      background: rgba(255, 255, 255, 0.55);
+      border-left: 3px solid var(--accent);
+      padding: 1.15rem 1.35rem;
+      margin: 0 0 2.5rem;
+    }
+
+    .abstract h2 {
+      font-family: "Sora", system-ui, sans-serif;
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--accent-deep);
+      margin: 0 0 0.6rem;
+    }
+
+    .abstract p {
+      margin: 0;
+      font-size: 0.98rem;
+      color: var(--ink-soft);
+      text-wrap: pretty;
+    }
+
+    section {
+      margin-bottom: 2.75rem;
+      content-visibility: auto;
+      contain-intrinsic-size: auto 320px;
+      opacity: 0;
+      transform: translateY(0.75rem);
+      transition: opacity 0.7s var(--ease), transform 0.7s var(--ease);
+    }
+
+    section.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    h2 {
+      font-family: "Sora", system-ui, sans-serif;
+      font-size: 1.35rem;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      margin: 0 0 1rem;
+      color: var(--ink);
+      text-wrap: balance;
+      scroll-margin-top: 1.25rem;
+    }
+
+    h3 {
+      font-family: "Sora", system-ui, sans-serif;
+      font-size: 1.05rem;
+      font-weight: 600;
+      margin: 1.75rem 0 0.65rem;
+      color: var(--ink);
+      text-wrap: balance;
+    }
+
+    p { margin: 0 0 1rem; text-wrap: pretty; }
+    p:last-child { margin-bottom: 0; }
+
+    a.ref {
+      color: var(--accent-deep);
+      text-decoration: underline;
+      text-decoration-thickness: 1px;
+      text-underline-offset: 0.18em;
+    }
+
+    ul, ol {
+      margin: 0 0 1rem;
+      padding-left: 1.25rem;
+    }
+
+    li { margin-bottom: 0.4rem; text-wrap: pretty; }
+
+    figure.diagram {
+      margin: 1.5rem 0;
+      padding: 0;
+    }
+
+    .arch {
+      display: grid;
+      gap: 0.65rem;
+      font-family: "Sora", system-ui, sans-serif;
+      font-size: 0.82rem;
+    }
+
+    .arch-row {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 0.65rem;
+    }
+
+    @media (min-width: 560px) {
+      .arch-row.two { grid-template-columns: 1fr 1fr; }
+      .arch-row.three { grid-template-columns: 1fr 1fr 1fr; }
+    }
+
+    .arch-block {
+      padding: 0.9rem 1rem;
+      background: rgba(255, 255, 255, 0.7);
+      border: 1px solid var(--line);
+      border-top: 3px solid var(--accent);
+    }
+
+    .arch-block strong {
+      display: block;
+      font-size: 0.9rem;
+      margin-bottom: 0.25rem;
+      color: var(--ink);
+    }
+
+    .arch-block span {
+      color: var(--ink-soft);
+      line-height: 1.45;
+    }
+
+    .arch-bridge {
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.75rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    figcaption {
+      font-family: "Sora", system-ui, sans-serif;
+      font-size: 0.75rem;
+      color: var(--muted);
+      margin-top: 0.65rem;
+      text-align: center;
+    }
+
+    blockquote {
+      margin: 1.35rem 0;
+      padding: 0.15rem 0 0.15rem 1.15rem;
+      border-left: 3px solid var(--line);
+      color: var(--ink-soft);
+      font-style: italic;
+    }
+
+    .callout {
+      margin: 1.35rem 0;
+      padding: 1rem 1.15rem;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.5);
+      border-left: 3px solid var(--warn);
+    }
+
+    .callout strong {
+      font-family: "Sora", system-ui, sans-serif;
+      font-size: 0.8rem;
+      display: block;
+      margin-bottom: 0.35rem;
+      color: var(--warn);
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    table.compare {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.92rem;
+      margin: 1.25rem 0;
+    }
+
+    table.compare th,
+    table.compare td {
+      text-align: left;
+      padding: 0.65rem 0.75rem;
+      border-bottom: 1px solid var(--line);
+      vertical-align: top;
+    }
+
+    table.compare th {
+      font-family: "Sora", system-ui, sans-serif;
+      font-size: 0.78rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--muted);
+      background: rgba(255, 255, 255, 0.45);
+    }
+
+    .aside-rail {
+      display: none;
+    }
+
+    @media (min-width: 1100px) {
+      .aside-rail {
+        display: block;
+        position: sticky;
+        top: 1.25rem;
+        font-family: "Sora", system-ui, sans-serif;
+        font-size: 0.78rem;
+        color: var(--muted);
+        line-height: 1.5;
+        padding-top: 0.5rem;
+      }
+      .aside-rail strong {
+        display: block;
+        color: var(--ink-soft);
+        margin-bottom: 0.4rem;
+        font-weight: 600;
+      }
+    }
+
+    footer.colophon {
+      max-width: 72rem;
+      margin: 0 auto;
+      padding: 2rem clamp(1.25rem, 4vw, 2.5rem) 3.5rem;
+      border-top: 1px solid var(--line);
+      font-family: "Sora", system-ui, sans-serif;
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+
+    code {
+      font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+      font-size: 0.88em;
+      background: rgba(13, 110, 110, 0.08);
+      padding: 0.1em 0.35em;
+    }
+
+    pre {
+      overflow-x: auto;
+      padding: 1rem 1.1rem;
+      background: #152028;
+      color: #dce8e8;
+      font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+      font-size: 0.82rem;
+      line-height: 1.55;
+      margin: 1.15rem 0;
+    }
+
+    pre code {
+      background: none;
+      padding: 0;
+      color: inherit;
+      font-size: inherit;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      .hero::after, .hero-orbit { animation: none; }
+      .brand, .hero h1, .hero-lead, .hero-actions {
+        animation: none;
+        opacity: 1;
+        transform: none;
+      }
+      section {
+        opacity: 1;
+        transform: none;
+        transition: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="hero" aria-labelledby="brand">
+    <div class="hero-orbit" aria-hidden="true"></div>
+    <div class="hero-inner">
+      <p class="brand" id="brand">Electron</p>
+      <h1>用 Web 技术构建跨平台桌面应用的运行时框架</h1>
+      <p class="hero-lead">
+        本文将以学术导论的体例，界定 Electron 的技术本质、进程架构与工程权衡，供已熟悉 Web 与 Node.js 的读者建立系统化认知。
+      </p>
+      <div class="hero-actions">
+        <a class="primary" href="#abstract">阅读摘要</a>
+        <a href="#architecture">跳至架构</a>
+      </div>
+    </div>
+  </header>
+
+  <div class="shell">
+    <nav class="toc" aria-label="目录">
+      <span class="toc-label">目录</span>
+      <ol>
+        <li><a href="#abstract">摘要</a></li>
+        <li><a href="#definition">定义与定位</a></li>
+        <li><a href="#architecture">技术架构</a></li>
+        <li><a href="#processes">进程模型</a></li>
+        <li><a href="#ipc">进程间通信</a></li>
+        <li><a href="#ecosystem">应用与生态</a></li>
+        <li><a href="#tradeoffs">优势与权衡</a></li>
+        <li><a href="#conclusion">结论</a></li>
+      </ol>
+    </nav>
+
+    <article>
+      <div class="meta-bar">
+        <span>导论 · 桌面运行时</span>
+        <span>关键词：Chromium · Node.js · IPC · 跨平台</span>
+      </div>
+
+      <section id="abstract" class="abstract" aria-labelledby="abs-title">
+        <h2 id="abs-title">摘要</h2>
+        <p>
+          Electron 是一个开源框架，将 <strong>Chromium</strong>（渲染与 Web 平台）与 <strong>Node.js</strong>（系统与包生态）嵌入同一应用，使开发者能以 HTML、CSS、JavaScript（或 TypeScript）编写可在 Windows、macOS、Linux 上运行的桌面程序。其核心设计是<strong>多进程模型</strong>：主进程掌管应用生命周期与原生能力，渲染进程承载界面；二者经受控的 IPC 协作。本文梳理其定义、架构、通信机制与工程取舍，并指出与 Tauri、原生工具链等路径的对照维度。
+        </p>
+      </section>
+
+      <section id="definition">
+        <h2>一、定义与定位</h2>
+        <p>
+          Electron（原名 Atom Shell）由 GitHub 为编辑器 Atom 开源演进而来，现由 OpenJS Foundation 生态维护。形式上，它不是“又一个浏览器”，也不是单纯的 Node 运行时，而是一个<strong>桌面应用运行时</strong>：打包时附带 Chromium 与 Node 的定制发行版，应用代码在该运行时之上执行。
+        </p>
+        <blockquote>
+          直觉说法：Electron ≈ 一个内嵌浏览器内核的“本地壳”，再配上 Node 的文件系统、网络与原生模块能力——从而让 Web 前端技能覆盖桌面端交付。
+        </blockquote>
+        <p>
+          在软件栈中，Electron 位于“应用框架”层：开发者负责界面与业务逻辑；窗口管理、菜单、托盘、自动更新等桌面语义由 Electron API 提供；底层 OS 差异则由 Chromium/Node 与 Electron 的原生绑定吸收。典型交付物是可安装的桌面包（如 <code>.dmg</code>、<code>.exe</code>、<code>.AppImage</code>），而非托管在服务器上的网页。
+        </p>
+      </section>
+
+      <section id="architecture">
+        <h2>二、技术架构：Chromium + Node.js</h2>
+        <p>
+          Electron 的双引擎结构是其能力边界与代价结构的根源。
+        </p>
+        <ul>
+          <li><strong>Chromium</strong>：提供 Blink 渲染、V8、DevTools、现代 Web API，以及与浏览器相近的布局与兼容性。</li>
+          <li><strong>Node.js</strong>：提供模块系统、<code>fs</code>/<code>path</code>/<code>child_process</code>、npm 生态，以及与操作系统交互的路径。</li>
+        </ul>
+        <figure class="diagram" aria-label="Electron 双引擎示意">
+          <div class="arch">
+            <div class="arch-row">
+              <div class="arch-block">
+                <strong>应用层（你的代码）</strong>
+                <span>HTML / CSS / JS·TS · UI 框架（React、Vue 等）· 业务逻辑</span>
+              </div>
+            </div>
+            <div class="arch-bridge">Electron API · 预加载桥 · 打包工具</div>
+            <div class="arch-row two">
+              <div class="arch-block">
+                <strong>Chromium</strong>
+                <span>渲染、DOM、CSS、Web API、GPU 合成</span>
+              </div>
+              <div class="arch-block">
+                <strong>Node.js</strong>
+                <span>I/O、进程、npm、原生扩展（N-API 等）</span>
+              </div>
+            </div>
+            <div class="arch-bridge">操作系统（窗口 · 文件系统 · 通知 · 电源）</div>
+          </div>
+          <figcaption>图 1 · Electron 逻辑栈：Web 前端能力与本地 I/O 在同一产品内汇合</figcaption>
+        </figure>
+        <p>
+          因此，Electron 应用的“前端”几乎就是 Web 应用；差异在于：它可以在受控通道下调用本地能力，且用户以独立进程使用它，而非打开某个 URL。版本上，Electron 大体跟随 Chromium 发布节奏，升级往往同时带来 Web 平台特性与安全补丁，也要求应用侧回归测试。
+        </p>
+      </section>
+
+      <section id="processes">
+        <h2>三、进程模型</h2>
+        <p>
+          Electron 继承并强化了 Chromium 的多进程思想。理解三类角色，是安全与架构设计的前提。
+        </p>
+        <h3>3.1 主进程（Main Process）</h3>
+        <p>
+          每个应用通常有一个主进程，入口多为 <code>main.js</code>（或打包配置指定的主模块）。主进程可使用完整 Node API，负责创建 <code>BrowserWindow</code>、应用菜单、全局快捷键、协议注册、自动更新等。它相当于“操作系统侧的协调者”。
+        </p>
+        <h3>3.2 渲染进程（Renderer Process）</h3>
+        <p>
+          每个窗口（及部分 WebContents）对应渲染进程，运行页面与前端框架。出于安全，现代最佳实践要求渲染进程<strong>默认不直接暴露 Node</strong>（关闭 <code>nodeIntegration</code>），仅通过预加载脚本暴露最小 API 面。
+        </p>
+        <h3>3.3 预加载脚本（Preload）</h3>
+        <p>
+          Preload 在渲染页脚本之前运行，处于一个可同时触及有限 Node 能力与 <code>window</code> 的桥梁位置。推荐模式是：在 preload 中用 <code>contextBridge.exposeInMainWorld</code> 暴露白名单函数，内部再 <code>ipcRenderer.invoke</code> 请求主进程——从而形成最小权限边界。
+        </p>
+        <figure class="diagram">
+          <div class="arch">
+            <div class="arch-row three">
+              <div class="arch-block">
+                <strong>Main</strong>
+                <span>生命周期 · 窗口 · 系统 API · 特权操作</span>
+              </div>
+              <div class="arch-block">
+                <strong>Preload</strong>
+                <span>contextBridge · 白名单 IPC 门面</span>
+              </div>
+              <div class="arch-block">
+                <strong>Renderer</strong>
+                <span>UI · DOM · 仅调用暴露的 API</span>
+              </div>
+            </div>
+          </div>
+          <figcaption>图 2 · 推荐的进程与信任边界：特权留在主进程，界面保持“近 Web”</figcaption>
+        </figure>
+        <pre><code>// preload.js（示意）
+const { contextBridge, ipcRenderer } = require('electron');
+
+contextBridge.exposeInMainWorld('desktop', {
+  saveFile: (text) => ipcRenderer.invoke('save-file', text),
+});</code></pre>
+      </section>
+
+      <section id="ipc">
+        <h2>四、进程间通信（IPC）</h2>
+        <p>
+          主进程与渲染进程地址空间隔离，协作依赖 IPC。Electron 提供两套常用原语：
+        </p>
+        <ul>
+          <li><strong>事件式</strong>：<code>ipcMain.on</code> / <code>ipcRenderer.send</code>（单向或需手动回包）</li>
+          <li><strong>调用式</strong>：<code>ipcMain.handle</code> / <code>ipcRenderer.invoke</code>（Promise 风格，适合请求–响应）</li>
+        </ul>
+        <p>
+          设计 IPC 时宜把通道视为<strong>公共 API</strong>：校验参数、限制可触达的路径与命令、避免把任意字符串当 shell 执行。对加载远程内容的窗口，更应严格沙箱化，防止页面脚本经由宽松桥梁获得宿主机权限——这是 Electron 安全文献中反复强调的主题。
+        </p>
+        <div class="callout">
+          <strong>易错点</strong>
+          在渲染进程开启 <code>nodeIntegration: true</code> 且加载不可信内容，等价于把宿主机能力交给网页脚本。当代默认应是：沙箱 + 无 Node 集成 + contextIsolation + 窄 preload。
+        </div>
+      </section>
+
+      <section id="ecosystem">
+        <h2>五、典型应用与生态</h2>
+        <p>
+          Electron 广泛用于需要“接近原生体验、又希望复用 Web 栈”的产品：代码编辑器与 IDE 壳、即时通讯客户端、笔记与知识库、设计工具、内部运维控制台等。周边工具链包括打包与分发（如 electron-builder、electron-forge）、自动更新、崩溃报告，以及与前端工程（Vite、Webpack）的整合。
+        </p>
+        <p>
+          从工程方法论看，Electron 降低了“桌面端另起一套 UI 技术”的门槛，使组织能以同一套组件、状态管理与设计系统同时服务 Web 与桌面（桌面侧再补一层壳与本地能力）。代价是运行时体积、内存基线与升级耦合——见下一节。
+        </p>
+      </section>
+
+      <section id="tradeoffs">
+        <h2>六、优势与权衡</h2>
+        <table class="compare">
+          <thead>
+            <tr>
+              <th>维度</th>
+              <th>倾向收益</th>
+              <th>需正视的成本</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>生产力</td>
+              <td>Web 人才与生态可直接迁移；跨三平台一套代码</td>
+              <td>需额外掌握主进程、打包、代码签名与更新通道</td>
+            </tr>
+            <tr>
+              <td>体验</td>
+              <td>UI 自由度高；DevTools 调试成熟</td>
+              <td>默认内存/体积高于精简原生或 WebView 方案</td>
+            </tr>
+            <tr>
+              <td>安全</td>
+              <td>可沿用 Web 安全模型 + 明确 IPC 边界</td>
+              <td>配置失误（如过宽 Node 暴露）后果严重</td>
+            </tr>
+            <tr>
+              <td>替代路径</td>
+              <td>与 Tauri、.NET MAUI、原生 Swift/Kotlin/Qt 等对照选型</td>
+              <td>选型取决于二进制体积、语言栈、系统 API 深度等约束</td>
+            </tr>
+          </tbody>
+        </table>
+        <p>
+          简言之：Electron 用<strong>运行时冗余</strong>换<strong>开发与跨平台一致性</strong>。对工具类、内容类、以复杂 UI 为主的产品，这一交换常常划算；对极端轻量、强实时或深度系统集成场景，则应审慎评估。
+        </p>
+      </section>
+
+      <section id="conclusion">
+        <h2>七、结论</h2>
+        <p>
+          Electron 可被界定为：以 Chromium 为界面引擎、以 Node.js 为系统能力层的跨平台桌面运行时。掌握它，关键在于把握<strong>主进程 / 预加载 / 渲染进程</strong>的职责划分，以及把 IPC 当作受审计的特权接口。理解这一定义与边界之后，再进入具体 API、打包与安全清单，学习曲线会清晰得多。
+        </p>
+        <p>
+          延伸阅读建议从官方文档的 Process Model、Security 与 Context Isolation 章节入手，并结合一个最小“主进程建窗 + preload 暴露一个 invoke”的示例动手验证。
+        </p>
+      </section>
+    </article>
+
+    <aside class="aside-rail" aria-hidden="true">
+      <strong>阅读提示</strong>
+      先建立“双引擎 + 三进程”的心智模型，再记具体 API。安全配置与架构同等重要。
+    </aside>
+  </div>
+
+  <footer class="colophon">
+    自包含学习产物 · 学术导论体例 · 内容依据 Electron 公开文档与常见工程实践整理 · 可离线打开本 HTML 阅读（需网络仅用于加载字体）
+  </footer>
+
+  <script>
+    (() => {
+      const sections = [...document.querySelectorAll("article section[id], #abstract")];
+      const links = [...document.querySelectorAll("nav.toc a")];
+
+      const io = new IntersectionObserver(
+        (entries) => {
+          for (const e of entries) {
+            if (e.isIntersecting) e.target.classList.add("visible");
+          }
+        },
+        { rootMargin: "0px 0px -8% 0px", threshold: 0.12 }
+      );
+      document.querySelectorAll("article section").forEach((s) => io.observe(s));
+      const abs = document.getElementById("abstract");
+      if (abs) {
+        abs.style.opacity = "1";
+        abs.style.transform = "none";
+      }
+
+      const spy = new IntersectionObserver(
+        (entries) => {
+          const visible = entries
+            .filter((e) => e.isIntersecting)
+            .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+          if (!visible) return;
+          const id = visible.target.id;
+          links.forEach((a) => {
+            a.setAttribute("aria-current", a.getAttribute("href") === `#${id}` ? "true" : "false");
+          });
+        },
+        { rootMargin: "-20% 0px -55% 0px", threshold: [0.2, 0.5, 0.8] }
+      );
+      sections.forEach((s) => spy.observe(s));
+    })();
+  </script>
+</body>
+</html>
